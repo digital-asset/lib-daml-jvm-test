@@ -1,0 +1,17 @@
+-- Copyright (c) 2019, Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+-- SPDX-License-Identifier: Apache-2.0
+
+daml 1.2
+module Test where
+
+import PingPong
+
+testSetup = scenario $ do
+  alice <- getParty "Alice"
+  bob <- getParty "Bob"
+  charlie <-getParty "Charlie"
+  alice `submit` do
+    create Ping with
+        sender = alice
+        receiver = bob
+        count = 2
