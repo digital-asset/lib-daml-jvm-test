@@ -35,10 +35,8 @@ object Patterns {
   /* Rich objects */
 
   implicit class IdentifierOps(id: Identifier) {
-    def fqn: String =
-      if (id.name != "") id.name else s"${id.moduleName}.${id.entityName}"
-    def entName: String =
-      if (id.name != "") id.name.split('.').last else id.entityName
+    def fqn: String = s"${id.moduleName}:${id.entityName}"
+    def entName: String = id.entityName
   }
 
   val SomeCtor = "Some"
