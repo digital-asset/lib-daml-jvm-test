@@ -9,6 +9,13 @@ executors:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
 
+only-master: &only-master
+  filters:
+    branches:
+      only:
+        - master
+        - publish-to-mvn-central
+
 jobs:
   sbt_verify:
     parameters:
@@ -36,11 +43,30 @@ jobs:
           name: Run Blackduck Detect
           command: |
             bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) ci-build digitalasset_refapps_func_test master --logging.level.com.synopsys.integration=DEBUG
+  sbt_publish:
+    parameters:
+      daml_sdk_version:
+        type: string
+    executor: jdk-executor
+    steps:
+      - checkout
+      - run:
+          command: |
+            if git show --name-only HEAD | grep version.sbt; then
+              echo "Version file changed. Creating a release."
+              bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}" << parameters.daml_sdk_version >>
+            fi
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - sbt_verify:
-          daml_sdk_version: "0.13.13"
+          daml_sdk_version: "0.13.15"
           context: blackduck
+  build_and_release:
+    jobs:
+      - sbt_publish:
+          <<: *only-master
+          daml_sdk_version: "0.13.15"
+          context: github-refapp-repo-context
