@@ -26,11 +26,13 @@ import org.junit.rules.ExternalResource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Sandbox extends ExternalResource {
 
@@ -248,6 +250,52 @@ public class Sandbox extends ExternalResource {
       } catch (InvalidProtocolBufferException e) {
         throw new RuntimeException(e);
       }
+    }
+
+    /**
+     * Fetches the next `countToFetch` number of contract instances of the given template id and
+     * returns them in a list.
+     *
+     * @param party The party
+     * @param id Template Id
+     * @param countToFetch Expected number of contract instances to be fetched
+     * @param idFactory Factory to create the contractIds
+     * @param <Cid>
+     * @return List of
+     */
+    public <Cid> List<ContractWithId<Cid>> fetchContractsWithId(
+        Party party, Identifier id, int countToFetch, Function<String, Cid> idFactory) {
+      ArrayList<ContractWithId<Cid>> result = new ArrayList<>();
+      for (int i = 0; i < countToFetch; i++) {
+        ContractWithId<Cid> contractWithId = getMatchedContract(party, id, idFactory);
+        result.add(contractWithId);
+      }
+      return result;
+    }
+
+    /**
+     * Fetches the next `countToFetch` number of contract instances of the given template id and
+     * returns them in a list.
+     *
+     * @param party The party
+     * @param id Template Id
+     * @param countToFetch Expected number of contract instances to be fetched
+     * @param idFactory Factory to create the contractIds
+     * @param ctor Constructor to create the contract instance
+     * @param <Cid>
+     * @param <Contract>
+     * @return List of
+     */
+    public <Cid, Contract> List<Contract> fetchContracts(
+        Party party,
+        Identifier id,
+        int countToFetch,
+        Function<String, Cid> idFactory,
+        Function<Value, Contract> ctor) {
+      return fetchContractsWithId(party, id, countToFetch, idFactory)
+          .stream()
+          .map(cwi -> ctor.apply(cwi.record))
+          .collect(Collectors.toList());
     }
 
     public Identifier templateIdentifier(
