@@ -126,17 +126,17 @@ ContractWithId<DeliveryInstruction.ContractId> deliveryInstructionWithCid = sand
         DeliveryInstruction.ContractId::new);
 ```
 
-If a workflow creates multiple instances of the same template it can be useful to fetch them at once and run checks on them after.
+If a workflow creates multiple instances of the same template it can be useful to check if they can be observed on the
+ledger regardless the order they arrive.
 Example to fetch 4 SettledDvPs and check if one of them has a payment of 8550000:
 ```
-    List<SettledDvP> settledDvPs =
-        sandbox.fetchContracts(
-            CCP_PARTY,
-            SettledDvP.TEMPLATE_ID,
-            4,
-            SettledDvP.ContractId::new,
-            SettledDvP::fromValue);
-    assertTrue(settledDvPs.stream.anyMatch(dvp -> dvp.paymentAmount == 8550000L));
+    assertTrue(sandbox.observeMatchingContracts(
+        CCP_PARTY,
+        SettledDvP.TEMPLATE_ID,
+        SettledDvP::fromValue,
+        true,
+        dvp -> dvp.paymentAmount == 8550000L,
+        dvp -> dvp.paymentAmount == 4750000L);
 ```
 
 © 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.

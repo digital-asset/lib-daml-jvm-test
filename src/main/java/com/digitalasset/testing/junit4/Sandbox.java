@@ -26,12 +26,11 @@ import org.junit.rules.ExternalResource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Sandbox extends ExternalResource {
@@ -253,49 +252,37 @@ public class Sandbox extends ExternalResource {
     }
 
     /**
-     * Fetches the next `countToFetch` number of contract instances of the given template id and
-     * returns them in a list.
+     * Makes sure that a set of contracts are present on the ledger. The contracts with the given
+     * templateIds are fetched one-by-one and matched against the given set of predicates. If all
+     * predicates are satisfied the method returns with true.
      *
-     * @param party The party
-     * @param id Template Id
-     * @param countToFetch Expected number of contract instances to be fetched
-     * @param idFactory Factory to create the contractIds
-     * @param <Cid>
-     * @return List of
-     */
-    public <Cid> List<ContractWithId<Cid>> fetchContractsWithId(
-        Party party, Identifier id, int countToFetch, Function<String, Cid> idFactory) {
-      ArrayList<ContractWithId<Cid>> result = new ArrayList<>();
-      for (int i = 0; i < countToFetch; i++) {
-        ContractWithId<Cid> contractWithId = getMatchedContract(party, id, idFactory);
-        result.add(contractWithId);
-      }
-      return result;
-    }
-
-    /**
-     * Fetches the next `countToFetch` number of contract instances of the given template id and
-     * returns them in a list.
+     * <p>If `exact` is true, each incoming contract must match a predicate, otherwise the method
+     * will return false.
      *
-     * @param party The party
-     * @param id Template Id
-     * @param countToFetch Expected number of contract instances to be fetched
-     * @param idFactory Factory to create the contractIds
-     * @param ctor Constructor to create the contract instance
-     * @param <Cid>
-     * @param <Contract>
-     * @return List of
+     * <p>Note: the ledger cursor will be moved during the execution of this method.
+     *
+     * @return true if all predicates were satisfied, false if a non-matching contract was observed
+     *     in exact mode.
      */
-    public <Cid, Contract> List<Contract> fetchContracts(
+    public <Contract> boolean observeMatchingContracts(
         Party party,
-        Identifier id,
-        int countToFetch,
-        Function<String, Cid> idFactory,
-        Function<Value, Contract> ctor) {
-      return fetchContractsWithId(party, id, countToFetch, idFactory)
-          .stream()
-          .map(cwi -> ctor.apply(cwi.record))
-          .collect(Collectors.toList());
+        Identifier templateId,
+        Function<Value, Contract> ctor,
+        boolean exact,
+        Predicate<Contract>... predicates) {
+      Set<Predicate<Contract>> predicateSet = new HashSet<>(Arrays.asList(predicates));
+      while (!predicateSet.isEmpty()) {
+        ContractWithId<String> contractWithId = getMatchedContract(party, templateId, i -> i);
+        Contract contract = ctor.apply(contractWithId.record);
+        Optional<Predicate<Contract>> predicateMatch =
+            predicateSet.stream().filter(p -> p.test(contract)).findFirst();
+        if (predicateMatch.isPresent()) {
+          predicateSet.remove(predicateMatch.get());
+        } else {
+          if (exact) return false;
+        }
+      }
+      return true;
     }
 
     public Identifier templateIdentifier(
