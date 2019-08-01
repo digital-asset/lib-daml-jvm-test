@@ -26,11 +26,12 @@ import org.junit.rules.ExternalResource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class Sandbox extends ExternalResource {
 
@@ -248,6 +249,40 @@ public class Sandbox extends ExternalResource {
       } catch (InvalidProtocolBufferException e) {
         throw new RuntimeException(e);
       }
+    }
+
+    /**
+     * Makes sure that a set of contracts are present on the ledger. The contracts with the given
+     * templateIds are fetched one-by-one and matched against the given set of predicates. If all
+     * predicates are satisfied the method returns with true.
+     *
+     * <p>If `exact` is true, each incoming contract must match a predicate, otherwise the method
+     * will return false.
+     *
+     * <p>Note: the ledger cursor will be moved during the execution of this method.
+     *
+     * @return true if all predicates were satisfied, false if a non-matching contract was observed
+     *     in exact mode.
+     */
+    public <Contract> boolean observeMatchingContracts(
+        Party party,
+        Identifier templateId,
+        Function<Value, Contract> ctor,
+        boolean exact,
+        Predicate<Contract>... predicates) {
+      Set<Predicate<Contract>> predicateSet = new HashSet<>(Arrays.asList(predicates));
+      while (!predicateSet.isEmpty()) {
+        ContractWithId<String> contractWithId = getMatchedContract(party, templateId, i -> i);
+        Contract contract = ctor.apply(contractWithId.record);
+        Optional<Predicate<Contract>> predicateMatch =
+            predicateSet.stream().filter(p -> p.test(contract)).findFirst();
+        if (predicateMatch.isPresent()) {
+          predicateSet.remove(predicateMatch.get());
+        } else {
+          if (exact) return false;
+        }
+      }
+      return true;
     }
 
     public Identifier templateIdentifier(
