@@ -9,7 +9,7 @@ import com.daml.ledger.javaapi.data.{
 import com.digitalasset.testing.comparator.MessageTester
 import com.digitalasset.testing.comparator.MessageTester.{Irrelevant, Same}
 import scalaz.syntax.monoid.ToSemigroupOps
-import com.digitalasset.testing.ast.toAstJ
+import com.digitalasset.testing.ast.toAst
 
 object ContractCreated {
   private def apply(
@@ -33,7 +33,7 @@ object ContractCreated {
             val valueDiff = compareValues(expectedContractId, contractId, "contractId")
             captureOrexpectedArgumentsOpt match {
               case Right(Some(expectedArguments)) =>
-                valueDiff |+| compareAst(toAstJ(expectedArguments), toAstJ(createArguments))
+                valueDiff |+| compareAst(toAst(expectedArguments), toAst(createArguments))
               case Right(None) => valueDiff
               case Left(capture) => valueDiff |+| Same(capture -> createArguments)
             }

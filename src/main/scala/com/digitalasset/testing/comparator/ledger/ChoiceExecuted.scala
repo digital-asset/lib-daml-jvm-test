@@ -7,7 +7,7 @@
 package com.digitalasset.testing.comparator.ledger
 
 import com.daml.ledger.javaapi.data.{ExercisedEvent, Identifier, TreeEvent, Value}
-import com.digitalasset.testing.ast.toAstJ
+import com.digitalasset.testing.ast.toAst
 import com.digitalasset.testing.comparator.MessageTester
 import com.digitalasset.testing.comparator.MessageTester.Irrelevant
 import grizzled.slf4j.Logging
@@ -35,7 +35,7 @@ object ChoiceExecuted extends Logging {
 
             expectedChoiceArgumentOpt match {
               case Some(expectedChoiceArgument) =>
-                compared |+| compareAst(toAstJ(expectedChoiceArgument), toAstJ(choiceArgument))
+                compared |+| compareAst(toAst(expectedChoiceArgument), toAst(choiceArgument))
               case None =>
                 compared
             }

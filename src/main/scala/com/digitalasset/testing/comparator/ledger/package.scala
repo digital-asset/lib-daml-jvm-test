@@ -7,7 +7,6 @@
 package com.digitalasset.testing.comparator
 
 import com.daml.ledger.javaapi.data.{ContractId, Identifier => JavaIdentifier}
-import com.digitalasset.ledger.api.v1.value.Identifier
 import com.digitalasset.testing.Patterns._
 import com.digitalasset.testing.ast.Ast
 import com.digitalasset.testing.comparator.MessageTester._
@@ -83,12 +82,4 @@ package object ledger {
       case _ =>
         Error(s"$path: Unexpected or unsupported case: $expected, $actual")
     }
-
-  // Compare Java / Scala protobuf values
-  def compareIdentifier(templateId: Identifier,
-                        expectedTemplateId: JavaIdentifier): Boolean = {
-    templateId.packageId == expectedTemplateId.getPackageId &&
-    templateId.moduleName == expectedTemplateId.getModuleName &&
-    templateId.entityName == expectedTemplateId.getEntityName
-  }
 }
