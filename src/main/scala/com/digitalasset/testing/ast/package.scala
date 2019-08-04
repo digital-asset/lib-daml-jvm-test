@@ -15,6 +15,11 @@ import com.digitalasset.ledger.api.v1.value.{
   Variant,
   Optional => ProtoOptional
 }
+
+import com.daml.ledger.javaapi.{data => jdata}
+
+import scala.collection.JavaConverters._
+
 import com.digitalasset.testing.Patterns.{NoneCtor, SomeCtor}
 
 package object ast {
@@ -40,5 +45,23 @@ package object ast {
       Ast.Map(Map(SomeCtor -> toAst(value)))
     case Sum.Optional(ProtoOptional(None)) => Ast.Map(Map(NoneCtor -> Ast.Null))
     case Sum.Date(d)                       => Ast.Value(d.toString)
+  }
+
+  def toAstJ(v: jdata.Value): Ast = v match {
+    case null => Ast.Null
+    case r: jdata.Record => Ast.Seq(r.getFields.asScala.map(f => toAstJ(f.getValue)))
+    case v: jdata.Variant => Ast.Map(Map(v.getConstructor -> toAstJ(v.getValue)))
+    case b: jdata.Bool => Ast.Value(b.getValue.toString)
+    case c: jdata.ContractId => Ast.Value(c.getValue)
+    case l: jdata.DamlList => Ast.Seq(l.getValues.asScala.map(toAstJ))
+    case i: jdata.Int64 => Ast.Value(i.getValue.toString)
+    case d: jdata.Decimal => Ast.Value(d.getValue.toString)
+    case t: jdata.Text => Ast.Value(t.getValue)
+    case t: jdata.Timestamp => Ast.Value(t.getValue.toString)
+    case p: jdata.Party => Ast.Value(p.getValue)
+    case u: jdata.Unit => Ast.Null
+    case o: jdata.DamlOptional if o.getValue.isPresent => Ast.Map(Map(SomeCtor -> toAstJ(o.getValue.get))) //map(v => toAstJ(v)).orElseGet(() => Ast.Null)))
+    case o: jdata.DamlOptional  => Ast.Map(Map(SomeCtor -> Ast.Null))
+    case d: jdata.Date => Ast.Value(d.getValue.toString)
   }
 }

@@ -223,12 +223,6 @@ public class Sandbox extends ExternalResource {
         logger.warn("Failed to stop ledger adapter", e);
       }
       try {
-        channel.shutdown();
-        channel.awaitTermination(25, TimeUnit.SECONDS);
-      } catch (InterruptedException ignored) {
-      }
-
-      try {
         ledgerClient.close();
       } catch (Exception e) {
         logger.warn("Failed to close ledger client", e);

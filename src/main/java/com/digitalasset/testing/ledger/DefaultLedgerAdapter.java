@@ -7,7 +7,7 @@ import com.digitalasset.ledger.api.v1.LedgerOffsetOuterClass;
 import com.digitalasset.ledger.api.v1.TransactionServiceGrpc;
 import com.digitalasset.ledger.api.v1.TransactionServiceOuterClass;
 import com.digitalasset.testing.comparator.MessageTester;
-import com.digitalasset.testing.comparator.ledger.JContractCreated;
+import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.ledger.clock.TimeProvider;
 import com.digitalasset.testing.store.InMemoryMessageStorage;
 import com.digitalasset.testing.store.ValueStore;
@@ -60,12 +60,7 @@ public class DefaultLedgerAdapter {
   private static final Duration TTL = Duration.ofSeconds(10);
 
   private static final String ChannelName = "ledger";
-  private static final String FTSandboxHost =
-      Optional.ofNullable(System.getProperty("ft.sandbox.hostname"))
-          .filter(s -> !s.trim().isEmpty())
-          .orElse("localhost");
 
-  private static final int FTSandboxPort = Integer.getInteger("ft.sandbox.port", 6865);
   private static final String wireLogger = "LEDGER.WIRE";
   private static final String interactionLogger = "LEDGER.INTERACTION";
 
@@ -97,8 +92,7 @@ public class DefaultLedgerAdapter {
     return cos;
   }
 
-  private static Timestamp toProtobufTimestamp(Instant instant)
-      throws InvalidProtocolBufferException {
+  private static Timestamp toProtobufTimestamp(Instant instant) {
     return Timestamp.newBuilder()
         .setSeconds(instant.toEpochMilli() / 1000)
         .setNanos(Long.valueOf((instant.toEpochMilli() % 1000) * 1000).intValue())
@@ -268,10 +262,10 @@ public class DefaultLedgerAdapter {
       Party party, Identifier identifier, Record arguments, Function<String, Cid> ctor) {
     observeEvent(
         party.getValue(),
-        JContractCreated.expectContractWithArguments(
+        ContractCreated.expectContractWithArguments(
             identifier, "{CAPTURE:" + key + "}", arguments));
 
-    String val = valueStore.get(key).getContractId();
+    String val = valueStore.get(key).asContractId().get().getValue();
     Cid cid = ctor.apply(val);
     valueStore.remove(key);
     return cid;
@@ -280,8 +274,8 @@ public class DefaultLedgerAdapter {
   public <Cid> Cid getCreatedContractId(
       Party party, Identifier identifier, Function<String, Cid> ctor) {
     observeEvent(
-        party.getValue(), JContractCreated.expectContract(identifier, "{CAPTURE:" + key + "}"));
-    String val = valueStore.get(key).getContractId();
+        party.getValue(), ContractCreated.expectContract(identifier, "{CAPTURE:" + key + "}"));
+    String val = valueStore.get(key).asContractId().get().getValue(); // getContractId();
     Cid cid = ctor.apply(val);
     valueStore.remove(key);
     return cid;
@@ -289,23 +283,15 @@ public class DefaultLedgerAdapter {
 
   public <Cid> ContractWithId<Cid> getMatchedContract(
       Party party, Identifier identifier, Function<String, Cid> ctor) {
-    try {
-      observeEvent(
-          party.getValue(),
-          JContractCreated.capture(identifier, "{CAPTURE:" + key + "}", recordKey));
+    observeEvent(
+        party.getValue(), ContractCreated.capture(identifier, "{CAPTURE:" + key + "}", recordKey));
 
-      String contractId = valueStore.get(key).getContractId();
-      Cid cid = ctor.apply(contractId);
-      Value record =
-          Value.fromProto(
-              com.digitalasset.ledger.api.v1.ValueOuterClass.Value.parseFrom(
-                  valueStore.get(recordKey).toByteArray()));
-      valueStore.remove(key);
-      valueStore.remove(recordKey);
-      return new ContractWithId<>(cid, record);
-    } catch (InvalidProtocolBufferException e) {
-      throw new RuntimeException(e);
-    }
+    String contractId = valueStore.get(key).asContractId().get().getValue();
+    Cid cid = ctor.apply(contractId);
+    Value record = valueStore.get(recordKey).asRecord().get();
+    valueStore.remove(key);
+    valueStore.remove(recordKey);
+    return new ContractWithId<>(cid, record);
   }
 
   /**

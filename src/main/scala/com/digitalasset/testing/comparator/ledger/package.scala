@@ -6,8 +6,8 @@
 
 package com.digitalasset.testing.comparator
 
-import com.daml.ledger.javaapi.data.{Identifier => JavaIdentifier}
-import com.digitalasset.ledger.api.v1.value.{Identifier, Value}
+import com.daml.ledger.javaapi.data.{ContractId, Identifier => JavaIdentifier}
+import com.digitalasset.ledger.api.v1.value.Identifier
 import com.digitalasset.testing.Patterns._
 import com.digitalasset.testing.ast.Ast
 import com.digitalasset.testing.comparator.MessageTester._
@@ -28,8 +28,7 @@ package object ledger {
             s"$path: Actual value [$actual] doesn't match against the expected pattern [$pattern]")
 
       case IgnoreRegex() => Same()
-      case CaptureVariableRegex(name) =>
-        Same(name -> Value.of(Value.Sum.ContractId(actual)))
+      case CaptureVariableRegex(name) => Same(name -> new ContractId(actual))
       case `actual` => Same()
       case _        => Diff(s"$path: Expected [$expected] but got [$actual]")
     }

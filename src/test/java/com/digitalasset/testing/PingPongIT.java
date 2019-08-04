@@ -12,8 +12,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.digitalasset.daml_lf.DamlLf1;
-import com.digitalasset.ledger.api.v1.value.Value;
-import com.digitalasset.testing.comparator.ledger.JContractCreated;
+import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.junit4.Sandbox;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.utils.ContractWithId;
@@ -25,6 +24,7 @@ import com.daml.ledger.javaapi.data.Int64;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.daml.ledger.javaapi.data.TreeEvent;
+import com.daml.ledger.javaapi.data.Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -96,7 +96,7 @@ public class PingPongIT {
         ledger()
             .observeEvent(
                 BOB.getValue(),
-                JContractCreated.expectContract(pingTemplateId(), "{CAPTURE:" + key + "}"));
+                ContractCreated.expectContract(pingTemplateId(), "{CAPTURE:" + key + "}"));
     Value capturedValue = ledger().valueStore.get(key);
     assertNotNull(capturedValue);
   }

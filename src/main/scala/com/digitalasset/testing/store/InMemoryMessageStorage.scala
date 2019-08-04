@@ -7,7 +7,6 @@
 package com.digitalasset.testing.store
 
 import java.time.Duration
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{CountDownLatch, TimeUnit, TimeoutException}
 
