@@ -8,37 +8,45 @@ package com.digitalasset.testing.junit4;
 
 import com.digitalasset.daml_lf.DamlLf;
 import com.digitalasset.daml_lf.DamlLf1;
-import com.digitalasset.testing.comparator.ledger.ContractCreated;
+import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
+import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxRunner;
-import com.digitalasset.testing.utils.ContractWithId;
+import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
+import com.digitalasset.testing.store.DefaultValueStore;
 
 import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
-import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.Record;
-import com.daml.ledger.javaapi.data.Value;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
+import com.google.common.collect.Range;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Sandbox extends ExternalResource {
+  private static final Logger logger = LoggerFactory.getLogger(Sandbox.class);
 
+  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
   private static String DEFAULT_TEST_MODULE = "Main";
   private static String DEFAULT_TEST_SCENARIO = "test";
-  private static int DEFAULT_SANDBOX_PORT = 6865;
-  private static int DEFAULT_WAIT_TIMEOUT = 30;
+  private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
 
   private static final String COMPILATION_LOG = "integration-test-compilation.log";
@@ -48,12 +56,22 @@ public class Sandbox extends ExternalResource {
     return new SandboxBuilder();
   }
 
+  private static final AtomicInteger SANDBOX_PORT_COUNTER =
+      new AtomicInteger(SANDBOX_PORT_RANGE.lowerEndpoint());
+
+  private static int getSandboxPort() {
+    return SANDBOX_PORT_COUNTER.updateAndGet(
+        p -> {
+          if (SANDBOX_PORT_RANGE.contains(p)) return p + 1;
+          else return SANDBOX_PORT_RANGE.lowerEndpoint();
+        });
+  }
+
   public static class SandboxBuilder {
     private Path projectDir;
     private String testModule = DEFAULT_TEST_MODULE;
     private String testScenario = DEFAULT_TEST_SCENARIO;
-    private int sandboxPort = DEFAULT_SANDBOX_PORT;
-    private int waitTimeout = DEFAULT_WAIT_TIMEOUT;
+    private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
     private Consumer<DamlLedgerClient> setupApplication;
@@ -78,12 +96,7 @@ public class Sandbox extends ExternalResource {
       return this;
     }
 
-    public SandboxBuilder port(int sandboxPort) {
-      this.sandboxPort = sandboxPort;
-      return this;
-    }
-
-    public SandboxBuilder timeout(int waitTimeout) {
+    public SandboxBuilder timeout(Duration waitTimeout) {
       this.waitTimeout = waitTimeout;
       return this;
     }
@@ -107,14 +120,7 @@ public class Sandbox extends ExternalResource {
       }
 
       return new Sandbox(
-          projectDir,
-          testModule,
-          testScenario,
-          sandboxPort,
-          waitTimeout,
-          parties,
-          darPath,
-          setupApplication);
+          projectDir, testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
     }
 
     private SandboxBuilder() {}
@@ -123,8 +129,7 @@ public class Sandbox extends ExternalResource {
   private final Path projectDir;
   private final String testModule;
   private final String testScenario;
-  private final int sandboxPort;
-  private final int waitTimeout;
+  private final Duration waitTimeout;
   private final String[] parties;
   private final Path darPath;
   private final Consumer<DamlLedgerClient> setupApplication;
@@ -133,15 +138,13 @@ public class Sandbox extends ExternalResource {
       Path projectDir,
       String testModule,
       String testScenario,
-      int sandboxPort,
-      int waitTimeout,
+      Duration waitTimeout,
       String[] parties,
       Path darPath,
       Consumer<DamlLedgerClient> setupApplication) {
     this.projectDir = projectDir;
     this.testModule = testModule;
     this.testScenario = testScenario;
-    this.sandboxPort = sandboxPort;
     this.waitTimeout = waitTimeout;
     this.parties = parties;
     this.darPath = darPath;
@@ -177,112 +180,77 @@ public class Sandbox extends ExternalResource {
 
     private static final String key = "internal-cid-query";
     private static final String recordKey = "internal-recordKey";
+    private DamlLedgerClient ledgerClient;
+    private DefaultLedgerAdapter ledgerAdapter;
+    private ManagedChannel channel;
 
     @Override
     protected void before() throws Throwable {
+      int sandboxPort = getSandboxPort();
+      channel =
+          ManagedChannelBuilder.forAddress("localhost", sandboxPort)
+              .usePlaintext()
+              .maxInboundMessageSize(Integer.MAX_VALUE)
+              .build();
+      ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
+
       sandboxRunner =
-          new SandboxRunner(
-              darPath.toString(),
-              testModule,
-              testScenario,
-              sandboxPort,
-              waitTimeout,
-              parties,
-              setupApplication);
-      sandboxRunner.startSandbox();
-    };
+          new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
+      sandboxRunner.startSandbox(ledgerClient);
+
+      String ledgerId =
+          LedgerIdentityServiceGrpc.newBlockingStub(channel)
+              .getLedgerIdentity(
+                  LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+              .getLedgerId();
+
+      ledgerAdapter =
+          new DefaultLedgerAdapter(
+              new DefaultValueStore(),
+              ledgerId,
+              channel,
+              SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
+
+      ledgerAdapter.start(parties);
+      setupApplication.accept(ledgerClient);
+    }
 
     @Override
     protected void after() {
-      sandboxRunner.stopSandbox();
+      try {
+        ledgerAdapter.stop();
+      } catch (InterruptedException e) {
+        logger.warn("Failed to stop ledger adapter", e);
+      }
+      try {
+        channel.shutdown();
+        channel.awaitTermination(25, TimeUnit.SECONDS);
+      } catch (InterruptedException ignored) {
+      }
+
+      try {
+        ledgerClient.close();
+      } catch (Exception e) {
+        logger.warn("Failed to close ledger client", e);
+      }
+
+      try {
+        sandboxRunner.stopSandbox();
+      } catch (Exception e) {
+        logger.warn("Failed to stop sandbox", e);
+      }
+
+      ledgerAdapter = null;
+      ledgerClient = null;
       sandboxRunner = null;
     }
 
     public DamlLedgerClient getClient() {
-      return sandboxRunner.damlLedgerClient();
+      return ledgerClient;
     }
 
     public DefaultLedgerAdapter getLedgerAdapter() {
-      return sandboxRunner.ledgerAdapter();
-    }
-
-    public <Cid> Cid getCreatedContractId(
-        Party party, Identifier identifier, Record arguments, Function<String, Cid> ctor) {
-      getLedgerAdapter()
-          .observeEvent(
-              party.getValue(),
-              ContractCreated.apply(identifier, "{CAPTURE:" + key + "}", arguments));
-      String val = getLedgerAdapter().valueStore().get(key).getContractId();
-      Cid cid = ctor.apply(val);
-      getLedgerAdapter().valueStore().remove(key);
-      return cid;
-    }
-
-    public <Cid> Cid getCreatedContractId(
-        Party party, Identifier identifier, Function<String, Cid> ctor) {
-      getLedgerAdapter()
-          .observeEvent(
-              party.getValue(), ContractCreated.apply(identifier, "{CAPTURE:" + key + "}"));
-      String val = getLedgerAdapter().valueStore().get(key).getContractId();
-      Cid cid = ctor.apply(val);
-      getLedgerAdapter().valueStore().remove(key);
-      return cid;
-    }
-
-    public <Cid> ContractWithId<Cid> getMatchedContract(
-        Party party, Identifier identifier, Function<String, Cid> ctor) {
-      try {
-        getLedgerAdapter()
-            .observeEvent(
-                party.getValue(),
-                ContractCreated.apply(identifier, "{CAPTURE:" + key + "}", recordKey));
-
-        String contractId = getLedgerAdapter().valueStore().get(key).getContractId();
-        Cid cid = ctor.apply(contractId);
-        Value record =
-            Value.fromProto(
-                com.digitalasset.ledger.api.v1.ValueOuterClass.Value.parseFrom(
-                    getLedgerAdapter().valueStore().get(recordKey).toByteArray()));
-        getLedgerAdapter().valueStore().remove(key);
-        getLedgerAdapter().valueStore().remove(recordKey);
-        return new ContractWithId<>(cid, record);
-      } catch (InvalidProtocolBufferException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    /**
-     * Makes sure that a set of contracts are present on the ledger. The contracts with the given
-     * templateIds are fetched one-by-one and matched against the given set of predicates. If all
-     * predicates are satisfied the method returns with true.
-     *
-     * <p>If `exact` is true, each incoming contract must match a predicate, otherwise the method
-     * will return false.
-     *
-     * <p>Note: the ledger cursor will be moved during the execution of this method.
-     *
-     * @return true if all predicates were satisfied, false if a non-matching contract was observed
-     *     in exact mode.
-     */
-    public <Contract> boolean observeMatchingContracts(
-        Party party,
-        Identifier templateId,
-        Function<Value, Contract> ctor,
-        boolean exact,
-        Predicate<Contract>... predicates) {
-      Set<Predicate<Contract>> predicateSet = new HashSet<>(Arrays.asList(predicates));
-      while (!predicateSet.isEmpty()) {
-        ContractWithId<String> contractWithId = getMatchedContract(party, templateId, i -> i);
-        Contract contract = ctor.apply(contractWithId.record);
-        Optional<Predicate<Contract>> predicateMatch =
-            predicateSet.stream().filter(p -> p.test(contract)).findFirst();
-        if (predicateMatch.isPresent()) {
-          predicateSet.remove(predicateMatch.get());
-        } else {
-          if (exact) return false;
-        }
-      }
-      return true;
+      return ledgerAdapter;
     }
 
     public Identifier templateIdentifier(
@@ -298,7 +266,7 @@ public class Sandbox extends ExternalResource {
       if (strName != null) {
         return strName;
       } else {
-        PackageClient pkgClient = getClient().getPackageClient();
+        PackageClient pkgClient = ledgerClient.getPackageClient();
         Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
         for (String pkgId : pkgs) {
           GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();

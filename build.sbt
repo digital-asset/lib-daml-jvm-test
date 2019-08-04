@@ -25,6 +25,8 @@ headerLicense := Some(
   ))
 licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
 
+// Test / parallelExecution := false
+
 libraryDependencies ++= Seq(
   damlJavaBinding,
   damlLFArchive,
@@ -35,6 +37,7 @@ libraryDependencies ++= Seq(
   snakeYaml,
   logbackClassic,
   commonsIO,
+  guava,
   junit4,
   junitInterface,
   hamcrestOptional

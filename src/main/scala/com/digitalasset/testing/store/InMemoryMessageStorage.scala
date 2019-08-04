@@ -6,6 +6,8 @@
 
 package com.digitalasset.testing.store
 
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{CountDownLatch, TimeUnit, TimeoutException}
 
@@ -45,6 +47,10 @@ class InMemoryMessageStorage[T](val channel: String, val valueStore: ValueStore)
           ref.set(msg)
           latch.countDown()
       }
+  }
+
+  def observe(duration: Duration, tester: MessageTester[T]): T = {
+    observe(FiniteDuration(duration.getSeconds, TimeUnit.SECONDS), tester)
   }
 
   def observe(time: FiniteDuration, tester: MessageTester[T]): T = {

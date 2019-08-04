@@ -18,6 +18,8 @@ object Dependencies {
   lazy val snakeYaml =  "org.yaml" % "snakeyaml" % yamlVersion
   lazy val hamcrestOptional = "com.spotify" % "hamcrest-optional" % "1.1.4"
 
+  lazy val guava = "com.google.guava" % "guava" % "28.0-jre"
+
   lazy val junit4 = "junit" % "junit" % "4.12"
   lazy val junitInterface = "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
 }
