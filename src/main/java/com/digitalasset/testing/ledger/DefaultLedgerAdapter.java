@@ -9,6 +9,7 @@ import com.digitalasset.ledger.api.v1.TransactionServiceOuterClass;
 import com.digitalasset.testing.comparator.MessageTester;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.ledger.clock.TimeProvider;
+import com.digitalasset.testing.logging.Dump;
 import com.digitalasset.testing.store.InMemoryMessageStorage;
 import com.digitalasset.testing.store.ValueStore;
 import com.digitalasset.testing.utils.ContractWithId;
@@ -26,8 +27,6 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.daml.ledger.javaapi.data.TreeEvent;
 import com.daml.ledger.javaapi.data.Value;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -50,7 +49,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-// TODO(lt) port over interactionLogger and Dump.dump
 public class DefaultLedgerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(DefaultLedgerAdapter.class);
 
@@ -84,12 +82,6 @@ public class DefaultLedgerAdapter {
     this.ledgerId = ledgerId;
     this.channel = channel;
     this.timeProviderFactory = timeProviderFactory;
-  }
-
-  private static CodedInputStream toCodedInputStream(ByteString input) {
-    CodedInputStream cos = CodedInputStream.newInstance(input.asReadOnlyByteBuffer());
-    cos.setRecursionLimit(1000);
-    return cos;
   }
 
   private static Timestamp toProtobufTimestamp(Instant instant) {
@@ -146,7 +138,9 @@ public class DefaultLedgerAdapter {
   }
 
   public TreeEvent observeEvent(String party, MessageTester<TreeEvent> eventTester) {
-    return getStorage(party).observe(timeout, eventTester);
+    TreeEvent event = getStorage(party).observe(timeout, eventTester);
+    Dump.dump(interactionLogger, new ObserveEvent(party, event));
+    return event;
   }
 
   public void assertDidntHappen(String party, MessageTester<TreeEvent> eventTester) {
@@ -214,37 +208,37 @@ public class DefaultLedgerAdapter {
       response
           .getTransactionsList()
           .forEach(
-              tree -> {
-                tree.getEventsByIdMap()
-                    .values()
-                    .forEach(
-                        event -> {
-                          // Dump.dump(wireLogger, );
-                          storage.onMessage(TreeEvent.fromProtoTreeEvent(event));
-                        });
-              });
+              tree -> tree.getEventsByIdMap()
+                  .values()
+                  .forEach(
+                      protoEvent -> {
+                        TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
+                        Dump.dump(wireLogger, new ObserveEvent(party, event));
+                        storage.onMessage(event);
+                      }));
     }
   }
 
-  private void submit(Party party, Command command) throws InvalidProtocolBufferException {
+  private void submit(Party party, Command command) {
     Instant let = timeProvider.getCurrentTime();
     Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
-    CommandServiceGrpc.newBlockingStub(channel)
-        .submitAndWait(
-            CommandServiceOuterClass.SubmitAndWaitRequest.newBuilder()
-                .setCommands(
+    CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands = CommandServiceOuterClass.SubmitAndWaitRequest.newBuilder()
+            .setCommands(
                     CommandsOuterClass.Commands.newBuilder()
-                        .setLedgerId(ledgerId)
-                        .setWorkflowId(String.format("%s:%s", APP_ID, cmdId))
-                        .setApplicationId(APP_ID)
-                        .setCommandId(cmdId)
-                        .setParty(party.getValue())
-                        .setLedgerEffectiveTime(toProtobufTimestamp(let))
-                        .setMaximumRecordTime(toProtobufTimestamp(mrt))
-                        .addCommands(command.toProtoCommand()))
-                .build());
+                            .setLedgerId(ledgerId)
+                            .setWorkflowId(String.format("%s:%s", APP_ID, cmdId))
+                            .setApplicationId(APP_ID)
+                            .setCommandId(cmdId)
+                            .setParty(party.getValue())
+                            .setLedgerEffectiveTime(toProtobufTimestamp(let))
+                            .setMaximumRecordTime(toProtobufTimestamp(mrt))
+                            .addCommands(command.toProtoCommand()));
+    CommandEvent event = new CommandEvent(cmdId, party.getValue(), command);
+    Dump.dump(wireLogger, event);
+    CommandServiceGrpc.newBlockingStub(channel).submitAndWait(commands.build());
+    Dump.dump(interactionLogger, event);
   }
 
   public Instant getCurrentTime() {

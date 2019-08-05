@@ -6,11 +6,15 @@
 
 package com.digitalasset.testing.ledger
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
+
 import com.daml.ledger.javaapi.data._
 import com.digitalasset.testing.Patterns.IdentifierOps
 import com.digitalasset.testing.ast.toAst
 import com.digitalasset.testing.ledger.Utils._
-import com.digitalasset.testing.logging.{LogEvent, _}
+import com.digitalasset.testing.logging.LogEvent
 import com.digitalasset.testing.utils.AstHelper
 import com.google.protobuf.TextFormat
 
@@ -107,6 +111,22 @@ case class ObserveEvent(party: String, event: TreeEvent) extends LedgerLogEvent 
 }
 
 object Utils {
+  val UNKNOWN: String = "UNKNOWN"
+  val EMPTY: String = "<EMPTY>"
+
+  private val FORMATTER = new DateTimeFormatterBuilder()
+    .appendValue(ChronoField.YEAR, 4)
+    .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+    .appendValue(ChronoField.DAY_OF_MONTH, 2)
+    .appendLiteral('-')
+    .appendValue(ChronoField.HOUR_OF_DAY, 2)
+    .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+    .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+    .appendFraction(ChronoField.NANO_OF_SECOND, 3, 3, true)
+    .toFormatter
+
+  def now: String = FORMATTER.format(ZonedDateTime.now())
+
   implicit class ValueOpts(val value: Value) {
     def pretty: String = AstHelper.prettyPrint(toAst(value))
     def proto: String = TextFormat.shortDebugString(value.toProto)
