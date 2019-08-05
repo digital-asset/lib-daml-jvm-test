@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -62,8 +61,11 @@ public class Sandbox extends ExternalResource {
   private static int getSandboxPort() {
     return SANDBOX_PORT_COUNTER.updateAndGet(
         p -> {
-          if (SANDBOX_PORT_RANGE.contains(p)) return p + 1;
-          else return SANDBOX_PORT_RANGE.lowerEndpoint();
+          if (SANDBOX_PORT_RANGE.contains(p)) {
+            return p + 1;
+          } else {
+            return SANDBOX_PORT_RANGE.lowerEndpoint();
+          }
         });
   }
 
