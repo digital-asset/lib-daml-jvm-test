@@ -7,66 +7,64 @@
 package com.digitalasset.testing.comparator.ledger
 
 import com.daml.ledger.javaapi.data.{
-  Identifier => JavaIdentifier,
-  Record => JavaRecord
+  CreatedEvent,
+  Identifier,
+  Record,
+  TreeEvent
 }
-import com.digitalasset.ledger.api.v1.transaction.TreeEvent
-import com.digitalasset.ledger.api.v1.value.Value
-import com.digitalasset.ledger.api.v1.value.Value.Sum
-import com.digitalasset.testing.ast.toAst
 import com.digitalasset.testing.comparator.MessageTester
 import com.digitalasset.testing.comparator.MessageTester.{Irrelevant, Same}
-import grizzled.slf4j.Logging
 import scalaz.syntax.monoid.ToSemigroupOps
+import com.digitalasset.testing.ast.toAst
 
-object ContractCreated extends Logging {
+object ContractCreated {
   private def apply(
-      expectedTemplate: JavaIdentifier,
+      expectedTemplate: Identifier,
       expectedContractId: String,
-      captureOrexpectedArgumentsOpt: Either[String, Option[JavaRecord]])
+      captureOrexpectedArgumentsOpt: Either[String, Option[Record]])
     : MessageTester[TreeEvent] =
     new MessageTester[TreeEvent] {
       override def prettyPrintExpected: String =
         s"${expectedTemplate} - ${expectedContractId}"
+
       override def prettyPrintActual(event: TreeEvent): String = event.toString
 
-      override def test(event: TreeEvent): MessageTester.ComparisonResult =
-        if (event.kind.isCreated && compareIdentifier(
-              event.getCreated.getTemplateId,
-              expectedTemplate)) {
-          val contractId = event.getCreated.contractId
-          val createArguments = event.getCreated.getCreateArguments
-          val valueDiff =
-            compareValues(expectedContractId, contractId, "contractId")
-          captureOrexpectedArgumentsOpt match {
-            case Right(Some(expectedArguments)) =>
-              val expVal =
-                Value.parseFrom(expectedArguments.toProto.toByteArray)
-              valueDiff |+| compareAst(
-                toAst(expVal),
-                toAst(Value.of(Sum.Record(createArguments))))
-            case Right(None) =>
-              valueDiff
-            case Left(capture) =>
-              valueDiff |+| Same(
-                capture -> Value(Value.Sum.Record(createArguments)))
-          }
-        } else {
-          Irrelevant
+      override def test(event: TreeEvent): MessageTester.ComparisonResult = {
+        event match {
+          case event1: CreatedEvent
+              if event1.getTemplateId == expectedTemplate =>
+            val contractId = event1.getContractId
+            val createArguments = event1.getArguments
+
+            val valueDiff =
+              compareValues(expectedContractId, contractId, "contractId")
+            captureOrexpectedArgumentsOpt match {
+              case Right(Some(expectedArguments)) =>
+                valueDiff |+| compareAst(toAst(expectedArguments),
+                                         toAst(createArguments))
+              case Right(None) => valueDiff
+              case Left(capture) =>
+                valueDiff |+| Same(capture -> createArguments)
+            }
+          case _ =>
+            Irrelevant
         }
+      }
     }
 
-  def apply(expectedTemplate: JavaIdentifier,
-            expectedContractId: String,
-            expectedArguments: JavaRecord): MessageTester[TreeEvent] =
-    apply(expectedTemplate, expectedContractId, Right(Some(expectedArguments)))
-
-  def apply(expectedTemplate: JavaIdentifier,
-            expectedContractId: String): MessageTester[TreeEvent] =
+  def expectContract(expectedTemplate: Identifier,
+                     expectedContractId: String): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Right(None))
 
-  def apply(expectedTemplate: JavaIdentifier,
-            expectedContractId: String,
-            capture: String): MessageTester[TreeEvent] =
+  def expectContractWithArguments(
+      expectedTemplate: Identifier,
+      expectedContractId: String,
+      expectedArguments: Record): MessageTester[TreeEvent] =
+    apply(expectedTemplate, expectedContractId, Right(Some(expectedArguments)))
+
+  def capture(expectedTemplate: Identifier,
+              expectedContractId: String,
+              capture: String): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Left(capture))
+
 }

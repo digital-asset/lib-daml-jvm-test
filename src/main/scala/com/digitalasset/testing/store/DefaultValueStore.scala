@@ -8,7 +8,7 @@ package com.digitalasset.testing.store
 
 import java.util.concurrent.ConcurrentHashMap
 
-import com.digitalasset.ledger.api.v1.value.Value
+import com.daml.ledger.javaapi.data.Value
 import com.digitalasset.testing.Patterns.varName
 
 class DefaultValueStore extends ValueStore {

@@ -6,7 +6,7 @@
 
 package com.digitalasset.testing.store
 
-import com.digitalasset.ledger.api.v1.value.Value
+import com.daml.ledger.javaapi.data.Value
 
 trait ValueStore {
   def put(key: String, value: Value): Unit

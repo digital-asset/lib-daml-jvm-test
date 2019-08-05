@@ -6,8 +6,7 @@
 
 package com.digitalasset.testing.comparator
 
-import com.daml.ledger.javaapi.data.{Identifier => JavaIdentifier}
-import com.digitalasset.ledger.api.v1.value.{Identifier, Value}
+import com.daml.ledger.javaapi.data.{ContractId, Identifier => JavaIdentifier}
 import com.digitalasset.testing.Patterns._
 import com.digitalasset.testing.ast.Ast
 import com.digitalasset.testing.comparator.MessageTester._
@@ -27,11 +26,10 @@ package object ledger {
           Diff(
             s"$path: Actual value [$actual] doesn't match against the expected pattern [$pattern]")
 
-      case IgnoreRegex() => Same()
-      case CaptureVariableRegex(name) =>
-        Same(name -> Value.of(Value.Sum.ContractId(actual)))
-      case `actual` => Same()
-      case _        => Diff(s"$path: Expected [$expected] but got [$actual]")
+      case IgnoreRegex()              => Same()
+      case CaptureVariableRegex(name) => Same(name -> new ContractId(actual))
+      case `actual`                   => Same()
+      case _                          => Diff(s"$path: Expected [$expected] but got [$actual]")
     }
 
   def compareAst(expected: Ast,
@@ -84,12 +82,4 @@ package object ledger {
       case _ =>
         Error(s"$path: Unexpected or unsupported case: $expected, $actual")
     }
-
-  // Compare Java / Scala protobuf values
-  def compareIdentifier(templateId: Identifier,
-                        expectedTemplateId: JavaIdentifier): Boolean = {
-    templateId.packageId == expectedTemplateId.getPackageId &&
-    templateId.moduleName == expectedTemplateId.getModuleName &&
-    templateId.entityName == expectedTemplateId.getEntityName
-  }
 }

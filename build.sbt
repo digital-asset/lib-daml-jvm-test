@@ -28,13 +28,12 @@ licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.
 libraryDependencies ++= Seq(
   damlJavaBinding,
   damlLFArchive,
-  damlScalaBinding,
   damlLedgerClient,
   grizzledLogger,
-  scalapbJson4s,
   snakeYaml,
   logbackClassic,
   commonsIO,
+  guava,
   junit4,
   junitInterface,
   hamcrestOptional

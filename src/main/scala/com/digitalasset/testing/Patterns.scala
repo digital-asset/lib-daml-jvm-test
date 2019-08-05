@@ -6,7 +6,7 @@
 
 package com.digitalasset.testing
 
-import com.digitalasset.ledger.api.v1.value.Identifier
+import com.daml.ledger.javaapi.data.Identifier
 
 import scala.util.matching.Regex
 
@@ -35,8 +35,8 @@ object Patterns {
   /* Rich objects */
 
   implicit class IdentifierOps(id: Identifier) {
-    def fqn: String = s"${id.moduleName}:${id.entityName}"
-    def entName: String = id.entityName
+    def fqn: String = s"${id.getModuleName}:${id.getEntityName}"
+    def entName: String = id.getEntityName
   }
 
   val SomeCtor = "Some"

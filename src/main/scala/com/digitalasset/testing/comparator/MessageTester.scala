@@ -6,7 +6,7 @@
 
 package com.digitalasset.testing.comparator
 
-import com.digitalasset.ledger.api.v1.value.Value
+import com.daml.ledger.javaapi.data.Value
 import com.digitalasset.testing.comparator.MessageTester.ComparisonResult
 import scalaz.Monoid
 
