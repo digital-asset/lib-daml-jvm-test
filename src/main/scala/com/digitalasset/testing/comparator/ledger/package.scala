@@ -26,10 +26,10 @@ package object ledger {
           Diff(
             s"$path: Actual value [$actual] doesn't match against the expected pattern [$pattern]")
 
-      case IgnoreRegex() => Same()
+      case IgnoreRegex()              => Same()
       case CaptureVariableRegex(name) => Same(name -> new ContractId(actual))
-      case `actual` => Same()
-      case _        => Diff(s"$path: Expected [$expected] but got [$actual]")
+      case `actual`                   => Same()
+      case _                          => Diff(s"$path: Expected [$expected] but got [$actual]")
     }
 
   def compareAst(expected: Ast,

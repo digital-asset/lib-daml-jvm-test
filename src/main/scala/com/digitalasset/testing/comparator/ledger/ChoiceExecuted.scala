@@ -6,7 +6,12 @@
 
 package com.digitalasset.testing.comparator.ledger
 
-import com.daml.ledger.javaapi.data.{ExercisedEvent, Identifier, TreeEvent, Value}
+import com.daml.ledger.javaapi.data.{
+  ExercisedEvent,
+  Identifier,
+  TreeEvent,
+  Value
+}
 import com.digitalasset.testing.ast.toAst
 import com.digitalasset.testing.comparator.MessageTester
 import com.digitalasset.testing.comparator.MessageTester.Irrelevant
@@ -25,7 +30,8 @@ object ChoiceExecuted extends Logging {
 
       override def test(event: TreeEvent): MessageTester.ComparisonResult = {
         event match {
-          case exercised: ExercisedEvent if exercised.getTemplateId == expectedTemplate =>
+          case exercised: ExercisedEvent
+              if exercised.getTemplateId == expectedTemplate =>
             val contractId = exercised.getContractId
             val choiceName = exercised.getChoice
             val choiceArgument = exercised.getChoiceArgument
@@ -35,11 +41,12 @@ object ChoiceExecuted extends Logging {
 
             expectedChoiceArgumentOpt match {
               case Some(expectedChoiceArgument) =>
-                compared |+| compareAst(toAst(expectedChoiceArgument), toAst(choiceArgument))
+                compared |+| compareAst(toAst(expectedChoiceArgument),
+                                        toAst(choiceArgument))
               case None =>
                 compared
             }
-          case  _ =>  Irrelevant
+          case _ => Irrelevant
         }
       }
     }

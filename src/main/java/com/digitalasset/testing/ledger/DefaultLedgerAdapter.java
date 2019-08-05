@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.digitalasset.testing.ledger;
 
 import com.digitalasset.ledger.api.v1.CommandServiceGrpc;
@@ -208,14 +214,15 @@ public class DefaultLedgerAdapter {
       response
           .getTransactionsList()
           .forEach(
-              tree -> tree.getEventsByIdMap()
-                  .values()
-                  .forEach(
-                      protoEvent -> {
-                        TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
-                        Dump.dump(wireLogger, new ObserveEvent(party, event));
-                        storage.onMessage(event);
-                      }));
+              tree ->
+                  tree.getEventsByIdMap()
+                      .values()
+                      .forEach(
+                          protoEvent -> {
+                            TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
+                            Dump.dump(wireLogger, new ObserveEvent(party, event));
+                            storage.onMessage(event);
+                          }));
     }
   }
 
@@ -224,17 +231,18 @@ public class DefaultLedgerAdapter {
     Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
-    CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands = CommandServiceOuterClass.SubmitAndWaitRequest.newBuilder()
+    CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
+        CommandServiceOuterClass.SubmitAndWaitRequest.newBuilder()
             .setCommands(
-                    CommandsOuterClass.Commands.newBuilder()
-                            .setLedgerId(ledgerId)
-                            .setWorkflowId(String.format("%s:%s", APP_ID, cmdId))
-                            .setApplicationId(APP_ID)
-                            .setCommandId(cmdId)
-                            .setParty(party.getValue())
-                            .setLedgerEffectiveTime(toProtobufTimestamp(let))
-                            .setMaximumRecordTime(toProtobufTimestamp(mrt))
-                            .addCommands(command.toProtoCommand()));
+                CommandsOuterClass.Commands.newBuilder()
+                    .setLedgerId(ledgerId)
+                    .setWorkflowId(String.format("%s:%s", APP_ID, cmdId))
+                    .setApplicationId(APP_ID)
+                    .setCommandId(cmdId)
+                    .setParty(party.getValue())
+                    .setLedgerEffectiveTime(toProtobufTimestamp(let))
+                    .setMaximumRecordTime(toProtobufTimestamp(mrt))
+                    .addCommands(command.toProtoCommand()));
     CommandEvent event = new CommandEvent(cmdId, party.getValue(), command);
     Dump.dump(wireLogger, event);
     CommandServiceGrpc.newBlockingStub(channel).submitAndWait(commands.build());

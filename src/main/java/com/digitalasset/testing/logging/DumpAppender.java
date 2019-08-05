@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.digitalasset.testing.logging;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -33,18 +39,21 @@ public class DumpAppender extends AppenderBase<ILoggingEvent> {
       String context = (String) args[1];
 
       String prefix;
-      if (!context.isEmpty()) { prefix = context + "/"; } else { prefix = ""; }
+      if (!context.isEmpty()) {
+        prefix = context + "/";
+      } else {
+        prefix = "";
+      }
 
       File file = new File(workDir, prefix + e.filename());
       file.getParentFile().mkdirs();
       try {
         Files.write(
-                file.toPath(),
-                e.filePrettyMsg().getBytes(StandardCharsets.UTF_8),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING
-        );
+            file.toPath(),
+            e.filePrettyMsg().getBytes(StandardCharsets.UTF_8),
+            StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.TRUNCATE_EXISTING);
       } catch (IOException ex) {
         throw new RuntimeException(ex);
       }

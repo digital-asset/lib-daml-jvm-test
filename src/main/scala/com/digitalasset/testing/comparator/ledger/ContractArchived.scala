@@ -15,11 +15,12 @@ object ContractArchived extends Logging {
   def apply(expectedTemplate: String,
             expectedContractId: String): MessageTester[TreeEvent] =
     new MessageTester[TreeEvent] {
-      override def prettyPrintExpected: String = pretty(expectedTemplate, expectedContractId)
+      override def prettyPrintExpected: String =
+        pretty(expectedTemplate, expectedContractId)
 
       override def prettyPrintActual(event: TreeEvent): String =
         event match {
-          case e:ExercisedEvent if e.isConsuming =>
+          case e: ExercisedEvent if e.isConsuming =>
             pretty(
               s"${e.getTemplateId.getModuleName}:${e.getTemplateId.getEntityName}",
               e.getContractId)
@@ -29,7 +30,8 @@ object ContractArchived extends Logging {
 
       override def test(event: TreeEvent): MessageTester.ComparisonResult =
         event match {
-          case e:ExercisedEvent if e.isConsuming => compareValues(expectedContractId, e.getContractId, "contractId")
+          case e: ExercisedEvent if e.isConsuming =>
+            compareValues(expectedContractId, e.getContractId, "contractId")
           case _ => Irrelevant
         }
     }

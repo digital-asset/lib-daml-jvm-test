@@ -20,7 +20,8 @@ import com.google.protobuf.TextFormat
 
 sealed trait LedgerLogEvent extends LogEvent
 
-case class CommandEvent(cmdId: String, party: String, cmd: Command) extends LedgerLogEvent {
+case class CommandEvent(cmdId: String, party: String, cmd: Command)
+    extends LedgerLogEvent {
   override lazy val consolePrettyMsg: String = s">>> CMD $party " + (cmd match {
     case cc: CreateCommand =>
       s"Create ${cc.getTemplateId.fqn}\n${cc.getCreateArguments.pretty}---"
@@ -57,12 +58,14 @@ case class CommandEvent(cmdId: String, party: String, cmd: Command) extends Ledg
 
   private def postfix = cmd match {
     case cc: CreateCommand => s"create-${cc.getTemplateId.entName}"
-    case ec: ExerciseCommand => s"exercise-${ec.getTemplateId.entName}#${ec.getChoice}"
+    case ec: ExerciseCommand =>
+      s"exercise-${ec.getTemplateId.entName}#${ec.getChoice}"
     case _ => UNKNOWN
   }
 }
 
-case class ObserveEvent(party: String, event: TreeEvent) extends LedgerLogEvent {
+case class ObserveEvent(party: String, event: TreeEvent)
+    extends LedgerLogEvent {
   override lazy val consolePrettyMsg
     : String = s"<<< EVT $party " + (event match {
     case ce: CreatedEvent =>
@@ -74,7 +77,7 @@ case class ObserveEvent(party: String, event: TreeEvent) extends LedgerLogEvent 
 
   override lazy val filename: String = s"ledger/$party/events/$now-$postfix.txt"
   override lazy val filePrettyMsg: String = event match {
-    case ce:CreatedEvent =>
+    case ce: CreatedEvent =>
       s"""Created contract:
          |Event id: ${ce.getEventId}
          |Template: ${ce.getTemplateId.fqn}
@@ -105,7 +108,8 @@ case class ObserveEvent(party: String, event: TreeEvent) extends LedgerLogEvent 
   private def postfix = event match {
     case ce: CreatedEvent => s"created-${ce.getTemplateId.entName}"
     case ee: ExercisedEvent =>
-      s"exercised-${ee.getTemplateId.entName}#${ee.getChoice}${if (ee.isConsuming) "!" else ""}"
+      s"exercised-${ee.getTemplateId.entName}#${ee.getChoice}${if (ee.isConsuming) "!"
+      else ""}"
     case _ => UNKNOWN
   }
 }
@@ -134,7 +138,8 @@ object Utils {
 
   implicit class OptionValueOpts(val obj: Option[Value]) {
     def pretty: String = obj.fold(EMPTY)(v => AstHelper.prettyPrint(toAst(v)))
-    def proto: String = obj.fold(EMPTY)(v => TextFormat.shortDebugString(v.toProto))
+    def proto: String =
+      obj.fold(EMPTY)(v => TextFormat.shortDebugString(v.toProto))
   }
 
   implicit class RecordOpts(record: Record) {
@@ -144,6 +149,7 @@ object Utils {
 
   implicit class OptionRecordOpts(val obj: Option[Record]) {
     def pretty: String = obj.fold(EMPTY)(r => AstHelper.prettyPrint(toAst(r)))
-    def proto: String = obj.fold(EMPTY)(r => TextFormat.shortDebugString(r.toProto))
+    def proto: String =
+      obj.fold(EMPTY)(r => TextFormat.shortDebugString(r.toProto))
   }
 }

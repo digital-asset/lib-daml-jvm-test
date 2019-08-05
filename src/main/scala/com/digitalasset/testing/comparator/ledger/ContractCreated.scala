@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.digitalasset.testing.comparator.ledger
 
 import com.daml.ledger.javaapi.data.{
@@ -30,12 +36,15 @@ object ContractCreated {
             val contractId = event1.getContractId
             val createArguments = event1.getArguments
 
-            val valueDiff = compareValues(expectedContractId, contractId, "contractId")
+            val valueDiff =
+              compareValues(expectedContractId, contractId, "contractId")
             captureOrexpectedArgumentsOpt match {
               case Right(Some(expectedArguments)) =>
-                valueDiff |+| compareAst(toAst(expectedArguments), toAst(createArguments))
+                valueDiff |+| compareAst(toAst(expectedArguments),
+                                         toAst(createArguments))
               case Right(None) => valueDiff
-              case Left(capture) => valueDiff |+| Same(capture -> createArguments)
+              case Left(capture) =>
+                valueDiff |+| Same(capture -> createArguments)
             }
           case _ =>
             Irrelevant
@@ -47,14 +56,15 @@ object ContractCreated {
                      expectedContractId: String): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Right(None))
 
-  def expectContractWithArguments(expectedTemplate: Identifier,
-            expectedContractId: String,
-            expectedArguments: Record): MessageTester[TreeEvent] =
+  def expectContractWithArguments(
+      expectedTemplate: Identifier,
+      expectedContractId: String,
+      expectedArguments: Record): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Right(Some(expectedArguments)))
 
   def capture(expectedTemplate: Identifier,
-            expectedContractId: String,
-            capture: String): MessageTester[TreeEvent] =
+              expectedContractId: String,
+              capture: String): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Left(capture))
 
 }
