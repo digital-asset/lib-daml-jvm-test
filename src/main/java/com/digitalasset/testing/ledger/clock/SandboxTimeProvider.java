@@ -30,54 +30,39 @@ public class SandboxTimeProvider implements TimeProvider {
     return () -> {
       logger.debug("Starting SandboxTimeProvider");
       SandboxTimeProvider p = new SandboxTimeProvider(stub, ledgerId);
-      Monitor monitor = new Monitor();
-      Monitor.Guard started = monitor.newGuard(() -> p.running.get());
-      try {
-        TimeServiceOuterClass.GetTimeRequest req =
-            TimeServiceOuterClass.GetTimeRequest.newBuilder().setLedgerId(ledgerId).build();
-        stub.getTime(
-            req,
-            new StreamObserver<TimeServiceOuterClass.GetTimeResponse>() {
-              public void onNext(TimeServiceOuterClass.GetTimeResponse value) {
-                logger.debug("SandboxTimeProvider received new time {}", value.getCurrentTime());
-                monitor.enter();
-                try {
-                  p.setActualTime(value.getCurrentTime());
-                } finally {
-                  monitor.leave();
-                }
-              }
 
-              public void onError(Throwable t) {
-                logger.warn("SandboxTimeProvider request received an error", t);
-                p.stop(t);
-              }
+      TimeServiceOuterClass.GetTimeRequest req =
+          TimeServiceOuterClass.GetTimeRequest.newBuilder().setLedgerId(ledgerId).build();
+      stub.getTime(
+          req,
+          new StreamObserver<TimeServiceOuterClass.GetTimeResponse>() {
+            public void onNext(TimeServiceOuterClass.GetTimeResponse value) {
+              logger.debug("SandboxTimeProvider received new time {}", value.getCurrentTime());
+              p.setActualTime(value.getCurrentTime());
+            }
 
-              public void onCompleted() {
-                logger.warn("SandboxTimeProvider finished");
-                p.stop(null);
-              }
-            });
+            public void onError(Throwable t) {
+              logger.warn("SandboxTimeProvider request received an error", t);
+              p.stop(t);
+            }
 
-        monitor.enter();
-        try {
-          boolean running = monitor.waitFor(started, Duration.ofSeconds(30));
-          Preconditions.checkState(running, "SandboxTimeProvider start failed");
-        } finally {
-          monitor.leave();
-        }
-      } catch (InterruptedException ignored) {
-      }
+            public void onCompleted() {
+              logger.warn("SandboxTimeProvider finished");
+              p.stop(null);
+            }
+          });
 
+      p.waitForTimeChange(Instant.EPOCH);
+      logger.warn("SandboxTimeProvider started");
       return p;
     };
   }
 
   private TimeServiceGrpc.TimeServiceStub stub;
   private final String ledgerId;
+  private final Monitor monitor = new Monitor();
 
-  private AtomicReference<Instant> actualTime = new AtomicReference<>(Instant.EPOCH);
-  private AtomicBoolean running = new AtomicBoolean(false);
+  private AtomicReference<Instant> actualTime = new AtomicReference<>(null);
 
   private SandboxTimeProvider(TimeServiceGrpc.TimeServiceStub stub, String ledgerId) {
     this.stub = stub;
@@ -85,18 +70,20 @@ public class SandboxTimeProvider implements TimeProvider {
   }
 
   private synchronized void setActualTime(Timestamp ts) {
-    actualTime.set(Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
-    running.set(true);
+    monitor.enter();
+    try {
+      actualTime.set(Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
+    } finally {
+      monitor.leave();
+    }
   }
 
   @Override
   public Instant getCurrentTime() {
-    ensureRunning();
     return actualTime.get();
   }
 
   private synchronized void stop(Throwable t) {
-    running.set(false);
     stub = null;
     if (t != null) {
       logger.error("Time service stopped", t);
@@ -105,13 +92,8 @@ public class SandboxTimeProvider implements TimeProvider {
     }
   }
 
-  private void ensureRunning() {
-    if (!running.get()) throw new IllegalStateException("TimeService is not running");
-  }
-
   @Override
   public void setCurrentTime(Instant time) {
-    ensureRunning();
     logger.debug("Setting new time {}", time);
 
     Instant at = actualTime.get();
@@ -130,5 +112,22 @@ public class SandboxTimeProvider implements TimeProvider {
                     .build())
             .build();
     TimeServiceGrpc.newBlockingStub(stub.getChannel()).setTime(req);
+
+    waitForTimeChange(time);
+  }
+
+  private void waitForTimeChange(Instant time) {
+    Monitor.Guard timeIsActualized =
+        monitor.newGuard(
+            () -> this.actualTime.get() != null && this.actualTime.get().compareTo(time) >= 0);
+    try {
+      if (monitor.enterWhen(timeIsActualized, Duration.ofSeconds(10))) {
+        monitor.leave();
+      } else {
+        throw new IllegalStateException("Failed to set time.");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 }
