@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import com.daml.ledger.javaapi.data.*;
 import com.digitalasset.daml_lf.DamlLf1;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.junit4.Sandbox;
@@ -25,7 +26,9 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.daml.ledger.javaapi.data.TreeEvent;
 import com.daml.ledger.javaapi.data.Value;
+
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.StatusRuntimeException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +36,7 @@ import org.junit.rules.ExternalResource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
@@ -196,5 +200,47 @@ public class PingPongIT {
 
   private Identifier pongTemplateId() throws InvalidProtocolBufferException {
     return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "Pong");
+  }
+
+  @Test(expected = StatusRuntimeException.class)
+  public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
+    Instant futureTime = Instant.ofEpochSecond(5000);
+    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+
+    Timestamp timestamp = Timestamp.fromInstant(futureTime);
+    sandbox
+        .getLedgerAdapter()
+        .createContract(CHARLIE, timedPingTid, record(timestamp, CHARLIE, BOB, int64(777)));
+
+    ContractId timedPingCid =
+        sandbox.getLedgerAdapter().getCreatedContractId(CHARLIE, timedPingTid, ContractId::new);
+
+    ExerciseCommand exerciseCmd =
+        new ExerciseCommand(
+            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyRecord());
+
+    sandbox.getLedgerAdapter().exerciseChoice(CHARLIE, exerciseCmd);
+  }
+
+  @Test
+  public void testTimedOperationIfTimeIsOk()
+      throws InvalidProtocolBufferException, InterruptedException {
+    Instant futureTime = Instant.ofEpochSecond(5000);
+    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+
+    Timestamp timestamp = Timestamp.fromInstant(futureTime);
+    sandbox
+        .getLedgerAdapter()
+        .createContract(CHARLIE, timedPingTid, record(timestamp, CHARLIE, BOB, int64(777)));
+
+    ContractId timedPingCid =
+        sandbox.getLedgerAdapter().getCreatedContractId(CHARLIE, timedPingTid, ContractId::new);
+
+    ExerciseCommand exerciseCmd =
+        new ExerciseCommand(
+            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyRecord());
+
+    sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
+    sandbox.getLedgerAdapter().exerciseChoice(BOB, exerciseCmd);
   }
 }
