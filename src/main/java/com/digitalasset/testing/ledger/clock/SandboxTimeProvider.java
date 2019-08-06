@@ -53,7 +53,7 @@ public class SandboxTimeProvider implements TimeProvider {
           });
 
       p.waitForTimeChange(Instant.EPOCH);
-      logger.warn("SandboxTimeProvider started");
+      logger.info("SandboxTimeProvider started");
       return p;
     };
   }
