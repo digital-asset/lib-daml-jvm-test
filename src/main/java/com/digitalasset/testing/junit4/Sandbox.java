@@ -43,8 +43,6 @@ public class Sandbox extends ExternalResource {
   private static final Logger logger = LoggerFactory.getLogger(Sandbox.class);
 
   private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
-  private static String DEFAULT_TEST_MODULE = "Main";
-  private static String DEFAULT_TEST_SCENARIO = "test";
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
 
@@ -71,8 +69,8 @@ public class Sandbox extends ExternalResource {
 
   public static class SandboxBuilder {
     private Path projectDir;
-    private String testModule = DEFAULT_TEST_MODULE;
-    private String testScenario = DEFAULT_TEST_SCENARIO;
+    private Optional<String> testModule = Optional.empty();
+    private Optional<String> testScenario = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
@@ -89,12 +87,12 @@ public class Sandbox extends ExternalResource {
     }
 
     public SandboxBuilder module(String testModule) {
-      this.testModule = testModule;
+      this.testModule = Optional.of(testModule);
       return this;
     }
 
     public SandboxBuilder scenario(String testScenario) {
-      this.testScenario = testScenario;
+      this.testScenario = Optional.of(testScenario);
       return this;
     }
 
@@ -129,8 +127,8 @@ public class Sandbox extends ExternalResource {
   }
 
   private final Path projectDir;
-  private final String testModule;
-  private final String testScenario;
+  private final Optional<String> testModule;
+  private final Optional<String> testScenario;
   private final Duration waitTimeout;
   private final String[] parties;
   private final Path darPath;
@@ -138,8 +136,8 @@ public class Sandbox extends ExternalResource {
 
   private Sandbox(
       Path projectDir,
-      String testModule,
-      String testScenario,
+      Optional<String> testModule,
+      Optional<String> testScenario,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
