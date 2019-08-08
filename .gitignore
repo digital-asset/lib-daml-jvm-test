@@ -3,3 +3,7 @@
 target/
 project/target
 project/project
+*.hi
+*.hie
+*.dar
+.daml
