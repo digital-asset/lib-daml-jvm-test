@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -75,6 +76,7 @@ public class Sandbox extends ExternalResource {
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
     private Consumer<DamlLedgerClient> setupApplication;
+    private boolean useReset = false;
 
     public SandboxBuilder projectDir(Path projectDir) {
       this.projectDir = projectDir;
@@ -111,16 +113,36 @@ public class Sandbox extends ExternalResource {
       return this;
     }
 
+    public SandboxBuilder useReset() {
+      this.useReset = true;
+      return this;
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
       Objects.requireNonNull(projectDir);
+
+      if (useReset && (testModule.isPresent() || testScenario.isPresent())) {
+        throw new IllegalStateException("Reset mode cannot be used together with market setup module/scenario.");
+      }
+
+      if (testModule.isPresent() ^ testScenario.isPresent()) {
+        throw new IllegalStateException("Market setup module and scenario need to be defined together.");
+      }
 
       if (setupApplication == null) {
         setupApplication = (t) -> {};
       }
 
       return new Sandbox(
-          projectDir, testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
+          projectDir,
+          testModule,
+          testScenario,
+          waitTimeout,
+          parties,
+          darPath,
+          setupApplication,
+          useReset);
     }
 
     private SandboxBuilder() {}
@@ -133,6 +155,12 @@ public class Sandbox extends ExternalResource {
   private final String[] parties;
   private final Path darPath;
   private final Consumer<DamlLedgerClient> setupApplication;
+  private final boolean useReset;
+  private SandboxRunner sandboxRunner;
+  private DamlLedgerClient ledgerClient;
+  private DefaultLedgerAdapter ledgerAdapter;
+  private ManagedChannel channel;
+  private ConcurrentHashMap<DamlLf1.DottedName, String> packageNames = new ConcurrentHashMap<>();
 
   private Sandbox(
       Path projectDir,
@@ -141,7 +169,8 @@ public class Sandbox extends ExternalResource {
       Duration waitTimeout,
       String[] parties,
       Path darPath,
-      Consumer<DamlLedgerClient> setupApplication) {
+      Consumer<DamlLedgerClient> setupApplication,
+      boolean useReset) {
     this.projectDir = projectDir;
     this.testModule = testModule;
     this.testScenario = testScenario;
@@ -149,134 +178,147 @@ public class Sandbox extends ExternalResource {
     this.parties = parties;
     this.darPath = darPath;
     this.setupApplication = setupApplication;
+    this.useReset = useReset;
   }
 
-  public ExternalResource compilation() {
+  public DamlLedgerClient getClient() {
+    return ledgerClient;
+  }
+
+  public DefaultLedgerAdapter getLedgerAdapter() {
+    return ledgerAdapter;
+  }
+
+  public Identifier templateIdentifier(
+          DamlLf1.DottedName packageName, String moduleName, String entityName)
+          throws InvalidProtocolBufferException {
+    String pkg = findPackage(packageName);
+    return new Identifier(pkg, moduleName, entityName);
+  }
+
+
+  // Rule that:
+  // - start/stops sandbox in reset mode
+  // - noop/noop sandbox in restart mode
+  public ExternalResource getClassRule() {
     return new ExternalResource() {
-      public void before() throws IOException, InterruptedException {
-        new ProcessBuilder(
-                DAML_EXE,
-                "build",
-                "--project-root",
-                projectDir.toString(),
-                "--output",
-                darPath.toString())
-            .redirectError(new File(COMPILATION_LOG))
-            .redirectOutput(new File(COMPILATION_LOG))
-            .directory(projectDir.toFile())
-            .start()
-            .waitFor();
+      @Override
+      protected void before() throws Throwable {
+        if (useReset) {
+          start();
+        }
+      }
+
+      @Override
+      protected void after() {
+        if (useReset) {
+          stop();
+        }
       }
     };
   }
 
-  public Process process() {
-    return new Process();
-  }
-
-  public class Process extends ExternalResource {
-    private SandboxRunner sandboxRunner;
-    private ConcurrentHashMap<DamlLf1.DottedName, String> packageNames = new ConcurrentHashMap<>();
-
-    private static final String key = "internal-cid-query";
-    private static final String recordKey = "internal-recordKey";
-    private DamlLedgerClient ledgerClient;
-    private DefaultLedgerAdapter ledgerAdapter;
-    private ManagedChannel channel;
-
-    @Override
-    protected void before() throws Throwable {
-      int sandboxPort = getSandboxPort();
-      channel =
-          ManagedChannelBuilder.forAddress("localhost", sandboxPort)
-              .usePlaintext()
-              .maxInboundMessageSize(Integer.MAX_VALUE)
-              .build();
-      ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
-
-      sandboxRunner =
-          new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
-      sandboxRunner.startSandbox(ledgerClient);
-
-      String ledgerId =
-          LedgerIdentityServiceGrpc.newBlockingStub(channel)
-              .getLedgerIdentity(
-                  LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-              .getLedgerId();
-
-      ledgerAdapter =
-          new DefaultLedgerAdapter(
-              new DefaultValueStore(),
-              ledgerId,
-              channel,
-              SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
-
-      ledgerAdapter.start(parties);
-      setupApplication.accept(ledgerClient);
-    }
-
-    @Override
-    protected void after() {
-      try {
-        ledgerAdapter.stop();
-      } catch (InterruptedException e) {
-        logger.warn("Failed to stop ledger adapter", e);
-      }
-      try {
-        ledgerClient.close();
-      } catch (Exception e) {
-        logger.warn("Failed to close ledger client", e);
-      }
-
-      try {
-        sandboxRunner.stopSandbox();
-      } catch (Exception e) {
-        logger.warn("Failed to stop sandbox", e);
-      }
-
-      ledgerAdapter = null;
-      ledgerClient = null;
-      sandboxRunner = null;
-    }
-
-    public DamlLedgerClient getClient() {
-      return ledgerClient;
-    }
-
-    public DefaultLedgerAdapter getLedgerAdapter() {
-      return ledgerAdapter;
-    }
-
-    public Identifier templateIdentifier(
-        DamlLf1.DottedName packageName, String moduleName, String entityName)
-        throws InvalidProtocolBufferException {
-      String pkg = findPackage(packageName);
-      return new Identifier(pkg, moduleName, entityName);
-    }
-
-    private String findPackage(DamlLf1.DottedName packageName)
-        throws InvalidProtocolBufferException {
-      String strName = packageNames.get(packageName);
-      if (strName != null) {
-        return strName;
-      } else {
-        PackageClient pkgClient = ledgerClient.getPackageClient();
-        Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
-        for (String pkgId : pkgs) {
-          GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-          DamlLf.ArchivePayload archivePl =
-              DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-          List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
-          for (DamlLf1.Module mod : mods) {
-            if (mod.getName().equals(packageName)) {
-              packageNames.put(packageName, pkgId);
-              return pkgId;
-            }
-          }
+  // Rule that:
+  // - noop/resets sandbox in reset mode
+  // - start/stops sandbox in restart mode
+  public ExternalResource getRule() {
+    return new ExternalResource() {
+      @Override
+      protected void before() throws Throwable {
+        if (useReset) {
+          
+        } else {
+          start();
         }
       }
 
-      throw new IllegalArgumentException("No package found " + packageName);
+      @Override
+      protected void after() {
+        if (useReset) {
+
+        } else {
+          stop();
+        }
+      }
+    };
+  }
+
+  private void start() throws IOException, TimeoutException {
+    int sandboxPort = getSandboxPort();
+    channel =
+            ManagedChannelBuilder.forAddress("localhost", sandboxPort)
+                    .usePlaintext()
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
+                    .build();
+    ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
+
+    sandboxRunner =
+            new SandboxRunner(
+                    darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
+    sandboxRunner.startSandbox(ledgerClient);
+
+    String ledgerId =
+            LedgerIdentityServiceGrpc.newBlockingStub(channel)
+                    .getLedgerIdentity(
+                            LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+                    .getLedgerId();
+
+    ledgerAdapter =
+            new DefaultLedgerAdapter(
+                    new DefaultValueStore(),
+                    ledgerId,
+                    channel,
+                    SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
+
+    ledgerAdapter.start(parties);
+    setupApplication.accept(ledgerClient);
+  }
+
+  private void stop() {
+    try {
+      ledgerAdapter.stop();
+    } catch (InterruptedException e) {
+      logger.warn("Failed to stop ledger adapter", e);
     }
+    try {
+      ledgerClient.close();
+    } catch (Exception e) {
+      logger.warn("Failed to close ledger client", e);
+    }
+
+    try {
+      sandboxRunner.stopSandbox();
+    } catch (Exception e) {
+      logger.warn("Failed to stop sandbox", e);
+    }
+
+    ledgerAdapter = null;
+    ledgerClient = null;
+    sandboxRunner = null;
+  }
+
+  private String findPackage(DamlLf1.DottedName packageName)
+          throws InvalidProtocolBufferException {
+    String strName = packageNames.get(packageName);
+    if (strName != null) {
+      return strName;
+    } else {
+      PackageClient pkgClient = ledgerClient.getPackageClient();
+      Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
+      for (String pkgId : pkgs) {
+        GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
+        DamlLf.ArchivePayload archivePl =
+                DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+        List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
+        for (DamlLf1.Module mod : mods) {
+          if (mod.getName().equals(packageName)) {
+            packageNames.put(packageName, pkgId);
+            return pkgId;
+          }
+        }
+      }
+    }
+
+    throw new IllegalArgumentException("No package found " + packageName);
   }
 }

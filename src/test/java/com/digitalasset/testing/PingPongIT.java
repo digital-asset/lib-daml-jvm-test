@@ -29,10 +29,8 @@ import com.daml.ledger.javaapi.data.Value;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExternalResource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,8 +58,8 @@ public class PingPongIT {
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .build();
 
-  @ClassRule public static ExternalResource compile = sandboxC.compilation();
-  @Rule public Sandbox.Process sandbox = sandboxC.process();
+  //  @ClassRule public static ExternalResource compile = sandboxC.compilation();
+  @Rule public Sandbox.Process sandbox = sandboxC.getRule();
 
   private DefaultLedgerAdapter ledger() {
     return sandbox.getLedgerAdapter();
