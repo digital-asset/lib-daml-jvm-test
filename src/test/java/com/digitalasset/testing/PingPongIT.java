@@ -39,18 +39,9 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+import static com.digitalasset.testing.TestCommons.*;
 
 public class PingPongIT {
-  private static final Path RESOURCE_DIR = Paths.get("src", "test", "resources").toAbsolutePath();
-  private static final Path PINGPONG_PATH = RESOURCE_DIR.resolve("ping-pong").toAbsolutePath();
-  private static final Path DAR_PATH = RESOURCE_DIR.resolve("ping-pong.dar").toAbsolutePath();
-  private static final String PING_PONG_MODULE_NAME = "PingPong";
-  private static final DamlLf1.DottedName PING_PONG_MODULE =
-      DamlLf1.DottedName.newBuilder().addSegments(PING_PONG_MODULE_NAME).build();
-  private static final Party ALICE = party("Alice");
-  private static final Party BOB = party("Bob");
-  private static final Party CHARLIE = party("Charlie");
-
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)

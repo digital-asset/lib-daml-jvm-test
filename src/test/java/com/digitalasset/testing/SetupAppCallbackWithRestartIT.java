@@ -13,19 +13,10 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.digitalasset.testing.Dsl.party;
+import static com.digitalasset.testing.TestCommons.*;
 import static org.junit.Assert.assertTrue;
 
 public class SetupAppCallbackWithRestartIT {
-  private static final Path RESOURCE_DIR = Paths.get("src", "test", "resources").toAbsolutePath();
-  private static final Path PINGPONG_PATH = RESOURCE_DIR.resolve("ping-pong").toAbsolutePath();
-  private static final Path DAR_PATH = RESOURCE_DIR.resolve("ping-pong.dar").toAbsolutePath();
-  private static final String PING_PONG_MODULE_NAME = "PingPong";
-  private static final DamlLf1.DottedName PING_PONG_MODULE =
-      DamlLf1.DottedName.newBuilder().addSegments(PING_PONG_MODULE_NAME).build();
-  private static final Party ALICE = party("Alice");
-  private static final Party BOB = party("Bob");
-  private static final Party CHARLIE = party("Charlie");
-
   private static AtomicBoolean boolFlag = new AtomicBoolean(false);
 
   private static Sandbox sandbox =
