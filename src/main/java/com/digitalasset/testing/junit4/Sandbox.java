@@ -23,6 +23,7 @@ import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
@@ -55,6 +56,7 @@ public class Sandbox extends ExternalResource {
 
   private static final String COMPILATION_LOG = "integration-test-compilation.log";
   private static final String DAML_EXE = "daml";
+  private int sandboxPort;
 
   public static SandboxBuilder builder() {
     return new SandboxBuilder();
@@ -129,11 +131,13 @@ public class Sandbox extends ExternalResource {
       Objects.requireNonNull(projectDir);
 
       if (useReset && (testModule.isPresent() || testScenario.isPresent())) {
-        throw new IllegalStateException("Reset mode cannot be used together with market setup module/scenario.");
+        throw new IllegalStateException(
+            "Reset mode cannot be used together with market setup module/scenario.");
       }
 
       if (testModule.isPresent() ^ testScenario.isPresent()) {
-        throw new IllegalStateException("Market setup module and scenario need to be defined together.");
+        throw new IllegalStateException(
+            "Market setup module and scenario need to be defined together.");
       }
 
       if (setupApplication == null) {
@@ -196,16 +200,12 @@ public class Sandbox extends ExternalResource {
   }
 
   public Identifier templateIdentifier(
-          DamlLf1.DottedName packageName, String moduleName, String entityName)
-          throws InvalidProtocolBufferException {
+      DamlLf1.DottedName packageName, String moduleName, String entityName)
+      throws InvalidProtocolBufferException {
     String pkg = findPackage(packageName);
     return new Identifier(pkg, moduleName, entityName);
   }
 
-
-  // Rule that:
-  // - start/stops sandbox in reset mode
-  // - noop/noop sandbox in restart mode
   public ExternalResource getClassRule() {
     return new ExternalResource() {
       @Override
@@ -218,52 +218,18 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void after() {
         if (useReset) {
-          stop();
+          stopSandbox();
         }
       }
     };
   }
 
-  // Rule that:
-  // - noop/resets sandbox in reset mode
-  // - start/stops sandbox in restart mode
   public ExternalResource getRule() {
     return new ExternalResource() {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          logger.warn("Calling reset, ledger ID: " + ledgerClient.getLedgerId());
-          ResetServiceGrpc
-                  .newBlockingStub(channel)
-                  .reset(ResetServiceOuterClass.ResetRequest.newBuilder()
-                                                            .setLedgerId(ledgerClient.getLedgerId())
-                                                            .build());
-          boolean sandboxIsUp = false;
-          int timeToTry = 20;
-
-          while (!sandboxIsUp && timeToTry > 0) {
-            try {
-              String newId =
-                      LedgerIdentityServiceGrpc
-                      .newBlockingStub(channel)
-                      .getLedgerIdentity(LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-                      .getLedgerId();
-              sandboxIsUp = true;
-              logger.warn("Reset done, ledger ID: " + newId);
-            } catch (StatusRuntimeException statusExc) {
-              if (!statusExc.getStatus().getCode().equals(Status.Code.UNAVAILABLE)) {
-                throw statusExc;
-              }
-              timeToTry--;
-              Thread.sleep(250);
-            }
-          }
-
-          if (!sandboxIsUp) {
-            throw new IllegalStateException("The Sandbox failed to reset.");
-          }
-          String connId = ledgerClient.getLedgerId();
-          logger.warn("Connected ledger ID: " + connId);
+          startCommChannels(sandboxPort);
         } else {
           start();
         }
@@ -272,7 +238,12 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void after() {
         if (useReset) {
-          // Nothing to do.
+          ResetServiceGrpc.newBlockingStub(channel)
+              .reset(
+                  ResetServiceOuterClass.ResetRequest.newBuilder()
+                      .setLedgerId(ledgerClient.getLedgerId())
+                      .build());
+          stopCommChannels();
         } else {
           stop();
         }
@@ -281,37 +252,42 @@ public class Sandbox extends ExternalResource {
   }
 
   private void start() throws IOException, TimeoutException {
-    int sandboxPort = getSandboxPort();
-    channel =
-            ManagedChannelBuilder.forAddress("localhost", sandboxPort)
-                    .usePlaintext()
-                    .maxInboundMessageSize(Integer.MAX_VALUE)
-                    .build();
-    ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
-
+    sandboxPort = getSandboxPort();
     sandboxRunner =
-            new SandboxRunner(
-                    darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
-    sandboxRunner.startSandbox(ledgerClient);
+        new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
+    sandboxRunner.startSandbox();
+    startCommChannels(sandboxPort);
+  }
 
+  private void startCommChannels(int sandboxPort) throws TimeoutException {
+    channel =
+        ManagedChannelBuilder.forAddress("localhost", sandboxPort)
+            .usePlaintext()
+            .maxInboundMessageSize(Integer.MAX_VALUE)
+            .build();
+    ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
+    waitForSandbox(ledgerClient);
     String ledgerId =
-            LedgerIdentityServiceGrpc.newBlockingStub(channel)
-                    .getLedgerIdentity(
-                            LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-                    .getLedgerId();
-
+        LedgerIdentityServiceGrpc.newBlockingStub(channel)
+            .getLedgerIdentity(
+                LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+            .getLedgerId();
     ledgerAdapter =
-            new DefaultLedgerAdapter(
-                    new DefaultValueStore(),
-                    ledgerId,
-                    channel,
-                    SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
-
+        new DefaultLedgerAdapter(
+            new DefaultValueStore(),
+            ledgerId,
+            channel,
+            SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
     ledgerAdapter.start(parties);
     setupApplication.accept(ledgerClient);
   }
 
   private void stop() {
+    stopCommChannels();
+    stopSandbox();
+  }
+
+  private void stopCommChannels() {
     try {
       ledgerAdapter.stop();
     } catch (InterruptedException e) {
@@ -324,12 +300,6 @@ public class Sandbox extends ExternalResource {
     }
 
     try {
-      sandboxRunner.stopSandbox();
-    } catch (Exception e) {
-      logger.warn("Failed to stop sandbox", e);
-    }
-
-    try {
       channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       logger.warn("Failed to stop the managed channel", e);
@@ -338,11 +308,41 @@ public class Sandbox extends ExternalResource {
     channel = null;
     ledgerAdapter = null;
     ledgerClient = null;
+  }
+
+  private void stopSandbox() {
+    try {
+      sandboxRunner.stopSandbox();
+    } catch (Exception e) {
+      logger.warn("Failed to stop sandbox", e);
+    }
     sandboxRunner = null;
   }
 
-  private String findPackage(DamlLf1.DottedName packageName)
-          throws InvalidProtocolBufferException {
+  private void waitForSandbox(DamlLedgerClient client) throws TimeoutException {
+    boolean connected = false;
+    Stopwatch time = Stopwatch.createStarted();
+    int attempts = 0;
+    while (!connected && time.elapsed().compareTo(waitTimeout) <= 0) {
+      try {
+        client.connect();
+        connected = true;
+      } catch (Exception ignored) {
+        try {
+          logger.info("Waiting for sandbox...");
+          TimeUnit.SECONDS.sleep(2 * attempts);
+          attempts += 1;
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    }
+
+    if (connected) logger.info("Connected to sandbox.");
+    else throw new TimeoutException("Can't connect to sandbox");
+  }
+
+  private String findPackage(DamlLf1.DottedName packageName) throws InvalidProtocolBufferException {
     String strName = packageNames.get(packageName);
     if (strName != null) {
       return strName;
@@ -352,7 +352,7 @@ public class Sandbox extends ExternalResource {
       for (String pkgId : pkgs) {
         GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
         DamlLf.ArchivePayload archivePl =
-                DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+            DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
         List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
         for (DamlLf1.Module mod : mods) {
           if (mod.getName().equals(packageName)) {
