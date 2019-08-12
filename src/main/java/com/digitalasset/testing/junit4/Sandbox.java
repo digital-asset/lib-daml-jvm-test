@@ -10,6 +10,9 @@ import com.digitalasset.daml_lf.DamlLf;
 import com.digitalasset.daml_lf.DamlLf1;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.digitalasset.ledger.api.v1.TransactionServiceGrpc;
+import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
+import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxRunner;
@@ -24,6 +27,8 @@ import com.google.common.collect.Range;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +41,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -226,7 +232,38 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          
+          logger.warn("Calling reset, ledger ID: " + ledgerClient.getLedgerId());
+          ResetServiceGrpc
+                  .newBlockingStub(channel)
+                  .reset(ResetServiceOuterClass.ResetRequest.newBuilder()
+                                                            .setLedgerId(ledgerClient.getLedgerId())
+                                                            .build());
+          boolean sandboxIsUp = false;
+          int timeToTry = 20;
+
+          while (!sandboxIsUp && timeToTry > 0) {
+            try {
+              String newId =
+                      LedgerIdentityServiceGrpc
+                      .newBlockingStub(channel)
+                      .getLedgerIdentity(LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+                      .getLedgerId();
+              sandboxIsUp = true;
+              logger.warn("Reset done, ledger ID: " + newId);
+            } catch (StatusRuntimeException statusExc) {
+              if (!statusExc.getStatus().getCode().equals(Status.Code.UNAVAILABLE)) {
+                throw statusExc;
+              }
+              timeToTry--;
+              Thread.sleep(250);
+            }
+          }
+
+          if (!sandboxIsUp) {
+            throw new IllegalStateException("The Sandbox failed to reset.");
+          }
+          String connId = ledgerClient.getLedgerId();
+          logger.warn("Connected ledger ID: " + connId);
         } else {
           start();
         }
@@ -235,7 +272,7 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void after() {
         if (useReset) {
-
+          // Nothing to do.
         } else {
           stop();
         }
@@ -292,6 +329,13 @@ public class Sandbox extends ExternalResource {
       logger.warn("Failed to stop sandbox", e);
     }
 
+    try {
+      channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      logger.warn("Failed to stop the managed channel", e);
+    }
+
+    channel = null;
     ledgerAdapter = null;
     ledgerClient = null;
     sandboxRunner = null;
