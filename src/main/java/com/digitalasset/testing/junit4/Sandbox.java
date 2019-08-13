@@ -10,7 +10,6 @@ import com.digitalasset.daml_lf.DamlLf;
 import com.digitalasset.daml_lf.DamlLf1;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.digitalasset.ledger.api.v1.TransactionServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
@@ -28,13 +27,10 @@ import com.google.common.collect.Range;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -211,7 +207,7 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          start();
+          startSandbox();
         }
       }
 
@@ -231,7 +227,8 @@ public class Sandbox extends ExternalResource {
         if (useReset) {
           startCommChannels(sandboxPort);
         } else {
-          start();
+          startSandbox();
+          startCommChannels(sandboxPort);
         }
       }
 
@@ -245,18 +242,17 @@ public class Sandbox extends ExternalResource {
                       .build());
           stopCommChannels();
         } else {
-          stop();
+          stopAll();
         }
       }
     };
   }
 
-  private void start() throws IOException, TimeoutException {
+  private void startSandbox() throws IOException, TimeoutException {
     sandboxPort = getSandboxPort();
     sandboxRunner =
         new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
     sandboxRunner.startSandbox();
-    startCommChannels(sandboxPort);
   }
 
   private void startCommChannels(int sandboxPort) throws TimeoutException {
@@ -282,7 +278,7 @@ public class Sandbox extends ExternalResource {
     setupApplication.accept(ledgerClient);
   }
 
-  private void stop() {
+  private void stopAll() {
     stopCommChannels();
     stopSandbox();
   }
