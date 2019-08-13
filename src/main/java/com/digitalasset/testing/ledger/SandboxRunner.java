@@ -49,7 +49,7 @@ public class SandboxRunner {
     this.waitTimeout = waitTimeout;
   }
 
-  public void startSandbox(DamlLedgerClient client) throws IOException, TimeoutException {
+  public void startSandbox() throws IOException, TimeoutException {
     ProcessBuilder procBuilder;
     if (testModule.isPresent() && testScenario.isPresent()) {
       procBuilder =
@@ -72,27 +72,6 @@ public class SandboxRunner {
             .redirectError(new File("integration-test-sandbox.log"))
             .redirectOutput(new File("integration-test-sandbox.log"))
             .start();
-
-    boolean connected = false;
-    Stopwatch time = Stopwatch.createStarted();
-    int attempts = 0;
-    while (!connected && time.elapsed().compareTo(waitTimeout) <= 0) {
-      try {
-        client.connect();
-        connected = true;
-      } catch (Exception ignored) {
-        try {
-          logger.info("Waiting for sandbox at localhost:{}", sandboxPort);
-          TimeUnit.SECONDS.sleep(2 * attempts);
-          attempts += 1;
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-
-    if (connected) logger.info("Connected to sandbox at localhost:{}", sandboxPort);
-    else throw new TimeoutException("Can't connect to sandbox at localhost:" + sandboxPort);
   }
 
   public void stopSandbox() throws Exception {

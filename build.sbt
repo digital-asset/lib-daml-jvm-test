@@ -66,3 +66,14 @@ usePgpKeyHex(sys.env.get("GPG_SIGNING_KEY_ID").getOrElse("0"))
 pgpPassphrase := Some(sys.env.get("GPG_PASSPHRASE").getOrElse("").toArray)
 publishConfiguration := publishConfiguration.value.withOverwrite(true)
 publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
+
+// Daml compilation
+import scala.sys.process._
+lazy val compileDamlBeforeScript = taskKey[Unit]("Compile DAR with daml")
+
+compileDamlBeforeScript := {
+  val pwd = new java.io.File(".").getCanonicalPath;
+  Seq("daml", "build", "--project-root", s"$pwd/src/test/resources/ping-pong", "--output", s"$pwd/src/test/resources/ping-pong.dar") !
+}
+
+(test in Test) := (test in Test).dependsOn(compileDamlBeforeScript).value
