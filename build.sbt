@@ -26,14 +26,16 @@ headerLicense := Some(
 licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 libraryDependencies ++= Seq(
-  damlJavaBinding,
-  damlLFArchive,
-  damlLedgerClient,
+  damlJavaBinding % "provided",
+  damlLFArchive % "provided",
+
+  damlLedgerClient % "provided",
   grizzledLogger,
   snakeYaml,
   logbackClassic,
   commonsIO,
   guava,
+  scalaz,
   junit4,
   junitInterface,
   hamcrestOptional
