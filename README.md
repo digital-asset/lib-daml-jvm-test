@@ -12,30 +12,40 @@ This library provides functions to test that a DAML application and its bots are
 
 ### Installing
 
-#### Prerequisites
-
-To be able to develop the library you need:
-* sbt
-
-To use the library in a project:
-* download the library from |PUT LOCATION HERE| as a dependency
+Add the library as a test scoped dependency to your project. In case of a Maven project:
+```
+  <dependencies>
+    ...
+    <dependency>
+        <groupId>com.digitalasset</groupId>
+        <artifactId>functest-java_2.12</artifactId>
+        <version>0.1.9999</version>
+        <scope>test</scope>
+    </dependency>
+    ...
+  </dependencies>
+```
+Additional daml dependencies are required by the library, but these dependencies are not specified as transitive dependencies. Unless you already have them in your project, add them as following:
+```
+  <dependencies>
+    ...
+    <dependency>
+        <groupId>com.daml.ledger</groupId>
+        <artifactId>bindings-rxjava</artifactId>
+        <version>100.13.16</version>
+    </dependency>
+    <dependency>
+        <groupId>com.digitalasset</groupId>
+        <artifactId>daml-lf-archive</artifactId>
+        <version>100.13.16</version>
+        <scope>test</scope>
+    </dependency>
+    ...
+  </dependencies>
+```
+**Note:** versioning of this library is not tied to SDK versions. The above artifacts are considered stable, changing rarely. The testing library is compatible with minor version changes in the SDK. We will release new version of the library for incompatible SDK versions.
 
 ## Using the library in Java projects
-
-To write tests using the library.
-
-### Most important traits
-
-The library has traits that define the main capabilities of different test tools:
-* SandboxRunner - functions to start/stop a Sandbox ledger and the app-specific bots
-* LedgerAdapter - functions to communicate with the ledger
-   * Creation of a contract
-   * Exercise of a choice
-   * Observation of events
-* JavaLedgerAdapter - similar to LedgerAdapter but optimized for usage from Java
-* TimeProvider - functions to get/set ledger time
-
-Most of these are implemented by *DefaultLedgerAdapter*, which is the most important tool for testing in the library. Sandbox runner is a class itself.
 
 ### Using the library with the Sandbox JUnit4 Rule
 
@@ -61,7 +71,7 @@ Sandbox object `sandbox` offers the following tools:
 
 ### Testing with functions provided by a ledger adapter
 
-Usage of class *DefaultLedgerAdapter* can be demonstrated via examples.
+Usage of class *DefaultLedgerAdapter* (`sandbox.getLedgerAdapter()`) can be demonstrated via examples.
 
 To create a contract on the ledger (the last argument contains the parameters of the contract instantion):
 ```
