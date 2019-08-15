@@ -6,6 +6,7 @@
 
 package com.digitalasset.testing.junit4;
 
+import com.daml.ledger.javaapi.data.Party;
 import com.digitalasset.daml_lf.DamlLf;
 import com.digitalasset.daml_lf.DamlLf1;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
@@ -109,6 +110,14 @@ public class Sandbox extends ExternalResource {
 
     public SandboxBuilder parties(String... parties) {
       this.parties = parties;
+      return this;
+    }
+
+    public SandboxBuilder parties(Party... parties) {
+      this.parties = new String[parties.length];
+      for (int i = 0; i < parties.length; i++) {
+        this.parties[i] = parties[i].getValue();
+      }
       return this;
     }
 
