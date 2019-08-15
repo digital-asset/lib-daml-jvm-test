@@ -57,7 +57,7 @@ One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
           .projectDir(PINGPONG_PATH)
           .module("Test")
           .scenario("testSetup")
-          .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
+          .parties(ALICE, BOB, CHARLIE)
           .build();
 
   @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();

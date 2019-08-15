@@ -3,7 +3,6 @@ package com.digitalasset.testing;
 import static com.digitalasset.testing.Dsl.emptyRecord;
 import static com.digitalasset.testing.Dsl.field;
 import static com.digitalasset.testing.Dsl.int64;
-import static com.digitalasset.testing.Dsl.party;
 import static com.digitalasset.testing.Dsl.record;
 import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
 import static org.hamcrest.Matchers.equalTo;
@@ -12,7 +11,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import com.daml.ledger.javaapi.data.*;
-import com.digitalasset.daml_lf.DamlLf1;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.junit4.Sandbox;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
@@ -22,7 +20,6 @@ import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.ExerciseCommand;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.daml.ledger.javaapi.data.TreeEvent;
 import com.daml.ledger.javaapi.data.Value;
@@ -34,8 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -48,7 +43,7 @@ public class PingPongIT {
           .projectDir(PINGPONG_PATH)
           .module("Test")
           .scenario("testSetup")
-          .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
+          .parties(ALICE, BOB, CHARLIE)
           .build();
 
   @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
