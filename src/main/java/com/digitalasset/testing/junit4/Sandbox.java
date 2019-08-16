@@ -44,10 +44,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static com.digitalasset.testing.utils.PackageUtils.findPackage;
+import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
+import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
+
 public class Sandbox extends ExternalResource {
   private static final Logger logger = LoggerFactory.getLogger(Sandbox.class);
 
-  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
 
@@ -57,20 +60,6 @@ public class Sandbox extends ExternalResource {
 
   public static SandboxBuilder builder() {
     return new SandboxBuilder();
-  }
-
-  private static final AtomicInteger SANDBOX_PORT_COUNTER =
-      new AtomicInteger(SANDBOX_PORT_RANGE.lowerEndpoint());
-
-  private static int getSandboxPort() {
-    return SANDBOX_PORT_COUNTER.updateAndGet(
-        p -> {
-          if (SANDBOX_PORT_RANGE.contains(p)) {
-            return p + 1;
-          } else {
-            return SANDBOX_PORT_RANGE.lowerEndpoint();
-          }
-        });
   }
 
   public static class SandboxBuilder {
@@ -175,7 +164,6 @@ public class Sandbox extends ExternalResource {
   private DamlLedgerClient ledgerClient;
   private DefaultLedgerAdapter ledgerAdapter;
   private ManagedChannel channel;
-  private ConcurrentHashMap<DamlLf1.DottedName, String> packageNames = new ConcurrentHashMap<>();
 
   private Sandbox(
       Path projectDir,
@@ -207,7 +195,7 @@ public class Sandbox extends ExternalResource {
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
-    String pkg = findPackage(packageName);
+    String pkg = findPackage(this.ledgerClient, packageName);
     return new Identifier(pkg, moduleName, entityName);
   }
 
@@ -271,7 +259,7 @@ public class Sandbox extends ExternalResource {
             .maxInboundMessageSize(Integer.MAX_VALUE)
             .build();
     ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
-    waitForSandbox(ledgerClient);
+    waitForSandbox(ledgerClient, waitTimeout, logger);
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)
             .getLedgerIdentity(
@@ -322,52 +310,5 @@ public class Sandbox extends ExternalResource {
       logger.warn("Failed to stop sandbox", e);
     }
     sandboxRunner = null;
-  }
-
-  private void waitForSandbox(DamlLedgerClient client) throws TimeoutException {
-    boolean connected = false;
-    Stopwatch time = Stopwatch.createStarted();
-    int attempts = 0;
-    while (!connected && time.elapsed().compareTo(waitTimeout) <= 0) {
-      try {
-        client.connect();
-        connected = true;
-      } catch (Exception ignored) {
-        try {
-          logger.info("Waiting for sandbox...");
-          TimeUnit.SECONDS.sleep(2 * attempts);
-          attempts += 1;
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-
-    if (connected) logger.info("Connected to sandbox.");
-    else throw new TimeoutException("Can't connect to sandbox");
-  }
-
-  private String findPackage(DamlLf1.DottedName packageName) throws InvalidProtocolBufferException {
-    String strName = packageNames.get(packageName);
-    if (strName != null) {
-      return strName;
-    } else {
-      PackageClient pkgClient = ledgerClient.getPackageClient();
-      Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
-      for (String pkgId : pkgs) {
-        GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-        DamlLf.ArchivePayload archivePl =
-            DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-        List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
-        for (DamlLf1.Module mod : mods) {
-          if (mod.getName().equals(packageName)) {
-            packageNames.put(packageName, pkgId);
-            return pkgId;
-          }
-        }
-      }
-    }
-
-    throw new IllegalArgumentException("No package found " + packageName);
   }
 }

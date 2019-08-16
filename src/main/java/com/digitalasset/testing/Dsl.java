@@ -6,14 +6,10 @@
 
 package com.digitalasset.testing;
 
-import com.daml.ledger.javaapi.data.DamlList;
-import com.daml.ledger.javaapi.data.Decimal;
-import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.Record;
-import com.daml.ledger.javaapi.data.Text;
-import com.daml.ledger.javaapi.data.Value;
+import com.daml.ledger.javaapi.data.*;
+
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class Dsl {
 
@@ -40,8 +36,20 @@ public class Dsl {
     return new Record.Field(label, value);
   }
 
+  public static Record.Field field(Value value) {
+    return new Record.Field(value);
+  }
+
+  public static Bool bool(String bool) {
+    return new Bool(Boolean.valueOf(bool));
+  };
+
   public static Party party(String name) {
     return new Party(name);
+  }
+
+  public static ContractId contractId(String name) {
+    return new ContractId(name);
   }
 
   public static Text text(String t) {
@@ -58,6 +66,10 @@ public class Dsl {
 
   public static Decimal decimal(String number) {
     return new Decimal(new BigDecimal(number));
+  }
+
+  public static Int64 integer(String number) {
+    return new Int64(Long.valueOf(number));
   }
 
   public static Int64 int64(long l) {
