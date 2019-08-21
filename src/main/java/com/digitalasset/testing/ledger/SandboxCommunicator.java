@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.digitalasset.testing.ledger;
 
 import com.daml.ledger.rxjava.DamlLedgerClient;
@@ -28,7 +34,6 @@ public class SandboxCommunicator {
   private static final String DAML_EXE = "daml";
   private int sandboxPort;
 
-  private final Path projectDir;
   private final Optional<String> testModule;
   private final Optional<String> testScenario;
   private final Duration waitTimeout;
@@ -42,14 +47,12 @@ public class SandboxCommunicator {
   private ManagedChannel channel;
 
   public SandboxCommunicator(
-      Path projectDir,
       Optional<String> testModule,
       Optional<String> testScenario,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
       Consumer<DamlLedgerClient> setupApplication) {
-    this.projectDir = projectDir;
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
@@ -100,6 +103,11 @@ public class SandboxCommunicator {
     setupApplication.accept(ledgerClient);
   }
 
+  public void startAll() throws TimeoutException, IOException {
+    startSandbox();
+    startCommChannels();
+  }
+
   public void stopAll() {
     stopCommChannels();
     stopSandbox();
@@ -107,18 +115,24 @@ public class SandboxCommunicator {
 
   public void stopCommChannels() {
     try {
-      ledgerAdapter.stop();
+      if (ledgerAdapter != null) {
+        ledgerAdapter.stop();
+      }
     } catch (InterruptedException e) {
       logger.warn("Failed to stop ledger adapter", e);
     }
     try {
-      ledgerClient.close();
+      if (ledgerClient != null) {
+        ledgerClient.close();
+      }
     } catch (Exception e) {
       logger.warn("Failed to close ledger client", e);
     }
 
     try {
-      channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
+      if (channel != null) {
+        channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
+      }
     } catch (InterruptedException e) {
       logger.warn("Failed to stop the managed channel", e);
     }
@@ -130,7 +144,9 @@ public class SandboxCommunicator {
 
   public void stopSandbox() {
     try {
-      sandboxRunner.stopSandbox();
+      if (sandboxRunner != null) {
+        sandboxRunner.stopSandbox();
+      }
     } catch (Exception e) {
       logger.warn("Failed to stop sandbox", e);
     }

@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.digitalasset.testing.utils;
 
 import com.daml.ledger.javaapi.data.GetPackageResponse;
@@ -61,7 +67,6 @@ public class PackageUtils {
     }
   }
 
-  // TODO refactor common parts
   public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName packageName)
       throws InvalidProtocolBufferException {
     String strName = packageNames.get(packageName);
@@ -86,7 +91,6 @@ public class PackageUtils {
     throw new IllegalArgumentException("No package found " + packageName);
   }
 
-  // TODO: add checks if needed
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
       throws InvalidProtocolBufferException {
     String[] parts = moduleAndEntityName.split(":");

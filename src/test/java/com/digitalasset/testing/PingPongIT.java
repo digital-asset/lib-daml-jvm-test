@@ -40,7 +40,6 @@ public class PingPongIT {
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
-          .projectDir(PINGPONG_PATH)
           .module("Test")
           .scenario("testSetup")
           .parties(ALICE, BOB, CHARLIE)

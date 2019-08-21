@@ -22,7 +22,6 @@ public class SetupAppCallbackWithRestartIT {
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
-          .projectDir(PINGPONG_PATH)
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .useReset()
           .setupAppCallback(client -> boolFlag.set(true))

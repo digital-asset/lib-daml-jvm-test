@@ -61,7 +61,6 @@ public class Sandbox extends ExternalResource {
   }
 
   public static class SandboxBuilder {
-    private Path projectDir;
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testScenario = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
@@ -69,11 +68,6 @@ public class Sandbox extends ExternalResource {
     private Path darPath;
     private Consumer<DamlLedgerClient> setupApplication;
     private boolean useReset = false;
-
-    public SandboxBuilder projectDir(Path projectDir) {
-      this.projectDir = projectDir;
-      return this;
-    }
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -120,7 +114,6 @@ public class Sandbox extends ExternalResource {
 
     public Sandbox build() {
       Objects.requireNonNull(darPath);
-      Objects.requireNonNull(projectDir);
 
       if (useReset && (testModule.isPresent() || testScenario.isPresent())) {
         throw new IllegalStateException(
@@ -137,14 +130,7 @@ public class Sandbox extends ExternalResource {
       }
 
       return new Sandbox(
-          projectDir,
-          testModule,
-          testScenario,
-          waitTimeout,
-          parties,
-          darPath,
-          setupApplication,
-          useReset);
+          testModule, testScenario, waitTimeout, parties, darPath, setupApplication, useReset);
     }
 
     private SandboxBuilder() {}
@@ -153,7 +139,6 @@ public class Sandbox extends ExternalResource {
   private final boolean useReset;
 
   private Sandbox(
-      Path projectDir,
       Optional<String> testModule,
       Optional<String> testScenario,
       Duration waitTimeout,
@@ -163,7 +148,7 @@ public class Sandbox extends ExternalResource {
       boolean useReset) {
     this.sandboxCommunicator =
         new SandboxCommunicator(
-            projectDir, testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
+            testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
     this.useReset = useReset;
   }
 

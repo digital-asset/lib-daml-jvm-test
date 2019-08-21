@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 // Copyright (c) 2019, Digital Asset (Switzerland) GmbH and/or its affiliates.
 // All rights reserved.
 
@@ -21,6 +27,7 @@ import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
+import com.digitalasset.testing.ledger.SandboxCommunicator;
 import com.digitalasset.testing.ledger.SandboxRunner;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.store.DefaultValueStore;
@@ -33,7 +40,11 @@ import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,79 +57,29 @@ import java.util.regex.Pattern;
 public class LedgerInteractions implements En {
   private static final String WITH = "WITH";
   private final AtomicReference<Throwable> resultHolder = new AtomicReference<>();
-  // TODO: Have a common class with all this Sandbox runner stuff
-  private SandboxRunner sandboxRunner = null;
-  private DamlLedgerClient ledgerClient;
-  private DefaultLedgerAdapter ledgerAdapter;
-  private ManagedChannel channel;
+  private SandboxCommunicator sandboxCommunicator;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
   public LedgerInteractions() {
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\"$",
         (String darPath, DataTable dataTable) -> {
-          logger.info("Starting Sandbox...");
-          Integer sandboxPort = getSandboxPort();
-          sandboxRunner =
-              new SandboxRunner(
-                  darPath.toString(),
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          sandboxCommunicator =
+              new SandboxCommunicator(
                   Optional.empty(),
                   Optional.empty(),
-                  sandboxPort,
-                  Duration.ofSeconds(30));
-          sandboxRunner.startSandbox();
-          channel =
-              ManagedChannelBuilder.forAddress("localhost", sandboxPort)
-                  .usePlaintext()
-                  .maxInboundMessageSize(Integer.MAX_VALUE)
-                  .build();
-          ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
-          waitForSandbox(ledgerClient, Duration.ofSeconds(30), logger);
-          String ledgerId =
-              LedgerIdentityServiceGrpc.newBlockingStub(channel)
-                  .getLedgerIdentity(
-                      LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-                  .getLedgerId();
-          ledgerAdapter =
-              new DefaultLedgerAdapter(
-                  new DefaultValueStore(),
-                  ledgerId,
-                  channel,
-                  SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
-          ledgerAdapter.start(dataTable.asList().toArray(new String[] {}));
-          // setupApplication.accept(ledgerClient);
+                  Duration.ofSeconds(30),
+                  parties,
+                  Paths.get(darPath),
+                  (client) -> {});
+          sandboxCommunicator.startAll();
         });
     After(
         () -> {
-          logger.info("Stopping Sandbox...");
-          try {
-            ledgerAdapter.stop();
-          } catch (InterruptedException e) {
-            logger.warn("Failed to stop ledger adapter", e);
+          if (sandboxCommunicator != null) {
+            sandboxCommunicator.stopAll();
           }
-          try {
-            ledgerClient.close();
-          } catch (Exception e) {
-            logger.warn("Failed to close ledger client", e);
-          }
-
-          try {
-            channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
-          } catch (InterruptedException e) {
-            logger.warn("Failed to stop the managed channel", e);
-          }
-
-          try {
-            sandboxRunner.stopSandbox();
-          } catch (Exception e) {
-            logger.warn("Failed to stop sandbox", e);
-          }
-
-          channel = null;
-          sandboxRunner = null;
-
-          ledgerAdapter = null;
-          ledgerClient = null;
         });
 
     // Given - When - Then clauses :
@@ -129,10 +90,11 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(ledgerClient, moduleAndEntityName);
-                // TODO: check datatable's dimension
-                Record args = fieldsToArgs(dataTable.asList(), idWithArgs.createFields);
-                ledgerAdapter.createContract(new Party(party), idWithArgs.identifier, args);
+                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+                Record args = fieldsToArgs(checkTableIsList(dataTable), idWithArgs.createFields);
+                sandboxCommunicator
+                    .getLedgerAdapter()
+                    .createContract(new Party(party), idWithArgs.identifier, args);
               }
             });
     When(
@@ -145,11 +107,18 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(ledgerClient, moduleAndEntityName);
+                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
                 ContractId contractId =
-                    ledgerAdapter.valueStore.get(contractIdKey).asContractId().get();
-                ledgerAdapter.exerciseChoice(
-                    party(party), idWithArgs.identifier, contractId, choiceName, new Record());
+                    sandboxCommunicator
+                        .getLedgerAdapter()
+                        .valueStore
+                        .get(contractIdKey)
+                        .asContractId()
+                        .get();
+                sandboxCommunicator
+                    .getLedgerAdapter()
+                    .exerciseChoice(
+                        party(party), idWithArgs.identifier, contractId, choiceName, new Record());
               }
             });
     When(
@@ -163,38 +132,59 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(ledgerClient, moduleAndEntityName);
+                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
                 Record args = fieldsToArgs(dataTable.asList(), idWithArgs.choices.get(choiceName));
                 ContractId contractId =
-                    ledgerAdapter.valueStore.get(contractIdKey).asContractId().get();
-                ledgerAdapter.exerciseChoice(
-                    party(party), idWithArgs.identifier, contractId, choiceName, args);
+                    sandboxCommunicator
+                        .getLedgerAdapter()
+                        .valueStore
+                        .get(contractIdKey)
+                        .asContractId()
+                        .get();
+                sandboxCommunicator
+                    .getLedgerAdapter()
+                    .exerciseChoice(
+                        party(party), idWithArgs.identifier, contractId, choiceName, args);
               }
             });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\"$",
         (String party, String moduleAndEntityName) -> {
-          PackageUtils.TemplateType idWithArgs = findTemplate(ledgerClient, moduleAndEntityName);
-          ledgerAdapter.getCreatedContractId(party(party), idWithArgs.identifier, ContractId::new);
+          PackageUtils.TemplateType idWithArgs =
+              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+          sandboxCommunicator
+              .getLedgerAdapter()
+              .getCreatedContractId(party(party), idWithArgs.identifier, ContractId::new);
         });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\" with(?: contract id \"([^\"]+)\" and)? values$",
         (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
-          PackageUtils.TemplateType idWithArgs = findTemplate(ledgerClient, moduleAndEntityName);
-          // TODO: check datatable's dimension
-          Record args = fieldsToArgs(dataTable.asList(), idWithArgs.createFields);
-          ledgerAdapter.observeEvent(
-              party,
-              ContractCreated.expectContractWithArguments(
-                  idWithArgs.identifier, "{CAPTURE:" + contractId + "}", args));
+          PackageUtils.TemplateType idWithArgs =
+              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+          Record args = fieldsToArgs(checkTableIsList(dataTable), idWithArgs.createFields);
+          sandboxCommunicator
+              .getLedgerAdapter()
+              .observeEvent(
+                  party,
+                  ContractCreated.expectContractWithArguments(
+                      idWithArgs.identifier, "{CAPTURE:" + contractId + "}", args));
         });
     Then(
         "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
         (String party, String moduleAndEntityName, String contractIdKey) -> {
-          PackageUtils.TemplateType idWithArgs = findTemplate(ledgerClient, moduleAndEntityName);
-          ContractId contractId = ledgerAdapter.valueStore.get(contractIdKey).asContractId().get();
-          ledgerAdapter.observeEvent(
-              party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
+          PackageUtils.TemplateType idWithArgs =
+              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+          ContractId contractId =
+              sandboxCommunicator
+                  .getLedgerAdapter()
+                  .valueStore
+                  .get(contractIdKey)
+                  .asContractId()
+                  .get();
+          sandboxCommunicator
+              .getLedgerAdapter()
+              .observeEvent(
+                  party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
         });
     Then(
         "^.*they should receive a technical failure (with|containing) message \\s*\"([^\"]*)\".*$",
@@ -212,6 +202,17 @@ public class LedgerInteractions implements En {
                   .matcher(lastResult.toString())
                   .matches());
         });
+  }
+
+  private List<String> checkTableIsList(DataTable dataTable) {
+    if (dataTable.height() == 1 & dataTable.width() > 0) {
+      return dataTable.asList();
+    }
+    throw new IllegalArgumentException(
+        "The provided data table must be a list. Current dimension: "
+            + dataTable.height()
+            + "x"
+            + dataTable.width());
   }
 
   abstract class LedgerExecutor {

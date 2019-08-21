@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 // Copyright (c) 2019, Digital Asset (Switzerland) GmbH and/or its affiliates.
 // All rights reserved.
 
@@ -11,7 +17,6 @@ import java.util.*;
 import static com.digitalasset.testing.Dsl.*;
 
 public class TableUtils {
-  // TODO: add checks if needed
   public static Record fieldsToArgs(List<String> args, List<DamlLf1.FieldWithType> fields) {
     if (args.size() != fields.size()) {
       throw new IllegalArgumentException(
