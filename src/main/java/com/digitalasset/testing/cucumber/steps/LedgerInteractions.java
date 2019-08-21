@@ -9,46 +9,30 @@
 
 package com.digitalasset.testing.cucumber.steps;
 
-import static com.digitalasset.testing.Dsl.party;
-import static com.digitalasset.testing.Dsl.record;
-import static com.digitalasset.testing.cucumber.utils.TableUtils.fieldsToArgs;
-import static com.digitalasset.testing.utils.PackageUtils.findTemplate;
-import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
-import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
-import static org.junit.Assert.assertTrue;
-
 import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
-import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
-import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxCommunicator;
-import com.digitalasset.testing.ledger.SandboxRunner;
-import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
-import com.digitalasset.testing.store.DefaultValueStore;
 import com.digitalasset.testing.utils.PackageUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
 import io.cucumber.datatable.DataTable;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+
+import static com.digitalasset.testing.Dsl.party;
+import static com.digitalasset.testing.cucumber.utils.TableUtils.fieldsToArgs;
+import static com.digitalasset.testing.utils.PackageUtils.findTemplate;
+import static org.junit.Assert.assertTrue;
 
 // Notes:
 // - for optional parts, one needs to use the form (:? expecting (failure))? because otherwise
