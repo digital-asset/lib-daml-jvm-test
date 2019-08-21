@@ -31,7 +31,9 @@ object ContractArchived extends Logging {
       override def test(event: TreeEvent): MessageTester.ComparisonResult =
         event match {
           case e: ExercisedEvent if e.isConsuming =>
-            compareValues(expectedContractId.getValue, e.getContractId, "contractId")
+            compareValues(expectedContractId.getValue,
+                          e.getContractId,
+                          "contractId")
           case _ => Irrelevant
         }
     }

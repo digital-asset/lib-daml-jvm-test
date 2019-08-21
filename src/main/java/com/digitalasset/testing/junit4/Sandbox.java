@@ -15,6 +15,7 @@ import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
+import com.digitalasset.testing.ledger.SandboxCommunicator;
 import com.digitalasset.testing.ledger.SandboxRunner;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.store.DefaultValueStore;
@@ -53,10 +54,7 @@ public class Sandbox extends ExternalResource {
 
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
-
-  private static final String COMPILATION_LOG = "integration-test-compilation.log";
-  private static final String DAML_EXE = "daml";
-  private int sandboxPort;
+  private final SandboxCommunicator sandboxCommunicator;
 
   public static SandboxBuilder builder() {
     return new SandboxBuilder();
@@ -152,18 +150,7 @@ public class Sandbox extends ExternalResource {
     private SandboxBuilder() {}
   }
 
-  private final Path projectDir;
-  private final Optional<String> testModule;
-  private final Optional<String> testScenario;
-  private final Duration waitTimeout;
-  private final String[] parties;
-  private final Path darPath;
-  private final Consumer<DamlLedgerClient> setupApplication;
   private final boolean useReset;
-  private SandboxRunner sandboxRunner;
-  private DamlLedgerClient ledgerClient;
-  private DefaultLedgerAdapter ledgerAdapter;
-  private ManagedChannel channel;
 
   private Sandbox(
       Path projectDir,
@@ -174,28 +161,24 @@ public class Sandbox extends ExternalResource {
       Path darPath,
       Consumer<DamlLedgerClient> setupApplication,
       boolean useReset) {
-    this.projectDir = projectDir;
-    this.testModule = testModule;
-    this.testScenario = testScenario;
-    this.waitTimeout = waitTimeout;
-    this.parties = parties;
-    this.darPath = darPath;
-    this.setupApplication = setupApplication;
+    this.sandboxCommunicator =
+        new SandboxCommunicator(
+            projectDir, testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
     this.useReset = useReset;
   }
 
   public DamlLedgerClient getClient() {
-    return ledgerClient;
+    return sandboxCommunicator.getClient();
   }
 
   public DefaultLedgerAdapter getLedgerAdapter() {
-    return ledgerAdapter;
+    return sandboxCommunicator.getLedgerAdapter();
   }
 
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
-    String pkg = findPackage(this.ledgerClient, packageName);
+    String pkg = findPackage(sandboxCommunicator.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);
   }
 
@@ -204,14 +187,14 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          startSandbox();
+          sandboxCommunicator.startSandbox();
         }
       }
 
       @Override
       protected void after() {
         if (useReset) {
-          stopSandbox();
+          sandboxCommunicator.stopSandbox();
         }
       }
     };
@@ -222,93 +205,26 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          startCommChannels(sandboxPort);
+          sandboxCommunicator.startCommChannels();
         } else {
-          startSandbox();
-          startCommChannels(sandboxPort);
+          sandboxCommunicator.startSandbox();
+          sandboxCommunicator.startCommChannels();
         }
       }
 
       @Override
       protected void after() {
         if (useReset) {
-          ResetServiceGrpc.newBlockingStub(channel)
+          ResetServiceGrpc.newBlockingStub(sandboxCommunicator.getChannel())
               .reset(
                   ResetServiceOuterClass.ResetRequest.newBuilder()
-                      .setLedgerId(ledgerClient.getLedgerId())
+                      .setLedgerId(sandboxCommunicator.getClient().getLedgerId())
                       .build());
-          stopCommChannels();
+          sandboxCommunicator.stopCommChannels();
         } else {
-          stopAll();
+          sandboxCommunicator.stopAll();
         }
       }
     };
-  }
-
-  private void startSandbox() throws IOException, TimeoutException {
-    sandboxPort = getSandboxPort();
-    sandboxRunner =
-        new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
-    sandboxRunner.startSandbox();
-  }
-
-  private void startCommChannels(int sandboxPort) throws TimeoutException {
-    channel =
-        ManagedChannelBuilder.forAddress("localhost", sandboxPort)
-            .usePlaintext()
-            .maxInboundMessageSize(Integer.MAX_VALUE)
-            .build();
-    ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
-    waitForSandbox(ledgerClient, waitTimeout, logger);
-    String ledgerId =
-        LedgerIdentityServiceGrpc.newBlockingStub(channel)
-            .getLedgerIdentity(
-                LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-            .getLedgerId();
-    ledgerAdapter =
-        new DefaultLedgerAdapter(
-            new DefaultValueStore(),
-            ledgerId,
-            channel,
-            SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
-    ledgerAdapter.start(parties);
-    setupApplication.accept(ledgerClient);
-  }
-
-  private void stopAll() {
-    stopCommChannels();
-    stopSandbox();
-  }
-
-  private void stopCommChannels() {
-    try {
-      ledgerAdapter.stop();
-    } catch (InterruptedException e) {
-      logger.warn("Failed to stop ledger adapter", e);
-    }
-    try {
-      ledgerClient.close();
-    } catch (Exception e) {
-      logger.warn("Failed to close ledger client", e);
-    }
-
-    try {
-      channel.shutdown().awaitTermination(5L, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      logger.warn("Failed to stop the managed channel", e);
-    }
-
-    channel = null;
-    ledgerAdapter = null;
-    ledgerClient = null;
-  }
-
-  private void stopSandbox() {
-    try {
-      sandboxRunner.stopSandbox();
-    } catch (Exception e) {
-      logger.warn("Failed to stop sandbox", e);
-    }
-    sandboxRunner = null;
   }
 }
