@@ -109,7 +109,7 @@ public class PackageUtils {
         DamlLf1.Type choiceArgType = choiceArgEntry.getValue();
         String choiceDataTypeName = dottedNameToString(choiceArgType.getCon().getTycon().getName());
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
-        if (choiceDataTypeName.equals("Archive")) {
+        if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
           choiceDataTypeFqn = "DAInternalTemplate:Archive";
         }
         DataType choiceArgDataType = findDataType(ledgerClient, choiceDataTypeFqn);
