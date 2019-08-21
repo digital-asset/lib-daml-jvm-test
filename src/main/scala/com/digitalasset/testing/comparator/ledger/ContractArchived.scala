@@ -6,17 +6,17 @@
 
 package com.digitalasset.testing.comparator.ledger
 
-import com.daml.ledger.javaapi.data.{ExercisedEvent, TreeEvent}
+import com.daml.ledger.javaapi.data.{ContractId, ExercisedEvent, TreeEvent}
 import com.digitalasset.testing.comparator.MessageTester
 import com.digitalasset.testing.comparator.MessageTester.Irrelevant
 import grizzled.slf4j.Logging
 
 object ContractArchived extends Logging {
   def apply(expectedTemplate: String,
-            expectedContractId: String): MessageTester[TreeEvent] =
+            expectedContractId: ContractId): MessageTester[TreeEvent] =
     new MessageTester[TreeEvent] {
       override def prettyPrintExpected: String =
-        pretty(expectedTemplate, expectedContractId)
+        pretty(expectedTemplate, expectedContractId.getValue)
 
       override def prettyPrintActual(event: TreeEvent): String =
         event match {
@@ -31,7 +31,7 @@ object ContractArchived extends Logging {
       override def test(event: TreeEvent): MessageTester.ComparisonResult =
         event match {
           case e: ExercisedEvent if e.isConsuming =>
-            compareValues(expectedContractId, e.getContractId, "contractId")
+            compareValues(expectedContractId.getValue, e.getContractId, "contractId")
           case _ => Irrelevant
         }
     }

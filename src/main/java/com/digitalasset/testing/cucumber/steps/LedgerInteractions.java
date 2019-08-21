@@ -18,6 +18,7 @@ import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
+import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxRunner;
@@ -36,13 +37,14 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 // Notes:
 // - for optional parts, one needs to use the form (:? expecting (failure))? because otherwise
-// Cucumber will
-//   complain about having an extra argument in the lambda expression
+//   Cucumber will complain about having an extra argument in the lambda expression
 @SuppressWarnings("unused")
 public class LedgerInteractions implements En {
+  private static final String WITH = "WITH";
   private final AtomicReference<Throwable> resultHolder = new AtomicReference<>();
   // TODO: Have a common class with all this Sandbox runner stuff
   private SandboxRunner sandboxRunner = null;
@@ -184,25 +186,30 @@ public class LedgerInteractions implements En {
               ContractCreated.expectContractWithArguments(
                   idWithArgs.identifier, "{CAPTURE:" + contractId + "}", args));
         });
-    //        Then(
-    //                "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id
-    // \"([^\"]+)\".*$",
-    //                ledgerAdapter::observeArchivedEvent
-    //        );
-    //        Then("^.*they should receive a technical failure with message \\s*\"([^\"]*)\".*$",
-    //                (String errorMessageRegex) -> {
-    //                    Throwable lastResult = resultHolder.getAndSet(null);
-    //                    if (lastResult == null) {
-    //                        throw new AssertionError("Failure was expected but not observed");
-    //                    }
-    //                    assertTrue(
-    //                            "Expected error text [" + errorMessageRegex + "], but found [" +
-    // lastResult + "]",
-    //                            Pattern.compile(errorMessageRegex,
-    // Pattern.DOTALL).matcher(lastResult.toString()).matches()
-    //                    );
-    //                }
-    //        );
+    Then(
+        "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
+        (String party, String moduleAndEntityName, String contractIdKey) -> {
+          PackageUtils.TemplateType idWithArgs = findTemplate(ledgerClient, moduleAndEntityName);
+          ContractId contractId = ledgerAdapter.valueStore.get(contractIdKey).asContractId().get();
+          ledgerAdapter.observeEvent(
+              party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
+        });
+    Then(
+        "^.*they should receive a technical failure (with|containing) message \\s*\"([^\"]*)\".*$",
+        (String withOrContaining, String errorMessageRegex) -> {
+          Throwable lastResult = resultHolder.getAndSet(null);
+          if (lastResult == null) {
+            throw new AssertionError("Failure was expected but not observed");
+          }
+          if (!withOrContaining.equals(WITH)) {
+            errorMessageRegex = ".*" + errorMessageRegex + ".*";
+          }
+          assertTrue(
+              "Expected error text [" + errorMessageRegex + "], but found [" + lastResult + "]",
+              Pattern.compile(errorMessageRegex, Pattern.DOTALL)
+                  .matcher(lastResult.toString())
+                  .matches());
+        });
   }
 
   abstract class LedgerExecutor {
