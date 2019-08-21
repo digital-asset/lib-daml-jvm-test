@@ -33,6 +33,34 @@ public class PackageUtils {
     }
   }
 
+  private static class DataType {
+    private Map<String, DamlLf1.Type> choices = null;
+    private List<DamlLf1.FieldWithType> fieldList = null;
+
+    public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType) {
+      if (dataType.hasRecord()) {
+        fieldList = dataType.getRecord().getFieldsList();
+        choices = getChoices(mod, dataType.getName());
+      }
+    }
+
+    public boolean isTemplate() {
+      return fieldList != null && choices != null;
+    }
+
+    public boolean hasFields() {
+      return fieldList != null;
+    }
+
+    public List<DamlLf1.FieldWithType> getCreateFields() {
+      return fieldList;
+    }
+
+    public Map<String, DamlLf1.Type> getTemplateChoices() {
+      return choices;
+    }
+  }
+
   // TODO refactor common parts
   public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName packageName)
       throws InvalidProtocolBufferException {
@@ -69,25 +97,6 @@ public class PackageUtils {
     }
 
     String moduleName = parts[0];
-    //    PackageClient pkgClient = ledgerClient.getPackageClient();
-    //    Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
-    //    for (String pkgId : pkgs) {
-    //      GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-    //      DamlLf.ArchivePayload archivePl =
-    //          DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-    //      List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
-    //      for (DamlLf1.Module mod : mods) {
-    //        if (dottedNameToString(mod.getName()).equals(moduleName)) {
-    //          for (DamlLf1.DefDataType dataType : mod.getDataTypesList()) {
-    //            if (dottedNameToString(dataType.getName()).equals(entityName)) {
-    //              return new TemplateType(
-    //                  new Identifier(pkgId, moduleName, entityName),
-    //                  dataType.getRecord().getFieldsList());
-    //            }
-    //          }
-    //        }
-    //      }
-    //    }
     DataType dt = findDataType(ledgerClient, moduleAndEntityName);
     if (dt.isTemplate()) {
       Map<String, List<DamlLf1.FieldWithType>> m = new HashMap<>();
@@ -109,6 +118,14 @@ public class PackageUtils {
       return new TemplateType(identifiers.get(moduleAndEntityName), dt.getCreateFields(), m);
     }
     throw new IllegalArgumentException("No template found with the name " + moduleAndEntityName);
+  }
+
+  public static String dottedNameToString(DamlLf1.DottedName name) {
+    StringBuilder b = new StringBuilder();
+    for (int i = 0; i < name.getSegmentsCount(); i++) {
+      b.append(name.getSegments(i));
+    }
+    return b.toString();
   }
 
   private static DataType findDataType(DamlLedgerClient ledgerClient, String moduleAndEntityName)
@@ -157,43 +174,6 @@ public class PackageUtils {
     return moduleName + ":" + entityName;
   }
 
-  //  public static TemplateType findTemplate(
-  //          DamlLedgerClient ledgerClient, String moduleAndEntityName)
-  //          throws InvalidProtocolBufferException {
-  //    String[] parts = moduleAndEntityName.split(":");
-  //
-  //    if (parts.length != 2) {
-  //      throw new IllegalArgumentException(
-  //              "Malformed module and entity name: " + moduleAndEntityName);
-  //    }
-  //
-  //    String moduleName = parts[0];
-  //    String entityName = parts[1];
-  //
-  //    PackageClient pkgClient = ledgerClient.getPackageClient();
-  //    Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
-  //    for (String pkgId : pkgs) {
-  //      GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-  //      DamlLf.ArchivePayload archivePl =
-  //              DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-  //      List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
-  //      for (DamlLf1.Module mod : mods) {
-  //        if (dottedNameToString(mod.getName()).equals(moduleName)) {
-  //          for (DamlLf1.DefDataType dataType : mod.getDataTypesList()) {
-  //            if (dottedNameToString(dataType.getName()).equals(entityName)) {
-  //              getChoices(mod, dataType.getName());
-  //              return new TemplateType(
-  //                      new Identifier(pkgId, moduleName, entityName),
-  //                      dataType.getRecord().getFieldsList());
-  //            }
-  //          }
-  //        }
-  //      }
-  //    }
-  //    throw new IllegalArgumentException("No template found with the name " +
-  // moduleAndEntityName);
-  //  }
-
   private static Map<String, DamlLf1.Type> getChoices(
       DamlLf1.Module mod, DamlLf1.DottedName dataTypeName) {
     Optional<DamlLf1.DefTemplate> template =
@@ -206,42 +186,6 @@ public class PackageUtils {
       return m;
     } else {
       return null;
-    }
-  }
-
-  public static String dottedNameToString(DamlLf1.DottedName name) {
-    StringBuilder b = new StringBuilder();
-    for (int i = 0; i < name.getSegmentsCount(); i++) {
-      b.append(name.getSegments(i));
-    }
-    return b.toString();
-  }
-
-  private static class DataType {
-    private Map<String, DamlLf1.Type> choices = null;
-    private List<DamlLf1.FieldWithType> fieldList = null;
-
-    public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType) {
-      if (dataType.hasRecord()) {
-        fieldList = dataType.getRecord().getFieldsList();
-        choices = getChoices(mod, dataType.getName());
-      }
-    }
-
-    public boolean isTemplate() {
-      return fieldList != null && choices != null;
-    }
-
-    public boolean hasFields() {
-      return fieldList != null;
-    }
-
-    public List<DamlLf1.FieldWithType> getCreateFields() {
-      return fieldList;
-    }
-
-    public Map<String, DamlLf1.Type> getTemplateChoices() {
-      return choices;
     }
   }
 }

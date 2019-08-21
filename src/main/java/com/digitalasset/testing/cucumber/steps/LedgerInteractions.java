@@ -121,6 +121,8 @@ public class LedgerInteractions implements En {
           ledgerClient = null;
         });
 
+    // Given - When - Then clauses :
+    // ----------------------------
     When(
         "^.*\"([^\"]+)\" creates contract \"([^\"]+)\" using values(?: expecting (failure))?$",
         (String party, String moduleAndEntityName, String expectedFailure, DataTable dataTable) ->
