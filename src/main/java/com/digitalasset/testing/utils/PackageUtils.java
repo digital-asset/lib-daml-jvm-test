@@ -134,6 +134,7 @@ public class PackageUtils {
 
   private static DataType findDataType(DamlLedgerClient ledgerClient, String moduleAndEntityName)
       throws InvalidProtocolBufferException {
+    assert !moduleAndEntityName.isEmpty();
     DataType dt = dataTypes.get(moduleAndEntityName);
     if (dt != null) {
       return dt;
@@ -142,9 +143,6 @@ public class PackageUtils {
       initCache(ledgerClient);
       // Try again and throw.
       dt = dataTypes.get(moduleAndEntityName);
-      for (Map.Entry<String, DataType> e : dataTypes.entrySet()) {
-        if (e.getKey().contains("PingPong")) System.out.println(e.getKey());
-      }
       if (dt != null) {
         return dt;
       }
@@ -175,6 +173,9 @@ public class PackageUtils {
   }
 
   private static String toFqn(String moduleName, String entityName) {
+    Objects.requireNonNull(moduleName);
+    Objects.requireNonNull(entityName);
+    assert !moduleName.isEmpty() && !entityName.isEmpty();
     return moduleName + ":" + entityName;
   }
 
