@@ -104,7 +104,7 @@ public class Sandbox extends ExternalResource {
       }
 
       return new Sandbox(
-              testModule, testScenario, waitTimeout, parties, darPath, setupApplication, useReset);
+          testModule, testScenario, waitTimeout, parties, darPath, setupApplication, useReset);
     }
 
     private SandboxBuilder() {}

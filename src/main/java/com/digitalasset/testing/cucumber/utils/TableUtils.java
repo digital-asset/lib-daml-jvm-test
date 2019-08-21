@@ -46,7 +46,7 @@ public class TableUtils {
           case PARTY:
             fieldList.addLast(field(party(arg)));
             break;
-          case DECIMAL:
+          case NUMERIC:
             fieldList.addLast(field(decimal(arg)));
             break;
           case CONTRACT_ID:

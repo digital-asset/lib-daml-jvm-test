@@ -146,7 +146,8 @@ public class PackageUtils {
       if (dt != null) {
         return dt;
       }
-      throw new IllegalArgumentException("No datatype found with the name '" + moduleAndEntityName + "'");
+      throw new IllegalArgumentException(
+          "No datatype found with the name '" + moduleAndEntityName + "'");
     }
   }
 
