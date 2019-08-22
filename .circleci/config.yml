@@ -27,7 +27,7 @@ jobs:
       - restore_cache:
           keys:
             - m2-{{ checksum "build.sbt" }}
-            - m2
+            - daml-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
       - run:
           command: |
             ./scripts/install-daml.sh << parameters.daml_sdk_version >>
@@ -37,8 +37,11 @@ jobs:
           paths:
             - ~/.m2
             - ~/.sbt
-            - ~/.daml
           key: m2-{{ checksum "build.sbt" }}
+      - save_cache:
+          paths:
+            - ~/.daml
+          key: daml-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
       - run:
           name: Run Blackduck Detect
           command: |
