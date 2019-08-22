@@ -40,7 +40,7 @@ public class PackageUtils {
   }
 
   private static class DataType {
-    private Map<String, DamlLf1.Type> choices = null;
+    private Optional<Map<String, DamlLf1.Type>> choices = Optional.empty();
     private List<DamlLf1.FieldWithType> fieldList = null;
 
     public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType) {
@@ -51,7 +51,7 @@ public class PackageUtils {
     }
 
     public boolean isTemplate() {
-      return fieldList != null && choices != null;
+      return fieldList != null && choices.isPresent();
     }
 
     public boolean hasFields() {
@@ -62,7 +62,7 @@ public class PackageUtils {
       return fieldList;
     }
 
-    public Map<String, DamlLf1.Type> getTemplateChoices() {
+    public Optional<Map<String, DamlLf1.Type>> getTemplateChoices() {
       return choices;
     }
   }
@@ -104,7 +104,8 @@ public class PackageUtils {
     DataType dt = findDataType(ledgerClient, moduleAndEntityName);
     if (dt.isTemplate()) {
       Map<String, List<DamlLf1.FieldWithType>> m = new HashMap<>();
-      for (Map.Entry<String, DamlLf1.Type> choiceArgEntry : dt.getTemplateChoices().entrySet()) {
+      for (Map.Entry<String, DamlLf1.Type> choiceArgEntry :
+          dt.getTemplateChoices().get().entrySet()) {
         String choiceArgName = choiceArgEntry.getKey();
         DamlLf1.Type choiceArgType = choiceArgEntry.getValue();
         String choiceDataTypeName = dottedNameToString(choiceArgType.getCon().getTycon().getName());
@@ -180,7 +181,7 @@ public class PackageUtils {
     return moduleName + ":" + entityName;
   }
 
-  private static Map<String, DamlLf1.Type> getChoices(
+  private static Optional<Map<String, DamlLf1.Type>> getChoices(
       DamlLf1.Module mod, DamlLf1.DottedName dataTypeName) {
     Optional<DamlLf1.DefTemplate> template =
         mod.getTemplatesList().stream().filter(t -> t.getTycon().equals(dataTypeName)).findFirst();
@@ -189,9 +190,9 @@ public class PackageUtils {
       for (DamlLf1.TemplateChoice choice : template.get().getChoicesList()) {
         m.put(choice.getName(), choice.getArgBinder().getType());
       }
-      return m;
+      return Optional.of(m);
     } else {
-      return null;
+      return Optional.empty();
     }
   }
 }

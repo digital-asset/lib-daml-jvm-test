@@ -46,7 +46,7 @@ public class LedgerInteractions implements En {
 
   public LedgerInteractions() {
     Given(
-        "^Sandbox is started with DAR \"([^\"]+)\"$",
+        "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPath, DataTable dataTable) -> {
           String[] parties = dataTable.asList().toArray(new String[] {});
           sandboxCommunicator =

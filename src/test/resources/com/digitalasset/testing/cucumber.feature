@@ -2,7 +2,7 @@ Feature: Cucumber support in the Functional Testing library
   Cucumber support needs to work.
 
   Background:
-    Given Sandbox is started with DAR "src/test/resources/ping-pong.dar"
+    Given Sandbox is started with DAR "src/test/resources/ping-pong.dar" and the following parties
     | Alice | Bob |
 
   Scenario: A contract can be created and observed.

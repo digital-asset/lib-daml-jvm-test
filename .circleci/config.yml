@@ -41,7 +41,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.daml
-          key: daml-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
+          key: daml-{{ checksum "build.sbt" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
       - run:
           name: Run Blackduck Detect
           command: |
