@@ -189,7 +189,7 @@ public class LedgerInteractions implements En {
   }
 
   private List<String> checkTableIsList(DataTable dataTable) {
-    if (dataTable.height() == 1 & dataTable.width() > 0) {
+    if (dataTable.height() == 1 && dataTable.width() > 0) {
       return dataTable.asList();
     }
     throw new IllegalArgumentException(

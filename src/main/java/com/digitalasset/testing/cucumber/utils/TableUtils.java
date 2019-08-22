@@ -20,7 +20,7 @@ public class TableUtils {
   public static Record fieldsToArgs(List<String> args, List<DamlLf1.FieldWithType> fields) {
     if (args.size() != fields.size()) {
       throw new IllegalArgumentException(
-          "Wrong number of actual arguments: " + args.size() + "(formal: " + fields.size() + ")");
+          "Wrong number of actual arguments: " + args.size() + " (formal: " + fields.size() + ")");
     }
     LinkedList<Record.Field> fieldList = new LinkedList<>();
     HashMap<String, String> m = new HashMap<>();
