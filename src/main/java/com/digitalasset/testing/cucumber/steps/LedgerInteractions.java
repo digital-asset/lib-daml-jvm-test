@@ -57,12 +57,12 @@ public class LedgerInteractions implements En {
                   parties,
                   Paths.get(darPath),
                   (client) -> {});
-          sandboxCommunicator.startAll();
+          sandboxCommunicator.start();
         });
     After(
         () -> {
           if (sandboxCommunicator != null) {
-            sandboxCommunicator.stopAll();
+            sandboxCommunicator.stop();
           }
         });
 

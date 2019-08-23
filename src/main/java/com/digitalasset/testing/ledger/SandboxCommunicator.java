@@ -9,6 +9,8 @@ package com.digitalasset.testing.ledger;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
+import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.store.DefaultValueStore;
@@ -73,14 +75,39 @@ public class SandboxCommunicator {
     return channel;
   }
 
-  public void startSandbox() throws IOException, TimeoutException {
+  public void start() throws TimeoutException, IOException {
+    startSandbox();
+    startCommChannels();
+  }
+
+  public void stop() {
+    stopCommChannels();
+    stopSandbox();
+  }
+
+  public void restart() throws TimeoutException, IOException {
+    stop();
+    start();
+  }
+
+  public void reset() throws TimeoutException {
+    ResetServiceGrpc.newBlockingStub(channel)
+        .reset(
+            ResetServiceOuterClass.ResetRequest.newBuilder()
+                .setLedgerId(ledgerClient.getLedgerId())
+                .build());
+    stopCommChannels();
+    startCommChannels();
+  }
+
+  private void startSandbox() throws IOException, TimeoutException {
     sandboxPort = getSandboxPort();
     sandboxRunner =
         new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
     sandboxRunner.startSandbox();
   }
 
-  public void startCommChannels() throws TimeoutException {
+  private void startCommChannels() throws TimeoutException {
     channel =
         ManagedChannelBuilder.forAddress("localhost", sandboxPort)
             .usePlaintext()
@@ -103,17 +130,7 @@ public class SandboxCommunicator {
     setupApplication.accept(ledgerClient);
   }
 
-  public void startAll() throws TimeoutException, IOException {
-    startSandbox();
-    startCommChannels();
-  }
-
-  public void stopAll() {
-    stopCommChannels();
-    stopSandbox();
-  }
-
-  public void stopCommChannels() {
+  private void stopCommChannels() {
     try {
       if (ledgerAdapter != null) {
         ledgerAdapter.stop();
@@ -142,7 +159,7 @@ public class SandboxCommunicator {
     ledgerClient = null;
   }
 
-  public void stopSandbox() {
+  private void stopSandbox() {
     try {
       if (sandboxRunner != null) {
         sandboxRunner.stopSandbox();

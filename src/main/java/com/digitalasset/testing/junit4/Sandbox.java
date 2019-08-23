@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 
 import static com.digitalasset.testing.utils.PackageUtils.findPackage;
 
-public class Sandbox extends ExternalResource {
+public class Sandbox {
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxCommunicator sandboxCommunicator;
@@ -146,15 +146,13 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          sandboxCommunicator.startSandbox();
+          sandboxCommunicator.start();
         }
       }
 
       @Override
       protected void after() {
-        if (useReset) {
-          sandboxCommunicator.stopSandbox();
-        }
+        sandboxCommunicator.stop();
       }
     };
   }
@@ -164,26 +162,14 @@ public class Sandbox extends ExternalResource {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          sandboxCommunicator.startCommChannels();
+          sandboxCommunicator.reset();
         } else {
-          sandboxCommunicator.startSandbox();
-          sandboxCommunicator.startCommChannels();
+          sandboxCommunicator.restart();
         }
       }
 
       @Override
-      protected void after() {
-        if (useReset) {
-          ResetServiceGrpc.newBlockingStub(sandboxCommunicator.getChannel())
-              .reset(
-                  ResetServiceOuterClass.ResetRequest.newBuilder()
-                      .setLedgerId(sandboxCommunicator.getClient().getLedgerId())
-                      .build());
-          sandboxCommunicator.stopCommChannels();
-        } else {
-          sandboxCommunicator.stopAll();
-        }
-      }
+      protected void after() {}
     };
   }
 }
