@@ -1,9 +1,10 @@
 import sbt._
 
 object Dependencies {
-  val DAML_SDK_VERSION = "100.13.15"
+  val DAML_SDK_VERSION = "100.13.20"
   val scalapbVersion = "0.9.2"
   val yamlVersion = "1.23"
+  val cucumberVersion = "4.3.1"
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.5"
   lazy val damlJavaBinding = "com.daml.ledger" % "bindings-java" % DAML_SDK_VERSION
@@ -21,4 +22,8 @@ object Dependencies {
 
   lazy val junit4 = "junit" % "junit" % "4.12"
   lazy val junitInterface = "com.novocode" % "junit-interface" % "0.11" % Test exclude("junit", "junit-dep")
+
+  lazy val cucumberJ8 = "io.cucumber" % "cucumber-java8" % cucumberVersion
+  lazy val cucumberJunit = "io.cucumber" % "cucumber-junit" % cucumberVersion
+
 }

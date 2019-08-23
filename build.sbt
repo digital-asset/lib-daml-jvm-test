@@ -1,7 +1,8 @@
 import Dependencies._
 
 addCommandAlias("packageAll", ";package")
-addCommandAlias("verify", ";test;scalafmtCheck;headerCheck")
+addCommandAlias("verify", ";test;cucumber;scalafmtCheck;headerCheck")
+addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
 resolvers ++= Seq(
   Resolver.bintrayRepo("digitalassetsdk", "DigitalAssetSDK"),
@@ -38,7 +39,9 @@ libraryDependencies ++= Seq(
   scalaz,
   junit4,
   junitInterface,
-  hamcrestOptional
+  hamcrestOptional,
+  cucumberJ8,
+  cucumberJunit
 )
 
 scalaVersion := "2.12.8"
@@ -71,11 +74,14 @@ publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 
 // Daml compilation
 import scala.sys.process._
-lazy val compileDamlBeforeScript = taskKey[Unit]("Compile DAR with daml")
+lazy val compileDaml = taskKey[Unit]("Compile DAR with daml")
 
-compileDamlBeforeScript := {
+compileDaml := {
   val pwd = new java.io.File(".").getCanonicalPath;
   Seq("daml", "build", "--project-root", s"$pwd/src/test/resources/ping-pong", "--output", s"$pwd/src/test/resources/ping-pong.dar") !
 }
 
-(test in Test) := (test in Test).dependsOn(compileDamlBeforeScript).value
+(test in Test) := (test in Test).dependsOn(compileDaml).value
+
+enablePlugins(CucumberPlugin)
+CucumberPlugin.glues := List("com/digitalasset/testing/steps")

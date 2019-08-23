@@ -54,7 +54,6 @@ One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
-          .projectDir(PINGPONG_PATH)
           .module("Test")
           .scenario("testSetup")
           .parties(ALICE, BOB, CHARLIE)

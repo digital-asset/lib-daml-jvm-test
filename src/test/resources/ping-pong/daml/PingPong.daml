@@ -47,3 +47,19 @@ template TimedPing
           now <- getTime
           assertMsg ("TimedPingRespondPong should be called after " <> show expectedAfter) $ expectedAfter < now
           create Pong with sender = receiver; receiver = sender; count = count + 1
+
+template ArgumentPing
+  with
+    sender: Party
+    receiver: Party
+    count: Int
+  where
+    signatory sender
+    observer receiver
+
+    controller receiver can
+      ArgumentPingRespondPong : ContractId Pong
+        with
+          intArg : Int
+        do create Pong with sender = receiver; receiver = sender; count = count + 1
+

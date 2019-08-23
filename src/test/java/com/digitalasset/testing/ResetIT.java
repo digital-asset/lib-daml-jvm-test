@@ -36,7 +36,6 @@ public class ResetIT {
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
-          .projectDir(PINGPONG_PATH)
           .useReset()
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .build();
