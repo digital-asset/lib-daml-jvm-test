@@ -75,10 +75,13 @@ public class LedgerInteractions implements En {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
-                Record args = fieldsToArgs(checkTableIsList(dataTable), idWithArgs.createFields);
-                sandboxCommunicator
-                    .getLedgerAdapter()
-                    .createContract(new Party(party), idWithArgs.identifier, args);
+                checkTableIsTwoOrManyRows(dataTable);
+                for (int i = 1; i < dataTable.width(); i++) {
+                  Record args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields);
+                  sandboxCommunicator
+                      .getLedgerAdapter()
+                      .createContract(new Party(party), idWithArgs.identifier, args);
+                }
               }
             });
     When(
@@ -117,7 +120,10 @@ public class LedgerInteractions implements En {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
-                Record args = fieldsToArgs(dataTable.asList(), idWithArgs.choices.get(choiceName));
+                Record args =
+                    fieldsToArgs(
+                        checkTableIsOneOrTwoRowsAndGet(dataTable),
+                        idWithArgs.choices.get(choiceName));
                 ContractId contractId =
                     sandboxCommunicator
                         .getLedgerAdapter()
@@ -145,7 +151,8 @@ public class LedgerInteractions implements En {
         (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
-          Record args = fieldsToArgs(checkTableIsList(dataTable), idWithArgs.createFields);
+          Record args =
+              fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields);
           sandboxCommunicator
               .getLedgerAdapter()
               .observeEvent(
@@ -188,14 +195,25 @@ public class LedgerInteractions implements En {
         });
   }
 
-  private List<String> checkTableIsList(DataTable dataTable) {
-    if (dataTable.height() == 1 && dataTable.width() > 0) {
-      return dataTable.asList();
+  private void checkTableIsTwoOrManyRows(DataTable dataTable) {
+    if (dataTable.width() <= 1) {
+      throw new IllegalArgumentException(
+          "The provided data table must be contain at least two columns: "
+              + "the argument names' columns and a columns with arguments. Current column count: "
+              + dataTable.width());
+    }
+  }
+
+  private List<String> checkTableIsOneOrTwoRowsAndGet(DataTable dataTable) {
+    if (dataTable.width() == 1) {
+      return dataTable.column(0);
+    }
+    if (dataTable.width() == 2) {
+      return dataTable.column(1);
     }
     throw new IllegalArgumentException(
-        "The provided data table must be a list. Current dimension: "
-            + dataTable.height()
-            + "x"
+        "The provided data table must contain one (arguments) or two (names with arguments) columns."
+            + " Current column count: "
             + dataTable.width());
   }
 
