@@ -30,8 +30,8 @@ import java.util.function.Consumer;
 import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
 import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
-public class SandboxCommunicator {
-  private static final Logger logger = LoggerFactory.getLogger(SandboxCommunicator.class);
+public class SandboxManager {
+  private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private static final String COMPILATION_LOG = "integration-test-compilation.log";
   private static final String DAML_EXE = "daml";
   private int sandboxPort;
@@ -48,7 +48,7 @@ public class SandboxCommunicator {
   private DefaultLedgerAdapter ledgerAdapter;
   private ManagedChannel channel;
 
-  public SandboxCommunicator(
+  public SandboxManager(
       Optional<String> testModule,
       Optional<String> testScenario,
       Duration waitTimeout,

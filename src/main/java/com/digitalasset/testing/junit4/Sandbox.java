@@ -8,10 +8,8 @@ package com.digitalasset.testing.junit4;
 
 import com.daml.ledger.javaapi.data.Party;
 import com.digitalasset.daml_lf.DamlLf1;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
-import com.digitalasset.testing.ledger.SandboxCommunicator;
+import com.digitalasset.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -28,7 +26,7 @@ import static com.digitalasset.testing.utils.PackageUtils.findPackage;
 public class Sandbox {
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static String[] DEFAULT_PARTIES = new String[] {};
-  private final SandboxCommunicator sandboxCommunicator;
+  private final SandboxManager sandboxManager;
 
   public static SandboxBuilder builder() {
     return new SandboxBuilder();
@@ -120,24 +118,24 @@ public class Sandbox {
       Path darPath,
       Consumer<DamlLedgerClient> setupApplication,
       boolean useReset) {
-    this.sandboxCommunicator =
-        new SandboxCommunicator(
+    this.sandboxManager =
+        new SandboxManager(
             testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
     this.useReset = useReset;
   }
 
   public DamlLedgerClient getClient() {
-    return sandboxCommunicator.getClient();
+    return sandboxManager.getClient();
   }
 
   public DefaultLedgerAdapter getLedgerAdapter() {
-    return sandboxCommunicator.getLedgerAdapter();
+    return sandboxManager.getLedgerAdapter();
   }
 
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
-    String pkg = findPackage(sandboxCommunicator.getClient(), packageName);
+    String pkg = findPackage(sandboxManager.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);
   }
 
@@ -146,13 +144,13 @@ public class Sandbox {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          sandboxCommunicator.start();
+          sandboxManager.start();
         }
       }
 
       @Override
       protected void after() {
-        sandboxCommunicator.stop();
+        sandboxManager.stop();
       }
     };
   }
@@ -162,9 +160,9 @@ public class Sandbox {
       @Override
       protected void before() throws Throwable {
         if (useReset) {
-          sandboxCommunicator.reset();
+          sandboxManager.reset();
         } else {
-          sandboxCommunicator.restart();
+          sandboxManager.restart();
         }
       }
 

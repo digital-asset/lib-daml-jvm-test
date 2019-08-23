@@ -14,7 +14,7 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
-import com.digitalasset.testing.ledger.SandboxCommunicator;
+import com.digitalasset.testing.ledger.SandboxManager;
 import com.digitalasset.testing.utils.PackageUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 public class LedgerInteractions implements En {
   private static final String WITH = "WITH";
   private final AtomicReference<Throwable> resultHolder = new AtomicReference<>();
-  private SandboxCommunicator sandboxCommunicator;
+  private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
   public LedgerInteractions() {
@@ -49,20 +49,20 @@ public class LedgerInteractions implements En {
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPath, DataTable dataTable) -> {
           String[] parties = dataTable.asList().toArray(new String[] {});
-          sandboxCommunicator =
-              new SandboxCommunicator(
+          sandboxManager =
+              new SandboxManager(
                   Optional.empty(),
                   Optional.empty(),
                   Duration.ofSeconds(30),
                   parties,
                   Paths.get(darPath),
                   (client) -> {});
-          sandboxCommunicator.start();
+          sandboxManager.start();
         });
     After(
         () -> {
-          if (sandboxCommunicator != null) {
-            sandboxCommunicator.stop();
+          if (sandboxManager != null) {
+            sandboxManager.stop();
           }
         });
 
@@ -74,11 +74,11 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 checkTableIsTwoOrManyRows(dataTable);
                 for (int i = 1; i < dataTable.width(); i++) {
                   Record args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields);
-                  sandboxCommunicator
+                  sandboxManager
                       .getLedgerAdapter()
                       .createContract(new Party(party), idWithArgs.identifier, args);
                 }
@@ -94,15 +94,15 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
-                    sandboxCommunicator
+                    sandboxManager
                         .getLedgerAdapter()
                         .valueStore
                         .get(contractIdKey)
                         .asContractId()
                         .get();
-                sandboxCommunicator
+                sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
                         party(party), idWithArgs.identifier, contractId, choiceName, new Record());
@@ -119,19 +119,19 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
-                    findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 Record args =
                     fieldsToArgs(
                         checkTableIsOneOrTwoRowsAndGet(dataTable),
                         idWithArgs.choices.get(choiceName));
                 ContractId contractId =
-                    sandboxCommunicator
+                    sandboxManager
                         .getLedgerAdapter()
                         .valueStore
                         .get(contractIdKey)
                         .asContractId()
                         .get();
-                sandboxCommunicator
+                sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
                         party(party), idWithArgs.identifier, contractId, choiceName, args);
@@ -141,8 +141,8 @@ public class LedgerInteractions implements En {
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\"$",
         (String party, String moduleAndEntityName) -> {
           PackageUtils.TemplateType idWithArgs =
-              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
-          sandboxCommunicator
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+          sandboxManager
               .getLedgerAdapter()
               .getCreatedContractId(party(party), idWithArgs.identifier, ContractId::new);
         });
@@ -150,10 +150,10 @@ public class LedgerInteractions implements En {
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\" with(?: contract id \"([^\"]+)\" and)? values$",
         (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
-              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           Record args =
               fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields);
-          sandboxCommunicator
+          sandboxManager
               .getLedgerAdapter()
               .observeEvent(
                   party,
@@ -164,15 +164,15 @@ public class LedgerInteractions implements En {
         "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
         (String party, String moduleAndEntityName, String contractIdKey) -> {
           PackageUtils.TemplateType idWithArgs =
-              findTemplate(sandboxCommunicator.getClient(), moduleAndEntityName);
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           ContractId contractId =
-              sandboxCommunicator
+              sandboxManager
                   .getLedgerAdapter()
                   .valueStore
                   .get(contractIdKey)
                   .asContractId()
                   .get();
-          sandboxCommunicator
+          sandboxManager
               .getLedgerAdapter()
               .observeEvent(
                   party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
