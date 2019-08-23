@@ -166,12 +166,7 @@ public class LedgerInteractions implements En {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           ContractId contractId =
-              sandboxManager
-                  .getLedgerAdapter()
-                  .valueStore
-                  .get(contractIdKey)
-                  .asContractId()
-                  .get();
+              sandboxManager.getLedgerAdapter().valueStore.get(contractIdKey).asContractId().get();
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
