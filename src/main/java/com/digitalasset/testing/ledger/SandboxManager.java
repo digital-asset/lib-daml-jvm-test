@@ -78,7 +78,11 @@ public class SandboxManager {
   }
 
   public void start() throws TimeoutException, IOException {
-    startSandbox();
+    start(getSandboxPort());
+  }
+
+  public void start(int port) throws TimeoutException, IOException {
+    startSandbox(port);
     startCommChannels();
   }
 
@@ -102,8 +106,8 @@ public class SandboxManager {
     startCommChannels();
   }
 
-  private void startSandbox() throws IOException, TimeoutException {
-    sandboxPort = getSandboxPort();
+  private void startSandbox(int port) throws IOException, TimeoutException {
+    sandboxPort = port;
     sandboxRunner =
         new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
     sandboxRunner.startSandbox();

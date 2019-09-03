@@ -14,8 +14,10 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
+import com.digitalasset.testing.cucumber.utils.World;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.digitalasset.testing.utils.PackageUtils;
+import com.digitalasset.testing.utils.SandboxUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
 import io.cucumber.datatable.DataTable;
@@ -43,8 +45,10 @@ public class LedgerInteractions implements En {
   private final AtomicReference<Throwable> resultHolder = new AtomicReference<>();
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
+  private World world;
 
-  public LedgerInteractions() {
+  public LedgerInteractions(World world) {
+    this.world = world;
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPath, DataTable dataTable) -> {
@@ -57,7 +61,8 @@ public class LedgerInteractions implements En {
                   parties,
                   Paths.get(darPath),
                   (client) -> {});
-          sandboxManager.start();
+          world.setSandboxPort(SandboxUtils.getSandboxPort());
+          sandboxManager.start(world.getSandboxPort());
         });
     After(
         () -> {
@@ -213,7 +218,7 @@ public class LedgerInteractions implements En {
   }
 
   protected int getSandboxPort() {
-      return sandboxManager.getPort();
+    return sandboxManager.getPort();
   }
 
   abstract class LedgerExecutor {

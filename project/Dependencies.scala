@@ -25,5 +25,6 @@ object Dependencies {
 
   lazy val cucumberJ8 = "io.cucumber" % "cucumber-java8" % cucumberVersion
   lazy val cucumberJunit = "io.cucumber" % "cucumber-junit" % cucumberVersion
+  lazy val cucumberPicoContainer = "io.cucumber" % "cucumber-picocontainer" % cucumberVersion
 
 }
