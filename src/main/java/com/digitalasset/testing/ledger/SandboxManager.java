@@ -63,6 +63,10 @@ public class SandboxManager {
     this.setupApplication = setupApplication;
   }
 
+  public int getPort() {
+    return sandboxPort;
+  }
+
   public DamlLedgerClient getClient() {
     return ledgerClient;
   }

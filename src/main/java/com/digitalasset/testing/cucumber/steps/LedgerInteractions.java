@@ -212,6 +212,10 @@ public class LedgerInteractions implements En {
             + dataTable.width());
   }
 
+  protected int getSandboxPort() {
+      return sandboxManager.getPort();
+  }
+
   abstract class LedgerExecutor {
     LedgerExecutor(boolean expectingError) throws InvalidProtocolBufferException {
       try {
