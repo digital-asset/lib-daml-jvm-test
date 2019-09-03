@@ -32,8 +32,6 @@ import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
-  private static final String COMPILATION_LOG = "integration-test-compilation.log";
-  private static final String DAML_EXE = "daml";
   private int sandboxPort;
 
   private final Optional<String> testModule;
