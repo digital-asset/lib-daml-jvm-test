@@ -41,7 +41,8 @@ libraryDependencies ++= Seq(
   junitInterface,
   hamcrestOptional,
   cucumberJ8,
-  cucumberJunit
+  cucumberJunit,
+  cucumberPicoContainer
 )
 
 scalaVersion := "2.12.8"
