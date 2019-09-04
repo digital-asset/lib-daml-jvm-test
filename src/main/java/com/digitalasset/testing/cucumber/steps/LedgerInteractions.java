@@ -45,10 +45,8 @@ public class LedgerInteractions implements En {
   private final AtomicReference<Throwable> resultHolder = new AtomicReference<>();
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
-  private World world;
 
   public LedgerInteractions(World world) {
-    this.world = world;
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPath, DataTable dataTable) -> {
@@ -61,7 +59,6 @@ public class LedgerInteractions implements En {
                   parties,
                   Paths.get(darPath),
                   (client) -> {});
-          world.setSandboxPort(SandboxUtils.getSandboxPort());
           sandboxManager.start(world.getSandboxPort());
         });
     After(

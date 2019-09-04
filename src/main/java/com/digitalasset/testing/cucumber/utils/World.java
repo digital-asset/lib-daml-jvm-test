@@ -1,14 +1,16 @@
 package com.digitalasset.testing.cucumber.utils;
 
+import com.digitalasset.testing.utils.SandboxUtils;
+
 public class World {
   private int sandboxPort;
 
-  public int getSandboxPort() {
-    return sandboxPort;
+  public World() {
+    this.sandboxPort = SandboxUtils.getSandboxPort();
   }
 
-  public void setSandboxPort(int sandboxPort) {
-    this.sandboxPort = sandboxPort;
+  public int getSandboxPort() {
+    return sandboxPort;
   }
 
   @Override
