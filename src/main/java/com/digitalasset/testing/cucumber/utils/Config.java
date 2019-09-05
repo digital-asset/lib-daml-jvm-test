@@ -8,10 +8,10 @@ package com.digitalasset.testing.cucumber.utils;
 
 import com.digitalasset.testing.utils.SandboxUtils;
 
-public class World {
+public class Config {
   private int sandboxPort;
 
-  public World() {
+  public Config() {
     this.sandboxPort = SandboxUtils.getSandboxPort();
   }
 
@@ -21,6 +21,6 @@ public class World {
 
   @Override
   public String toString() {
-    return "World{" + "sandboxPort=" + sandboxPort + '}';
+    return "Config{" + "sandboxPort=" + sandboxPort + '}';
   }
 }

@@ -1,10 +1,10 @@
 package com.digitalasset.testing.steps;
 
 import com.digitalasset.testing.cucumber.steps.LedgerInteractions;
-import com.digitalasset.testing.cucumber.utils.World;
+import com.digitalasset.testing.cucumber.utils.Config;
 
 public class StepDefs extends LedgerInteractions {
-  public StepDefs(World world) {
-    super(world);
+  public StepDefs(Config config) {
+    super(config);
   }
 }
