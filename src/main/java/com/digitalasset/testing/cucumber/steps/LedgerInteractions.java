@@ -14,6 +14,7 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.javaapi.data.Record;
 import com.digitalasset.testing.comparator.ledger.ContractArchived;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
+import com.digitalasset.testing.cucumber.utils.Config;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.digitalasset.testing.utils.PackageUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -44,7 +45,7 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
-  public LedgerInteractions() {
+  public LedgerInteractions(Config config) {
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPath, DataTable dataTable) -> {
@@ -57,7 +58,7 @@ public class LedgerInteractions implements En {
                   parties,
                   Paths.get(darPath),
                   (client) -> {});
-          sandboxManager.start();
+          sandboxManager.start(config.getSandboxPort());
         });
     After(
         () -> {
@@ -210,6 +211,10 @@ public class LedgerInteractions implements En {
         "The provided data table must contain one (arguments) or two (names with arguments) columns."
             + " Current column count: "
             + dataTable.width());
+  }
+
+  protected int getSandboxPort() {
+    return sandboxManager.getPort();
   }
 
   abstract class LedgerExecutor {

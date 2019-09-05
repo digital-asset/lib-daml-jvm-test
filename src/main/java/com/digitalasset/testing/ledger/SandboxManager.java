@@ -32,8 +32,6 @@ import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
-  private static final String COMPILATION_LOG = "integration-test-compilation.log";
-  private static final String DAML_EXE = "daml";
   private int sandboxPort;
 
   private final Optional<String> testModule;
@@ -63,6 +61,10 @@ public class SandboxManager {
     this.setupApplication = setupApplication;
   }
 
+  public int getPort() {
+    return sandboxPort;
+  }
+
   public DamlLedgerClient getClient() {
     return ledgerClient;
   }
@@ -76,7 +78,11 @@ public class SandboxManager {
   }
 
   public void start() throws TimeoutException, IOException {
-    startSandbox();
+    start(getSandboxPort());
+  }
+
+  public void start(int port) throws TimeoutException, IOException {
+    startSandbox(port);
     startCommChannels();
   }
 
@@ -100,8 +106,8 @@ public class SandboxManager {
     startCommChannels();
   }
 
-  private void startSandbox() throws IOException, TimeoutException {
-    sandboxPort = getSandboxPort();
+  private void startSandbox(int port) throws IOException, TimeoutException {
+    sandboxPort = port;
     sandboxRunner =
         new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
     sandboxRunner.startSandbox();
