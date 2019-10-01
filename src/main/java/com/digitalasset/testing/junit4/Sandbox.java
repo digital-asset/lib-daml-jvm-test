@@ -40,7 +40,6 @@ public class Sandbox {
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
-    // private Consumer<DamlLedgerClient> setupApplication;
     private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
