@@ -13,12 +13,14 @@ import com.digitalasset.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.ManagedChannel;
 import org.junit.rules.ExternalResource;
 
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.digitalasset.testing.utils.PackageUtils.findPackage;
@@ -38,8 +40,8 @@ public class Sandbox {
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
-    private Consumer<DamlLedgerClient> setupApplication;
     private boolean useReset = false;
+    private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -75,6 +77,12 @@ public class Sandbox {
     }
 
     public SandboxBuilder setupAppCallback(Consumer<DamlLedgerClient> setupApplication) {
+      this.setupApplication = (client, channel) -> setupApplication.accept(client);
+      return this;
+    }
+
+    public SandboxBuilder setupAppCallback(
+        BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication) {
       this.setupApplication = setupApplication;
       return this;
     }
@@ -98,7 +106,7 @@ public class Sandbox {
       }
 
       if (setupApplication == null) {
-        setupApplication = (t) -> {};
+        setupApplication = (t, u) -> {};
       }
 
       return new Sandbox(
@@ -116,7 +124,7 @@ public class Sandbox {
       Duration waitTimeout,
       String[] parties,
       Path darPath,
-      Consumer<DamlLedgerClient> setupApplication,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useReset) {
     this.sandboxManager =
         new SandboxManager(

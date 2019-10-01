@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
@@ -39,7 +40,7 @@ public class SandboxManager {
   private final Duration waitTimeout;
   private final String[] parties;
   private final Path darPath;
-  private final Consumer<DamlLedgerClient> setupApplication;
+  private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
   private SandboxRunner sandboxRunner;
   private DamlLedgerClient ledgerClient;
@@ -52,7 +53,7 @@ public class SandboxManager {
       Duration waitTimeout,
       String[] parties,
       Path darPath,
-      Consumer<DamlLedgerClient> setupApplication) {
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
@@ -133,7 +134,7 @@ public class SandboxManager {
             channel,
             SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
     ledgerAdapter.start(parties);
-    setupApplication.accept(ledgerClient);
+    setupApplication.accept(ledgerClient, channel);
   }
 
   private void stopCommChannels() {
