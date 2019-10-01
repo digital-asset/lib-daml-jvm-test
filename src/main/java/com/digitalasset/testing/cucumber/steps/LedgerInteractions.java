@@ -57,8 +57,8 @@ public class LedgerInteractions implements En {
                   Duration.ofSeconds(30),
                   parties,
                   Paths.get(darPath),
-                  (client) -> {});
-          sandboxManager.start(config.getSandboxPort());
+                  (client, channel) -> {});
+          sandboxManager.start();
         });
     After(
         () -> {
