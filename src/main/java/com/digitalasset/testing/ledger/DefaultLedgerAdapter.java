@@ -92,8 +92,8 @@ public class DefaultLedgerAdapter {
 
   private static Timestamp toProtobufTimestamp(Instant instant) {
     return Timestamp.newBuilder()
-        .setSeconds(instant.toEpochMilli() / 1000)
-        .setNanos(Long.valueOf((instant.toEpochMilli() % 1000) * 1000).intValue())
+        .setSeconds(instant.getEpochSecond())
+        .setNanos(instant.getNano())
         .build();
   }
 

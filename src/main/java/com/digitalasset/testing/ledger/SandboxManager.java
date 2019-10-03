@@ -13,6 +13,8 @@ import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
+import com.digitalasset.testing.ledger.clock.SystemTimeProvider;
+import com.digitalasset.testing.ledger.clock.TimeProvider;
 import com.digitalasset.testing.store.DefaultValueStore;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
 import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
@@ -38,6 +41,7 @@ public class SandboxManager {
   private final Optional<String> testModule;
   private final Optional<String> testScenario;
   private final Duration waitTimeout;
+  private final boolean useWallclockTime;
   private final String[] parties;
   private final Path darPath;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -53,13 +57,15 @@ public class SandboxManager {
       Duration waitTimeout,
       String[] parties,
       Path darPath,
-      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication) {
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
     this.parties = parties;
     this.darPath = darPath;
     this.setupApplication = setupApplication;
+    this.useWallclockTime = useWallclockTime;
   }
 
   public int getPort() {
@@ -110,7 +116,13 @@ public class SandboxManager {
   private void startSandbox(int port) throws IOException, TimeoutException {
     sandboxPort = port;
     sandboxRunner =
-        new SandboxRunner(darPath.toString(), testModule, testScenario, sandboxPort, waitTimeout);
+        new SandboxRunner(
+            darPath.toString(),
+            testModule,
+            testScenario,
+            sandboxPort,
+            waitTimeout,
+            useWallclockTime);
     sandboxRunner.startSandbox();
   }
 
@@ -127,12 +139,15 @@ public class SandboxManager {
             .getLedgerIdentity(
                 LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
             .getLedgerId();
+
+    Supplier<TimeProvider> timeProviderFactory;
+    if (useWallclockTime) {
+      timeProviderFactory = SystemTimeProvider.factory();
+    } else {
+      timeProviderFactory = SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId);
+    }
     ledgerAdapter =
-        new DefaultLedgerAdapter(
-            new DefaultValueStore(),
-            ledgerId,
-            channel,
-            SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId));
+        new DefaultLedgerAdapter(new DefaultValueStore(), ledgerId, channel, timeProviderFactory);
     ledgerAdapter.start(parties);
     setupApplication.accept(ledgerClient, channel);
   }
