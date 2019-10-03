@@ -23,6 +23,7 @@ public class SandboxRunner {
   private final Optional<String> testScenario;
   private final Integer sandboxPort;
   private final Duration waitTimeout;
+  private final boolean useWallclockTime;
 
   private Process sandbox;
 
@@ -31,12 +32,14 @@ public class SandboxRunner {
       Optional<String> testModule,
       Optional<String> testScenario,
       Integer sandboxPort,
-      Duration waitTimeout) {
+      Duration waitTimeout,
+      boolean useWallclockTime) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
     this.waitTimeout = waitTimeout;
+    this.useWallclockTime = useWallclockTime;
   }
 
   public void startSandbox() throws IOException, TimeoutException {
@@ -51,11 +54,18 @@ public class SandboxRunner {
               sandboxPort.toString(),
               "--scenario",
               String.format("%s:%s", testModule.get(), testScenario.get()),
+              useWallclockTime ? "-w" : "-s",
               relativeDarPath);
     } else {
       procBuilder =
           new ProcessBuilder(
-              "daml", "sandbox", "--", "-p", sandboxPort.toString(), relativeDarPath);
+              "daml",
+              "sandbox",
+              "--",
+              "-p",
+              sandboxPort.toString(),
+              useWallclockTime ? "-w" : "-s",
+              relativeDarPath);
     }
     sandbox =
         procBuilder

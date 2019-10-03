@@ -40,6 +40,7 @@ public class Sandbox {
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
+    private boolean useWallclockTime = false;
     private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
@@ -92,6 +93,11 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder useWallclockTime() {
+      this.useWallclockTime = true;
+      return this;
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
@@ -110,7 +116,14 @@ public class Sandbox {
       }
 
       return new Sandbox(
-          testModule, testScenario, waitTimeout, parties, darPath, setupApplication, useReset);
+          testModule,
+          testScenario,
+          waitTimeout,
+          parties,
+          darPath,
+          setupApplication,
+          useWallclockTime,
+          useReset);
     }
 
     private SandboxBuilder() {}
@@ -125,10 +138,17 @@ public class Sandbox {
       String[] parties,
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
       boolean useReset) {
     this.sandboxManager =
         new SandboxManager(
-            testModule, testScenario, waitTimeout, parties, darPath, setupApplication);
+            testModule,
+            testScenario,
+            waitTimeout,
+            parties,
+            darPath,
+            setupApplication,
+            useWallclockTime);
     this.useReset = useReset;
   }
 
