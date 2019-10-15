@@ -145,5 +145,6 @@ Example to fetch at most two SettledDvPs and check if one of them has a payment 
         dvp -> dvp.paymentAmount == 4750000L);
 ```
 If the boolean argument (`exact`) is true, each incoming contract must match at least one predicate.
+Otherwise, it may skip several events until all predicates are matched.
 
 © 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
