@@ -301,8 +301,8 @@ public class DefaultLedgerAdapter {
    * templateIds are fetched one-by-one and matched against the given set of predicates. If all
    * predicates are satisfied the method returns with true.
    *
-   * <p>If `exact` is true, each incoming contract must match a predicate, otherwise the method will
-   * return false.
+   * <p>If `exact` is true, each incoming contract must match at least one predicate, otherwise
+   * the method will return false.
    *
    * <p>Note: the ledger cursor will be moved during the execution of this method.
    *

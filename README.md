@@ -134,7 +134,7 @@ ContractWithId<DeliveryInstruction.ContractId> deliveryInstructionWithCid = sand
 
 If a workflow creates multiple instances of the same template it can be useful to check if they can be observed on the
 ledger regardless the order they arrive.
-Example to fetch 4 SettledDvPs and check if one of them has a payment of 8550000:
+Example to fetch at most two SettledDvPs and check if one of them has a payment of 8550000 and the other has 4750000:
 ```
     assertTrue(sandbox.observeMatchingContracts(
         CCP_PARTY,
@@ -144,5 +144,7 @@ Example to fetch 4 SettledDvPs and check if one of them has a payment of 8550000
         dvp -> dvp.paymentAmount == 8550000L,
         dvp -> dvp.paymentAmount == 4750000L);
 ```
+If the boolean argument (`exact`) is true, each incoming contract must match at least one predicate.
+Otherwise, it may skip several events until all predicates are matched.
 
 © 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
