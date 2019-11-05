@@ -41,6 +41,7 @@ Feature: Cucumber support in the Functional Testing library
     | Alice |
     | 3 |
     When "Alice" exercises choice "RespondPong" on "PingPong:Ping" with contract id "pingPongCid2"
+    Then "Alice" should observe the creation of "PingPong:Pong"
 
   Scenario: Contract choices with arguments can be exercised.
     Given "Bob" creates contract "PingPong:ArgumentPing" using values
@@ -53,6 +54,7 @@ Feature: Cucumber support in the Functional Testing library
     | 3     |
     When "Alice" exercises choice "ArgumentPingRespondPong" on "PingPong:ArgumentPing" with contract id "pingPongCid3" using values
     | 2 |
+    Then "Alice" should observe the creation of "PingPong:Pong"
 
   Scenario: Contract choices with arguments can be exercised using a data table with argument names.
     Given "Bob" creates contract "PingPong:ArgumentPing" using values
@@ -65,6 +67,7 @@ Feature: Cucumber support in the Functional Testing library
     | 3     |
     When "Alice" exercises choice "ArgumentPingRespondPong" on "PingPong:ArgumentPing" with contract id "pingPongCid3" using values
     | intArg | 2 |
+    Then "Alice" should observe the creation of "PingPong:Pong"
 
   Scenario: A created contract can be archived and the archival can be observed.
     Given "Bob" creates contract "PingPong:Ping" using values
