@@ -160,6 +160,10 @@ public class Sandbox {
     return sandboxManager.getLedgerAdapter();
   }
 
+  public int getSandboxPort() {
+    return sandboxManager.getPort();
+  }
+
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
