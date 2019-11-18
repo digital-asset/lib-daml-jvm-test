@@ -18,7 +18,7 @@ public class SandboxTest {
   @Rule public ExternalResource rule = sandbox.getRule();
 
   @Test
-  public void getSandboxPort() {
+  public void portIsAssignedWhenSandboxIsStarted() {
     int sandboxPort = sandbox.getSandboxPort();
     assertAreBetween(sandboxPort, 6860, 6890);
   }
