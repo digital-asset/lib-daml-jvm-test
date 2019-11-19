@@ -20,7 +20,7 @@ public class SandboxTest {
   @Test
   public void portIsAssignedWhenSandboxIsStarted() {
     int sandboxPort = sandbox.getSandboxPort();
-    assertAreBetween(sandboxPort, 6860, 6890);
+    assertsIsBetween(sandboxPort, 6860, 6890);
   }
 
   private void assertsIsBetween(int x, int low, int high) {
