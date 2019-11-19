@@ -23,7 +23,7 @@ public class SandboxTest {
     assertAreBetween(sandboxPort, 6860, 6890);
   }
 
-  private void assertAreBetween(int x, int low, int high) {
+  private void assertsIsBetween(int x, int low, int high) {
     String message = String.format("Expected '%d' to be between '%d' and '%d'", x, low, high);
     Assert.assertTrue(message, low <= x && x <= high);
   }
