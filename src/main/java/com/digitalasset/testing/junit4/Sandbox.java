@@ -7,7 +7,7 @@
 package com.digitalasset.testing.junit4;
 
 import com.daml.ledger.javaapi.data.Party;
-import com.digitalasset.daml_lf.DamlLf1;
+import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
@@ -165,7 +165,7 @@ public class Sandbox {
   }
 
   public Identifier templateIdentifier(
-      DamlLf1.DottedName packageName, String moduleName, String entityName)
+          DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
     String pkg = findPackage(sandboxManager.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);

@@ -10,8 +10,8 @@ import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
-import com.digitalasset.daml_lf.DamlLf;
-import com.digitalasset.daml_lf.DamlLf1;
+import com.digitalasset.daml_lf_dev.DamlLf;
+import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class PackageUtils {
     public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType) {
       if (dataType.hasRecord()) {
         fieldList = dataType.getRecord().getFieldsList();
-        choices = getChoices(mod, dataType.getName());
+        choices = getChoices(mod, dataType.getNameDname());
       }
     }
 
@@ -81,7 +81,7 @@ public class PackageUtils {
             DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
         List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
         for (DamlLf1.Module mod : mods) {
-          if (mod.getName().equals(packageName)) {
+          if (mod.getNameDname().equals(packageName)) {
             packageNames.put(packageName, pkgId);
             return pkgId;
           }
@@ -108,7 +108,8 @@ public class PackageUtils {
           dt.getTemplateChoices().get().entrySet()) {
         String choiceArgName = choiceArgEntry.getKey();
         DamlLf1.Type choiceArgType = choiceArgEntry.getValue();
-        String choiceDataTypeName = dottedNameToString(choiceArgType.getCon().getTycon().getName());
+        String choiceDataTypeName =
+            dottedNameToString(choiceArgType.getCon().getTycon().getNameDname());
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
         if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
           choiceDataTypeFqn = "DAInternalTemplate:Archive";
@@ -163,8 +164,8 @@ public class PackageUtils {
       List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
       for (DamlLf1.Module mod : mods) {
         for (DamlLf1.DefDataType dataType : mod.getDataTypesList()) {
-          String modN = dottedNameToString(mod.getName());
-          String dataN = dottedNameToString(dataType.getName());
+          String modN = dottedNameToString(mod.getNameDname());
+          String dataN = dottedNameToString(dataType.getNameDname());
           String moduleAndEntityName = toFqn(modN, dataN);
           Identifier id = new Identifier(pkgId, modN, dataN);
           identifiers.put(moduleAndEntityName, id);
@@ -184,11 +185,14 @@ public class PackageUtils {
   private static Optional<Map<String, DamlLf1.Type>> getChoices(
       DamlLf1.Module mod, DamlLf1.DottedName dataTypeName) {
     Optional<DamlLf1.DefTemplate> template =
-        mod.getTemplatesList().stream().filter(t -> t.getTycon().equals(dataTypeName)).findFirst();
+        mod.getTemplatesList()
+            .stream()
+            .filter(t -> t.getTyconDname().equals(dataTypeName))
+            .findFirst();
     if (template.isPresent()) {
       HashMap<String, DamlLf1.Type> m = new HashMap<>();
       for (DamlLf1.TemplateChoice choice : template.get().getChoicesList()) {
-        m.put(choice.getName(), choice.getArgBinder().getType());
+        m.put(choice.getNameStr(), choice.getArgBinder().getType());
       }
       return Optional.of(m);
     } else {

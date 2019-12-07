@@ -10,7 +10,7 @@
 package com.digitalasset.testing.cucumber.utils;
 
 import com.daml.ledger.javaapi.data.Record;
-import com.digitalasset.daml_lf.DamlLf1;
+import com.digitalasset.daml_lf_dev.DamlLf1;
 
 import java.util.*;
 
