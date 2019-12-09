@@ -67,9 +67,9 @@ public class PackageUtils {
     }
   }
 
-  public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName packageName)
+  public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleName)
       throws InvalidProtocolBufferException {
-    String strName = packageNames.get(packageName);
+    String strName = packageNames.get(moduleName);
     if (strName != null) {
       return strName;
     } else {
@@ -81,14 +81,14 @@ public class PackageUtils {
             DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
         List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
         for (DamlLf1.Module mod : mods) {
-          if (mod.getNameDname().equals(packageName)) {
-            packageNames.put(packageName, pkgId);
+          if (mod.getNameDname().equals(moduleName)) {
+            packageNames.put(moduleName, pkgId);
             return pkgId;
           }
         }
       }
     }
-    throw new IllegalArgumentException("No package found " + packageName);
+    throw new IllegalArgumentException("No package found " + moduleName);
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
