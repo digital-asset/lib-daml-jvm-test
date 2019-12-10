@@ -16,6 +16,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class PackageUtils {
   private static final ConcurrentHashMap<DamlLf1.DottedName, String> packageNames =
@@ -79,9 +80,19 @@ public class PackageUtils {
         GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
         DamlLf.ArchivePayload archivePl =
             DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-        List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
+        DamlLf1.Package dl1 = archivePl.getDamlLf1();
+        List<DamlLf1.Module> mods = dl1.getModulesList();
         for (DamlLf1.Module mod : mods) {
-          if (mod.getNameDname().equals(moduleName)) {
+          DamlLf1.InternedDottedName internedDottedModuleName =
+              dl1.getInternedDottedNames(mod.getNameInternedDname());
+          List<String> actualModuleNameList =
+              internedDottedModuleName
+                  .getSegmentsInternedStrList()
+                  .stream()
+                  .map(dl1::getInternedStrings)
+                  .collect(Collectors.toList());
+          List<String> moduleNameList = moduleName.getSegmentsList();
+          if (actualModuleNameList.equals(moduleNameList)) {
             packageNames.put(moduleName, pkgId);
             return pkgId;
           }
