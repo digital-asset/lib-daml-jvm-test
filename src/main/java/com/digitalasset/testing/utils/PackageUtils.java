@@ -13,6 +13,7 @@ import com.daml.ledger.rxjava.PackageClient;
 import com.digitalasset.daml_lf_dev.DamlLf;
 import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.google.protobuf.InvalidProtocolBufferException;
+import cucumber.api.java.sl.In;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,10 +45,10 @@ public class PackageUtils {
     private Optional<Map<String, DamlLf1.Type>> choices = Optional.empty();
     private List<DamlLf1.FieldWithType> fieldList = null;
 
-    public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType) {
+    public DataType(DamlLf1.Module mod, DamlLf1.DefDataType dataType, DamlLf1.Package lfPackage) {
       if (dataType.hasRecord()) {
         fieldList = dataType.getRecord().getFieldsList();
-        choices = getChoices(mod, dataType.getNameDname());
+        choices = getChoices(mod, dataType, lfPackage);
       }
     }
 
@@ -68,6 +69,82 @@ public class PackageUtils {
     }
   }
 
+  private static DamlLf1.DottedName getInternedName(int internedNameId, DamlLf1.Package lfPackage) {
+    DamlLf1.InternedDottedName internedDottedModuleName =
+        lfPackage.getInternedDottedNames(internedNameId);
+    List<String> actualModuleNameList =
+        internedDottedModuleName
+            .getSegmentsInternedStrList()
+            .stream()
+            .map(lfPackage::getInternedStrings)
+            .collect(Collectors.toList());
+    return DamlLf1.DottedName.newBuilder().addAllSegments(actualModuleNameList).build();
+  }
+
+  private static DamlLf1.DottedName getModuleName(DamlLf1.Module mod, DamlLf1.Package lfPackage) {
+    DamlLf1.DottedName modN;
+    if (mod.hasNameDname()) { // DamlLf version <= 1.6 or nameCase_ == 1
+      modN = mod.getNameDname();
+    } else {
+      modN = getInternedName(mod.getNameInternedDname(), lfPackage);
+    }
+    return modN;
+  }
+
+  private static DamlLf1.DottedName getDataTypeName(
+      DamlLf1.DefDataType dataType,
+      DamlLf1.Package
+          lfPackage) {
+    DamlLf1.DottedName dataN;
+    if (dataType.hasNameDname()) { // DamlLf version <= 1.6 or nameCase_ == 1
+      dataN = dataType.getNameDname();
+    } else {
+      dataN = getInternedName(dataType.getNameInternedDname(), lfPackage);
+    }
+    return dataN;
+  }
+
+  private static DamlLf1.DottedName getTypeConName(
+      DamlLf1.TypeConName tycon, DamlLf1.Package lfPackage) {
+    DamlLf1.DottedName tyconN;
+    if (tycon.hasNameDname()) { // DamlLf version <= 1.6 or nameCase_ == 2
+      tyconN = tycon.getNameDname();
+    } else {
+      tyconN = getInternedName(tycon.getNameInternedDname(), lfPackage);
+    }
+    return tyconN;
+  }
+
+  private static DamlLf1.DottedName getDefTemplateName(
+          DamlLf1.DefTemplate dt,
+          DamlLf1.Package
+                  lfPackage) {
+    DamlLf1.DottedName dtN;
+    if (dt.hasTyconDname()) { // DamlLf version <= 1.6 or nameCase_ == 1
+      dtN = dt.getTyconDname();
+    } else {
+      dtN = getInternedName(dt.getTyconInternedDname(), lfPackage);
+    }
+    return dtN;
+  }
+
+  private static String getInternedString(int internedNameId, DamlLf1.Package lfPackage) {
+    return lfPackage.getInternedStrings(internedNameId);
+  }
+
+  private static String getChoiceName(
+      DamlLf1.TemplateChoice choice, // no .getNameDname()  and .hasNameDname() methods
+      DamlLf1.Package
+          lfPackage) {
+    String choN;
+    if (!choice.getNameStr().equals("")) { // DamlLf version <= 1.6
+      choN = choice.getNameStr();
+    } else {
+      choN = getInternedString(choice.getNameInternedStr(), lfPackage);
+    }
+    return choN;
+  }
+
   public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleName)
       throws InvalidProtocolBufferException {
     String strName = packageNames.get(moduleName);
@@ -83,16 +160,8 @@ public class PackageUtils {
         DamlLf1.Package dl1 = archivePl.getDamlLf1();
         List<DamlLf1.Module> mods = dl1.getModulesList();
         for (DamlLf1.Module mod : mods) {
-          DamlLf1.InternedDottedName internedDottedModuleName =
-              dl1.getInternedDottedNames(mod.getNameInternedDname());
-          List<String> actualModuleNameList =
-              internedDottedModuleName
-                  .getSegmentsInternedStrList()
-                  .stream()
-                  .map(dl1::getInternedStrings)
-                  .collect(Collectors.toList());
-          List<String> moduleNameList = moduleName.getSegmentsList();
-          if (actualModuleNameList.equals(moduleNameList)) {
+          DamlLf1.DottedName modN = getModuleName(mod, dl1);
+          if (modN.equals(moduleName)) {
             packageNames.put(moduleName, pkgId);
             return pkgId;
           }
@@ -100,6 +169,16 @@ public class PackageUtils {
       }
     }
     throw new IllegalArgumentException("No package found " + moduleName);
+  }
+
+  public static DamlLf1.Package findPackageObject(
+      DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleName)
+      throws InvalidProtocolBufferException {
+    PackageClient pkgClient = ledgerClient.getPackageClient();
+    String pkgId = findPackage(ledgerClient, moduleName);
+    GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
+    DamlLf.ArchivePayload archivePl = DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+    return archivePl.getDamlLf1();
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
@@ -119,13 +198,20 @@ public class PackageUtils {
           dt.getTemplateChoices().get().entrySet()) {
         String choiceArgName = choiceArgEntry.getKey();
         DamlLf1.Type choiceArgType = choiceArgEntry.getValue();
+
+        DamlLf1.Package dl1 =
+            findPackageObject(
+                ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
+
         String choiceDataTypeName =
-            dottedNameToString(choiceArgType.getCon().getTycon().getNameDname());
+            dottedNameToString(getTypeConName(choiceArgType.getCon().getTycon(), dl1));
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
         if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
           choiceDataTypeFqn = "DAInternalTemplate:Archive";
         }
         DataType choiceArgDataType = findDataType(ledgerClient, choiceDataTypeFqn);
+        //    moduleAndEntityName.equals("PingPong:ArgumentPing")
+        //    missing choice : ArgumentPingRespondPong
         if (choiceArgDataType.hasFields()) {
           m.put(choiceArgName, choiceArgDataType.fieldList);
         } else {
@@ -172,15 +258,16 @@ public class PackageUtils {
       GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
       DamlLf.ArchivePayload archivePl =
           DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
-      List<DamlLf1.Module> mods = archivePl.getDamlLf1().getModulesList();
+      DamlLf1.Package dl1 = archivePl.getDamlLf1();
+      List<DamlLf1.Module> mods = dl1.getModulesList();
       for (DamlLf1.Module mod : mods) {
         for (DamlLf1.DefDataType dataType : mod.getDataTypesList()) {
-          String modN = dottedNameToString(mod.getNameDname());
-          String dataN = dottedNameToString(dataType.getNameDname());
+          String modN = dottedNameToString(getModuleName(mod, dl1));
+          String dataN = dottedNameToString(getDataTypeName(dataType, dl1));
           String moduleAndEntityName = toFqn(modN, dataN);
           Identifier id = new Identifier(pkgId, modN, dataN);
           identifiers.put(moduleAndEntityName, id);
-          dataTypes.put(moduleAndEntityName, new DataType(mod, dataType));
+          dataTypes.put(moduleAndEntityName, new DataType(mod, dataType, dl1));
         }
       }
     }
@@ -194,16 +281,19 @@ public class PackageUtils {
   }
 
   private static Optional<Map<String, DamlLf1.Type>> getChoices(
-      DamlLf1.Module mod, DamlLf1.DottedName dataTypeName) {
+      DamlLf1.Module mod, DamlLf1.DefDataType dataTypeName, DamlLf1.Package lfPackage) {
     Optional<DamlLf1.DefTemplate> template =
         mod.getTemplatesList()
             .stream()
-            .filter(t -> t.getTyconDname().equals(dataTypeName))
+            .filter(
+                t ->
+                    getDefTemplateName(t, lfPackage)
+                        .equals(getDataTypeName(dataTypeName, lfPackage)))
             .findFirst();
     if (template.isPresent()) {
       HashMap<String, DamlLf1.Type> m = new HashMap<>();
       for (DamlLf1.TemplateChoice choice : template.get().getChoicesList()) {
-        m.put(choice.getNameStr(), choice.getArgBinder().getType());
+        m.put(getChoiceName(choice, lfPackage), choice.getArgBinder().getType());
       }
       return Optional.of(m);
     } else {
