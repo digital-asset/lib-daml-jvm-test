@@ -43,6 +43,7 @@ public class SandboxUtils {
         connected = true;
       } catch (Exception ignored) {
         if (!ignored.getMessage().contains("UNAVAILABLE")) {
+          // Sandbox hasn't started yet
           throw ignored;
         }
         try {

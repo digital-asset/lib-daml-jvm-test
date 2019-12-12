@@ -9,6 +9,8 @@ template Ping
     sender: Party
     receiver: Party
     count: Int
+    x: Decimal
+    y: Numeric 4
   where
     signatory sender
     observer receiver
@@ -28,7 +30,7 @@ template Pong
 
     controller receiver can
       RespondPing : ContractId Ping
-        do create Ping with sender = receiver; receiver = sender; count = count + 1
+        do create Ping with sender = receiver; receiver = sender; count = count + 1; x=3.14156; y=4.3218
 
 
 template TimedPing

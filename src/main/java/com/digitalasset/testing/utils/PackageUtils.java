@@ -92,9 +92,7 @@ public class PackageUtils {
   }
 
   private static DamlLf1.DottedName getDataTypeName(
-      DamlLf1.DefDataType dataType,
-      DamlLf1.Package
-          lfPackage) {
+      DamlLf1.DefDataType dataType, DamlLf1.Package lfPackage) {
     DamlLf1.DottedName dataN;
     if (dataType.hasNameDname()) { // DamlLf version <= 1.6 or nameCase_ == 1
       dataN = dataType.getNameDname();
@@ -116,9 +114,7 @@ public class PackageUtils {
   }
 
   private static DamlLf1.DottedName getDefTemplateName(
-          DamlLf1.DefTemplate dt,
-          DamlLf1.Package
-                  lfPackage) {
+      DamlLf1.DefTemplate dt, DamlLf1.Package lfPackage) {
     DamlLf1.DottedName dtN;
     if (dt.hasTyconDname()) { // DamlLf version <= 1.6 or nameCase_ == 1
       dtN = dt.getTyconDname();
@@ -134,8 +130,7 @@ public class PackageUtils {
 
   private static String getChoiceName(
       DamlLf1.TemplateChoice choice, // no .getNameDname()  and .hasNameDname() methods
-      DamlLf1.Package
-          lfPackage) {
+      DamlLf1.Package lfPackage) {
     String choN;
     if (!choice.getNameStr().equals("")) { // DamlLf version <= 1.6
       choN = choice.getNameStr();
@@ -210,8 +205,6 @@ public class PackageUtils {
           choiceDataTypeFqn = "DAInternalTemplate:Archive";
         }
         DataType choiceArgDataType = findDataType(ledgerClient, choiceDataTypeFqn);
-        //    moduleAndEntityName.equals("PingPong:ArgumentPing")
-        //    missing choice : ArgumentPingRespondPong
         if (choiceArgDataType.hasFields()) {
           m.put(choiceArgName, choiceArgDataType.fieldList);
         } else {

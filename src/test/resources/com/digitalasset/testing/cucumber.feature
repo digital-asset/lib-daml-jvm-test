@@ -11,13 +11,19 @@ Feature: Cucumber support in the Functional Testing library
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        |3.124434533 |
+    | y        |4.123 |
+
     Then "Alice" should observe the creation of "PingPong:Ping"
 
   Scenario: Multiple contracts can be created and observed.
     Given "Bob" creates contract "PingPong:Ping" using values
-    | sender   | Bob   | Bob   |
+    | sender   | Bob  | Bob   |
     | receiver | Alice | Alice |
-    | count    | 3     | 4     |
+    | count    | 3      | 4     |
+    | x        |3.124434533 |32.3234|
+    | y        |4.123       |34.1234      |
+
     Then "Alice" should observe the creation of "PingPong:Ping"
     Then "Alice" should observe the creation of "PingPong:Ping"
 
@@ -26,20 +32,28 @@ Feature: Cucumber support in the Functional Testing library
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        |3.124434533 |
+    | y        |4.123 |
     Then "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid1" and values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        |3.124434533 |
+    | y        |4.123 |
 
   Scenario: Contract choices can be exercised.
     Given "Bob" creates contract "PingPong:Ping" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        |3.124434533 |
+    | y        |4.123 |
     When "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid2" and values
     | Bob |
     | Alice |
     | 3 |
+    | 3.124434533 |
+    | 4.123 |
     When "Alice" exercises choice "RespondPong" on "PingPong:Ping" with contract id "pingPongCid2"
     Then "Bob" should observe the creation of "PingPong:Pong"
 
@@ -74,10 +88,14 @@ Feature: Cucumber support in the Functional Testing library
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        | 3.124434533 |
+    | y        |4.123 |
     When "Alice" should observe the creation of "PingPong:Ping" with contract id "cidToArchive" and values
     | Bob   |
     | Alice |
     | 3     |
+    | x        |
+    | y        |
     When "Bob" exercises choice "Archive" on "PingPong:Ping" with contract id "cidToArchive"
     Then "Bob" should observe the archival of "PingPong:Ping" with contract id "cidToArchive"
 
@@ -86,9 +104,13 @@ Feature: Cucumber support in the Functional Testing library
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
+    | x        |3.124434533 |
+    | y        |4.123 |
     When "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid4" and values
     | Bob   |
     | Alice |
     | 3     |
+    | 3.124434533 |
+    | 4.123 |
     When "Bob" exercises choice "RespondPong" on "PingPong:Ping" with contract id "pingPongCid4" and expects failure
     Then they should receive a technical failure containing message "requires authorizers Alice"

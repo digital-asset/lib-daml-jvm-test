@@ -15,3 +15,5 @@ testSetup = scenario $ do
         sender = alice
         receiver = bob
         count = 2
+        x = 3.124434533
+        y = 4.123
