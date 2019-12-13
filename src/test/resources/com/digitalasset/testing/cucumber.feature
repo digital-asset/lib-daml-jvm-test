@@ -10,12 +10,12 @@ Feature: Cucumber support in the Functional Testing library
     Given "Bob" creates contract "PingPong:NumericTester" using values
     | s | Bob      |
     | x | 3.124321 |
-    | y | 4.0000   |
+    | y | 4.000    |
 
    Then "Bob" should observe the creation of "PingPong:NumericTester" with contract id "pingPongCid1" and values
-   | s    | Bob      |
-   | x    | 3.124321 |
-   | y    | 4.0000   |
+   | s    | Bob          |
+   | x    | 3.1243210000 |
+   | y    | 4.0000       |
 
 
   Scenario: A contract can be created and observed.
