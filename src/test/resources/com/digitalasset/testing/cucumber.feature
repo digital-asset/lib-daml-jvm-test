@@ -12,10 +12,10 @@ Feature: Cucumber support in the Functional Testing library
     | x | 3.124321 |
     | y | 4.0000   |
 
-  #  Then "Bob" should observe the creation of "PingPong:NumericTester" with contract id "pingPongCid1" and values
-  #  | s    | Bob      |
-  #  | x    | 3.124321 |
-  #  | y    | 4.0000   |
+   Then "Bob" should observe the creation of "PingPong:NumericTester" with contract id "pingPongCid1" and values
+   | s    | Bob      |
+   | x    | 3.124321 |
+   | y    | 4.0000   |
 
 
   Scenario: A contract can be created and observed.
