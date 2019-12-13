@@ -4,13 +4,22 @@
 daml 1.2
 module PingPong where
 
+template NumericTester
+  with
+    s: Party
+    x: Decimal
+    y: Numeric 4
+  where
+    signatory s
+    controller s can
+      Increment : ContractId NumericTester
+        do create NumericTester with s = s; x =x + 1.0; y = y+1.2345
+
 template Ping
   with
     sender: Party
     receiver: Party
     count: Int
-    x: Decimal
-    y: Numeric 4
   where
     signatory sender
     observer receiver
@@ -30,7 +39,7 @@ template Pong
 
     controller receiver can
       RespondPing : ContractId Ping
-        do create Ping with sender = receiver; receiver = sender; count = count + 1; x=3.14156; y=4.3218
+        do create Ping with sender = receiver; receiver = sender; count = count + 1
 
 
 template TimedPing

@@ -15,8 +15,6 @@ main = scenario $ do
           sender = alice
           receiver = bob
           count = 2
-          x = 3.124434533
-          y = 4.123
   pong1
     <- bob `submit` do
         exercise ping1 RespondPong

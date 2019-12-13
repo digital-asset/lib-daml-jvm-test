@@ -55,6 +55,20 @@ public class TableUtils {
           default:
             throw new IllegalArgumentException("Cannot handle type: " + prim.getPrim().getNumber());
         }
+      } else {
+        if (prim.getArgsList().size() == 1) {
+          switch (prim.getPrim()) {
+            case NUMERIC:
+              fieldList.addLast(field(numeric(arg)));
+              break;
+            default:
+              throw new IllegalArgumentException(
+                  "Cannot handle parametric type: " + prim.getPrim().getNumber());
+          }
+        } else {
+          throw new IllegalArgumentException(
+              "Cannot handle parametric type: " + prim.getPrim().getNumber());
+        }
       }
     }
     return new Record(fieldList);

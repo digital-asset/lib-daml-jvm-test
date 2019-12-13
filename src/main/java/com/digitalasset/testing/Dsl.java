@@ -68,6 +68,10 @@ public class Dsl {
     return new Decimal(new BigDecimal(number));
   }
 
+  public static Numeric numeric(String number) {
+    return new Numeric(new BigDecimal(number));
+  }
+
   public static Int64 integer(String number) {
     return new Int64(Long.valueOf(number));
   }
