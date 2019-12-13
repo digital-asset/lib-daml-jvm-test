@@ -21,6 +21,7 @@ package object ast {
     case l: DamlList   => Ast.Seq(l.getValues.asScala.map(toAst))
     case i: Int64      => Ast.Value(i.getValue.toString)
     case d: Decimal    => Ast.Value(d.getValue.toString)
+    case n: Numeric    => Ast.Value(n.getValue.toString)
     case t: Text       => Ast.Value(t.getValue)
     case t: Timestamp  => Ast.Value(t.getValue.toString)
     case p: Party      => Ast.Value(p.getValue)

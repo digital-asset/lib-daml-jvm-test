@@ -10,7 +10,7 @@
 package com.digitalasset.testing.cucumber.utils;
 
 import com.daml.ledger.javaapi.data.Record;
-import com.digitalasset.daml_lf.DamlLf1;
+import com.digitalasset.daml_lf_dev.DamlLf1;
 
 import java.util.*;
 
@@ -54,6 +54,20 @@ public class TableUtils {
             break;
           default:
             throw new IllegalArgumentException("Cannot handle type: " + prim.getPrim().getNumber());
+        }
+      } else {
+        if (prim.getArgsList().size() == 1) {
+          switch (prim.getPrim()) {
+            case NUMERIC:
+              fieldList.addLast(field(numeric(arg)));
+              break;
+            default:
+              throw new IllegalArgumentException(
+                  "Cannot handle parametric type: " + prim.getPrim().getNumber());
+          }
+        } else {
+          throw new IllegalArgumentException(
+              "Cannot handle parametric type: " + prim.getPrim().getNumber());
         }
       }
     }

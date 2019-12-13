@@ -1,9 +1,6 @@
 package com.digitalasset.testing;
 
-import static com.digitalasset.testing.Dsl.emptyRecord;
-import static com.digitalasset.testing.Dsl.field;
-import static com.digitalasset.testing.Dsl.int64;
-import static com.digitalasset.testing.Dsl.record;
+import static com.digitalasset.testing.Dsl.*;
 import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -227,5 +225,30 @@ public class PingPongIT {
 
     sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
     sandbox.getLedgerAdapter().exerciseChoice(BOB, exerciseCmd);
+  }
+
+  private Identifier numericTemplateId() throws InvalidProtocolBufferException {
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "NumericTester");
+  }
+
+  @Test
+  public void testNumeric() throws InvalidProtocolBufferException {
+    ledger()
+        .createContract(
+            CHARLIE, numericTemplateId(), record(CHARLIE, numeric("3.14"), numeric("1.234")));
+    ContractWithId<ContractId> numericTesterContract =
+        ledger().getMatchedContract(CHARLIE, numericTemplateId(), ContractId::new);
+    // Checking that the ping-pong counter is right
+    Optional<Record> parameters = numericTesterContract.record.asRecord();
+    assertThat(
+        parameters
+            .flatMap(p -> p.getFieldsMap().get("x").asNumeric().map(Numeric::getValue))
+            .map(BigDecimal::toPlainString),
+        is(optionalWithValue(equalTo("3.1400000000")))); // DAML / Decimal := Numeric 10
+    assertThat(
+        parameters
+            .flatMap(p -> p.getFieldsMap().get("y").asNumeric().map(Numeric::getValue))
+            .map(BigDecimal::toPlainString),
+        is(optionalWithValue(equalTo("1.2340"))));
   }
 }

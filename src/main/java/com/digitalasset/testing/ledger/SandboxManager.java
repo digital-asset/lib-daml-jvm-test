@@ -132,7 +132,8 @@ public class SandboxManager {
             .usePlaintext()
             .maxInboundMessageSize(Integer.MAX_VALUE)
             .build();
-    ledgerClient = new DamlLedgerClient(Optional.empty(), channel);
+    DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
+    ledgerClient = builder.build();
     waitForSandbox(ledgerClient, waitTimeout, logger);
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)

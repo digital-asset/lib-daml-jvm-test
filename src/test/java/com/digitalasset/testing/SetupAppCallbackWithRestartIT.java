@@ -1,7 +1,7 @@
 package com.digitalasset.testing;
 
 import com.daml.ledger.javaapi.data.Party;
-import com.digitalasset.daml_lf.DamlLf1;
+import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.junit4.Sandbox;
 import org.junit.ClassRule;
 import org.junit.Rule;

@@ -42,6 +42,10 @@ public class SandboxUtils {
         client.connect();
         connected = true;
       } catch (Exception ignored) {
+        if (!ignored.getMessage().contains("UNAVAILABLE")) {
+          // Sandbox hasn't started yet
+          throw ignored;
+        }
         try {
           logger.info("Waiting for sandbox...");
           TimeUnit.SECONDS.sleep(2 * attempts);

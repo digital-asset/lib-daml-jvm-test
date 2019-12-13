@@ -4,6 +4,17 @@
 daml 1.2
 module PingPong where
 
+template NumericTester
+  with
+    s: Party
+    x: Decimal
+    y: Numeric 4
+  where
+    signatory s
+    controller s can
+      Increment : ContractId NumericTester
+        do create NumericTester with s = s; x =x + 1.0; y = y+1.2345
+
 template Ping
   with
     sender: Party
