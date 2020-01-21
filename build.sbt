@@ -78,8 +78,10 @@ import scala.sys.process._
 lazy val compileDaml = taskKey[Unit]("Compile DAR with daml")
 
 compileDaml := {
-  val pwd = new java.io.File(".").getCanonicalPath;
-  Seq("daml", "build", "--project-root", s"$pwd/src/test/resources/ping-pong", "--output", s"$pwd/src/test/resources/ping-pong.dar") !
+  val pwd = new java.io.File(".").getCanonicalPath
+  val isWindows = System.getProperty("os.name").contains("indows")
+  val command = if (isWindows) "daml.cmd" else "daml"
+  Seq(command, "build", "--project-root", s"$pwd/src/test/resources/ping-pong", "--output", s"$pwd/src/test/resources/ping-pong.dar").!
 }
 
 (test in Test) := (test in Test).dependsOn(compileDaml).value

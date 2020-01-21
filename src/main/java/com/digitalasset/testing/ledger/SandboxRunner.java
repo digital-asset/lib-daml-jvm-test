@@ -6,6 +6,7 @@
 
 package com.digitalasset.testing.ledger;
 
+import com.digitalasset.testing.utils.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeoutException;
 
 public class SandboxRunner {
   private static final Logger logger = LoggerFactory.getLogger(SandboxRunner.class);
+  private static final String DAML_COMMAND = OS.isWindows() ? "daml.cmd" : "daml";
 
   private final String relativeDarPath;
   private final Optional<String> testModule;
@@ -47,7 +49,7 @@ public class SandboxRunner {
     if (testModule.isPresent() && testScenario.isPresent()) {
       procBuilder =
           new ProcessBuilder(
-              "daml",
+              DAML_COMMAND,
               "sandbox",
               "--",
               "-p",
@@ -59,7 +61,7 @@ public class SandboxRunner {
     } else {
       procBuilder =
           new ProcessBuilder(
-              "daml",
+              DAML_COMMAND,
               "sandbox",
               "--",
               "-p",
