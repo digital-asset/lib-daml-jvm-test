@@ -7,24 +7,19 @@
 package com.digitalasset.testing.ledger;
 
 import com.digitalasset.testing.utils.OS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 public class SandboxRunner {
-  private static final Logger logger = LoggerFactory.getLogger(SandboxRunner.class);
   private static final String DAML_COMMAND = OS.isWindows() ? "daml.cmd" : "daml";
 
   private final String relativeDarPath;
   private final Optional<String> testModule;
   private final Optional<String> testScenario;
   private final Integer sandboxPort;
-  private final Duration waitTimeout;
   private final boolean useWallclockTime;
 
   private Process sandbox;
@@ -34,17 +29,15 @@ public class SandboxRunner {
       Optional<String> testModule,
       Optional<String> testScenario,
       Integer sandboxPort,
-      Duration waitTimeout,
       boolean useWallclockTime) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
-    this.waitTimeout = waitTimeout;
     this.useWallclockTime = useWallclockTime;
   }
 
-  public void startSandbox() throws IOException, TimeoutException {
+  public void startSandbox() throws IOException {
     ProcessBuilder procBuilder;
     if (testModule.isPresent() && testScenario.isPresent()) {
       procBuilder =
