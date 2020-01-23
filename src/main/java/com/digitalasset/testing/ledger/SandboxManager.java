@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
@@ -117,12 +116,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         new SandboxRunner(
-            darPath.toString(),
-            testModule,
-            testScenario,
-            sandboxPort,
-            waitTimeout,
-            useWallclockTime);
+            darPath.toString(), testModule, testScenario, sandboxPort, useWallclockTime);
     sandboxRunner.startSandbox();
   }
 
