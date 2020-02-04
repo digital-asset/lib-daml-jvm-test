@@ -62,12 +62,9 @@ public class SandboxRunner {
               useWallclockTime ? "-w" : "-s",
               relativeDarPath);
     }
-    Redirect redirect = Redirect.appendTo(new File("integration-test-sandbox.log"));
-    sandbox =
-        procBuilder
-            .redirectError(redirect)
-            .redirectOutput(redirect)
-            .start();
+    ProcessBuilder.Redirect redirect =
+        ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
+    sandbox = procBuilder.redirectError(redirect).redirectOutput(redirect).start();
   }
 
   public void stopSandbox() throws Exception {
