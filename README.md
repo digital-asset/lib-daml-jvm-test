@@ -32,12 +32,12 @@ Additional daml dependencies are required by the library, but these dependencies
     <dependency>
         <groupId>com.daml.ledger</groupId>
         <artifactId>bindings-rxjava</artifactId>
-        <version>100.13.39</version>
+        <version>100.13.51</version>
     </dependency>
     <dependency>
         <groupId>com.digitalasset</groupId>
         <artifactId>daml-lf-archive</artifactId>
-        <version>100.13.39</version>
+        <version>100.13.51</version>
         <scope>test</scope>
     </dependency>
     ...
