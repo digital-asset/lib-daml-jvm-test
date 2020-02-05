@@ -1,7 +1,7 @@
 import Dependencies._
 
 addCommandAlias("packageAll", ";package")
-addCommandAlias("verify", ";test;cucumber;scalafmtCheck;headerCheck")
+addCommandAlias("verify", ";test;cucumber;scalafmtCheck;headerCheck;test:headerCheck")
 addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
 resolvers ++= Seq(
