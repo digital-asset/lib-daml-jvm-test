@@ -33,6 +33,8 @@ jobs:
             ./scripts/install-daml.sh << parameters.daml_sdk_version >>
             export PATH=$PATH:~/.daml/bin
             sbt verify packageAll
+      - store_test_results:
+          path: target/test-reports
       - save_cache:
           paths:
             - ~/.m2
