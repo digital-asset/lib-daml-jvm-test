@@ -69,7 +69,9 @@ public class SandboxRunner {
 
   public void stopSandbox() throws Exception {
     if (sandbox != null) {
-      sandbox.destroy();
+      // Do not use destroy method, otherwise subprocesses cannot be stopped properly on Windows.
+      // Closing the output stream is treated as signal for graceful termination.
+      sandbox.getOutputStream().close();
       sandbox.waitFor();
     }
     sandbox = null;
