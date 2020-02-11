@@ -57,7 +57,7 @@ public class SandboxManagerIT {
         code.run();
         isSuccessful = true;
       } catch (Throwable ignore) {
-        if (hasPassed.apply(Duration.ofSeconds(60))) {
+        if (hasPassed.apply(Duration.ofMinutes(5))) {
           fail("Code did not succeed in time.");
         } else {
           Thread.sleep(200);
