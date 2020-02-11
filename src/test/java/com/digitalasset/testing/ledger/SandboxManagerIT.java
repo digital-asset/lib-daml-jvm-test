@@ -27,6 +27,8 @@ public class SandboxManagerIT {
 
   @Test
   public void managerStopsSandboxGracefully() throws Exception {
+    eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
+
     SandboxManager manager =
         new SandboxManager(
             Optional.empty(),
