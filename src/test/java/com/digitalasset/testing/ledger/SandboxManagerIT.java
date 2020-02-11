@@ -6,7 +6,6 @@
 
 package com.digitalasset.testing.ledger;
 
-import com.digitalasset.testing.utils.SandboxUtils;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -24,23 +23,24 @@ import static com.digitalasset.testing.TestCommons.DAR_PATH;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class SandboxRunnerIT {
+public class SandboxManagerIT {
 
   @Test
-  public void runnerStopsSandboxGracefully() throws Exception {
-    SandboxRunner runner =
-        new SandboxRunner(
-            DAR_PATH.toString(),
+  public void managerStopsSandboxGracefully() throws Exception {
+    SandboxManager manager =
+        new SandboxManager(
             Optional.empty(),
             Optional.empty(),
-            SandboxUtils.getSandboxPort(),
+            Duration.ofMinutes(1),
+            new String[0],
+            DAR_PATH,
+            (_ignore1, _ignore2) -> {},
             false);
-
-    runner.startSandbox();
+    manager.start();
 
     eventually(() -> assertTrue(jps().stream().anyMatch(p -> p.contains("daml-sdk.jar"))));
 
-    runner.stopSandbox();
+    manager.stop();
 
     eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
   }
