@@ -15,8 +15,8 @@ resolvers ++= Seq(
 credentials += Credentials(
   "Sonatype Nexus Repository Manager",
   "oss.sonatype.org",
-  sys.env.get("MAVEN_LOGIN").getOrElse("NO_MAVEN_LOGIN_SPECIFIED"),
-  sys.env.get("MAVEN_PASSWORD").getOrElse("NO_MAVEN_PASSWORD_SPECIFIED")
+  sys.env.getOrElse("MAVEN_LOGIN", "NO_MAVEN_LOGIN_SPECIFIED"),
+  sys.env.getOrElse("MAVEN_PASSWORD", "NO_MAVEN_PASSWORD_SPECIFIED")
 )
 
 name := "functest-java"
@@ -75,13 +75,15 @@ publishTo := Some(
     Opts.resolver.sonatypeStaging
 )
 
-usePgpKeyHex(sys.env.get("GPG_SIGNING_KEY_ID").getOrElse("0"))
-pgpPassphrase := Some(sys.env.get("GPG_PASSPHRASE").getOrElse("").toArray)
+usePgpKeyHex(sys.env.getOrElse("GPG_SIGNING_KEY_ID", "0"))
+pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toArray)
 publishConfiguration := publishConfiguration.value.withOverwrite(true)
 publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 
 // Daml compilation
+
 import scala.sys.process._
+
 lazy val compileDaml = taskKey[Unit]("Compile DAR with daml")
 
 compileDaml := {
