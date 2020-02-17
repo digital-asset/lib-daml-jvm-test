@@ -112,11 +112,10 @@ public class SandboxManager {
     startCommChannels();
   }
 
-  private void startSandbox(int port) throws IOException, TimeoutException {
+  private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
-        new SandboxRunner(
-            darPath.toString(), testModule, testScenario, sandboxPort, useWallclockTime);
+            SandboxRunnerFactory.getSandboxRunner(darPath, testModule, testScenario, sandboxPort, useWallclockTime);
     sandboxRunner.startSandbox();
   }
 
