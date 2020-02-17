@@ -10,8 +10,9 @@ import com.digitalasset.testing.utils.OS;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 
 public class SandboxRunner {
   private static final String DAML_COMMAND = OS.isWindows() ? "daml.cmd" : "daml";
@@ -38,32 +39,20 @@ public class SandboxRunner {
   }
 
   public void startSandbox() throws IOException {
-    ProcessBuilder procBuilder;
+    List<String> commands = new ArrayList<>();
+    commands.add(DAML_COMMAND);
+    commands.add("sandbox");
+    commands.add("--");
+    commands.add("--shutdown-stdin-close");
+    commands.add("-p");
+    commands.add(sandboxPort.toString());
+    commands.add(useWallclockTime ? "-w" : "-s");
     if (testModule.isPresent() && testScenario.isPresent()) {
-      procBuilder =
-          new ProcessBuilder(
-              DAML_COMMAND,
-              "sandbox",
-              "--",
-              "--shutdown-stdin-close",
-              "-p",
-              sandboxPort.toString(),
-              "--scenario",
-              String.format("%s:%s", testModule.get(), testScenario.get()),
-              useWallclockTime ? "-w" : "-s",
-              relativeDarPath);
-    } else {
-      procBuilder =
-          new ProcessBuilder(
-              DAML_COMMAND,
-              "sandbox",
-              "--",
-              "--shutdown-stdin-close",
-              "-p",
-              sandboxPort.toString(),
-              useWallclockTime ? "-w" : "-s",
-              relativeDarPath);
+      commands.add("--scenario");
+      commands.add(String.format("%s:%s", testModule.get(), testScenario.get()));
     }
+    commands.add(relativeDarPath);
+    ProcessBuilder procBuilder = new ProcessBuilder(commands);
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
     sandbox = procBuilder.redirectError(redirect).redirectOutput(redirect).start();
