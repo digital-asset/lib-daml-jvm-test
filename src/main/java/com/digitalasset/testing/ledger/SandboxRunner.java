@@ -6,6 +6,9 @@
 
 package com.digitalasset.testing.ledger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,11 +16,12 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class SandboxRunner {
-  protected final String relativeDarPath;
-  protected final Optional<String> testModule;
-  protected final Optional<String> testScenario;
-  protected final Integer sandboxPort;
-  protected final boolean useWallclockTime;
+  private final Logger logger = LoggerFactory.getLogger(getClass());
+  private final String relativeDarPath;
+  private final Optional<String> testModule;
+  private final Optional<String> testScenario;
+  private final Integer sandboxPort;
+  private final boolean useWallclockTime;
   private Process sandbox;
 
   public SandboxRunner(
@@ -33,7 +37,7 @@ public abstract class SandboxRunner {
     this.useWallclockTime = useWallclockTime;
   }
 
-  public void startSandbox() throws IOException {
+  public final void startSandbox() throws IOException {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
@@ -50,17 +54,21 @@ public abstract class SandboxRunner {
     ProcessBuilder procBuilder = new ProcessBuilder(commands);
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
+    logger.debug("Executing: {}", String.join(" ", procBuilder.command()));
     sandbox = procBuilder.redirectError(redirect).redirectOutput(redirect).start();
+    logger.info("Starting sandbox...");
   }
 
   protected void addCustomCommands(List<String> commands) {}
 
   protected abstract String getDamlCommand();
 
-  public void stopSandbox() throws Exception {
+  public final void stopSandbox() throws Exception {
     if (sandbox != null) {
+      logger.info("Stopping sandbox...");
       closeSandbox(sandbox);
       sandbox.waitFor();
+      logger.info("Stopped sandbox");
     }
     sandbox = null;
   }
