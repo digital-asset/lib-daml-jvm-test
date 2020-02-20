@@ -22,6 +22,7 @@ public abstract class SandboxRunner {
   private final Optional<String> testScenario;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
+  private final Optional<String> ledgerId;
   private Process sandbox;
 
   public SandboxRunner(
@@ -36,6 +37,7 @@ public abstract class SandboxRunner {
     this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
+    this.ledgerId = ledgerId;
   }
 
   public final void startSandbox() throws IOException {
@@ -51,6 +53,11 @@ public abstract class SandboxRunner {
       commands.add("--scenario");
       commands.add(String.format("%s:%s", testModule.get(), testScenario.get()));
     }
+    ledgerId.ifPresent(
+        value -> {
+          commands.add("--ledgerId");
+          commands.add(value);
+        });
     commands.add(relativeDarPath);
     ProcessBuilder procBuilder = new ProcessBuilder(commands);
     ProcessBuilder.Redirect redirect =
