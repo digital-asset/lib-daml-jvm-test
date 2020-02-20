@@ -14,10 +14,16 @@ import org.junit.rules.ExternalResource;
 
 import java.nio.file.Paths;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 public class SandboxTest {
 
   private static Sandbox sandbox =
-      Sandbox.builder().dar(Paths.get("./src/test/resources/ping-pong.dar")).build();
+      Sandbox.builder()
+          .dar(Paths.get("./src/test/resources/ping-pong.dar"))
+          .ledgerId("sample-ledger")
+          .build();
 
   @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
 
@@ -27,6 +33,11 @@ public class SandboxTest {
   public void portIsAssignedWhenSandboxIsStarted() {
     int sandboxPort = sandbox.getSandboxPort();
     assertsIsBetween(sandboxPort, 6860, 6890);
+  }
+
+  @Test
+  public void ledgerIdSpecified() {
+    assertThat(sandbox.getClient().getLedgerId(), is("sample-ledger"));
   }
 
   private void assertsIsBetween(int x, int low, int high) {

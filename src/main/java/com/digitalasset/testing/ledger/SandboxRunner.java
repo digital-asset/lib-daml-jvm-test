@@ -55,7 +55,7 @@ public abstract class SandboxRunner {
     }
     ledgerId.ifPresent(
         value -> {
-          commands.add("--ledgerId");
+          commands.add("--ledgerid");
           commands.add(value);
         });
     commands.add(relativeDarPath);
