@@ -7,7 +7,6 @@
 package com.digitalasset.testing.ledger;
 
 import com.digitalasset.testing.utils.OS;
-
 import java.nio.file.Path;
 import java.util.Optional;
 

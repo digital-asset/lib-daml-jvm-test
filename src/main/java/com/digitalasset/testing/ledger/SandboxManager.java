@@ -6,6 +6,9 @@
 
 package com.digitalasset.testing.ledger;
 
+import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
+import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
+
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
@@ -18,9 +21,6 @@ import com.digitalasset.testing.ledger.clock.TimeProvider;
 import com.digitalasset.testing.store.DefaultValueStore;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -29,9 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-
-import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
-import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);

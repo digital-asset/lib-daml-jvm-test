@@ -6,7 +6,11 @@
 
 package com.digitalasset.testing.ledger;
 
-import org.junit.Test;
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.digitalasset.testing.TestCommons.DAR_PATH;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class SandboxManagerIT {
 
