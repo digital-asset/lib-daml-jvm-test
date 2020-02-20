@@ -29,7 +29,8 @@ public abstract class SandboxRunner {
       Optional<String> testModule,
       Optional<String> testScenario,
       Integer sandboxPort,
-      boolean useWallclockTime) {
+      boolean useWallclockTime,
+      Optional<String> ledgerId) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
     this.testScenario = testScenario;
