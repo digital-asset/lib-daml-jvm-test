@@ -41,7 +41,7 @@ public class SandboxManager {
   private final Optional<String> testScenario;
   private final Duration waitTimeout;
   private final boolean useWallclockTime;
-  private final String ledgerId;
+  private final Optional<String> ledgerId;
   private final String[] parties;
   private final Path darPath;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -78,7 +78,7 @@ public class SandboxManager {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      String ledgerId) {
+      Optional<String> ledgerId) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
