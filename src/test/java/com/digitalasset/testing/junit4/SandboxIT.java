@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class SandboxTest {
+public class SandboxIT {
 
   private static Sandbox sandbox =
       Sandbox.builder()
