@@ -41,6 +41,7 @@ public class SandboxManager {
   private final Optional<String> testScenario;
   private final Duration waitTimeout;
   private final boolean useWallclockTime;
+  private final String ledgerId;
   private final String[] parties;
   private final Path darPath;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -58,6 +59,26 @@ public class SandboxManager {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
+    this(
+        testModule,
+        testScenario,
+        waitTimeout,
+        parties,
+        darPath,
+        setupApplication,
+        useWallclockTime,
+        null);
+  }
+
+  public SandboxManager(
+      Optional<String> testModule,
+      Optional<String> testScenario,
+      Duration waitTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
+      String ledgerId) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
@@ -65,6 +86,7 @@ public class SandboxManager {
     this.darPath = darPath;
     this.setupApplication = setupApplication;
     this.useWallclockTime = useWallclockTime;
+    this.ledgerId = ledgerId;
   }
 
   public int getPort() {

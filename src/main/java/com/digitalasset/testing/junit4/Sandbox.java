@@ -6,12 +6,12 @@
 
 package com.digitalasset.testing.junit4;
 
+import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
-import com.daml.ledger.javaapi.data.Identifier;
-import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import org.junit.rules.ExternalResource;
@@ -129,7 +129,8 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
-          useReset);
+          useReset,
+          ledgerId);
     }
 
     private SandboxBuilder() {}
@@ -145,7 +146,8 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      boolean useReset) {
+      boolean useReset,
+      String ledgerId) {
     this.sandboxManager =
         new SandboxManager(
             testModule,
@@ -154,7 +156,8 @@ public class Sandbox {
             parties,
             darPath,
             setupApplication,
-            useWallclockTime);
+            useWallclockTime,
+            ledgerId);
     this.useReset = useReset;
   }
 
