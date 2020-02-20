@@ -208,4 +208,8 @@ public class SandboxManager {
     }
     sandboxRunner = null;
   }
+
+  public String getLedgerId() {
+    return ledgerId.orElse(getClient().getLedgerId());
+  }
 }

@@ -37,7 +37,7 @@ public class SandboxIT {
 
   @Test
   public void ledgerIdSpecified() {
-    assertThat(sandbox.getClient().getLedgerId(), is("sample-ledger"));
+    assertThat(sandbox.getLedgerId(), is("sample-ledger"));
   }
 
   private void assertsIsBetween(int x, int low, int high) {

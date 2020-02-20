@@ -169,6 +169,10 @@ public class Sandbox {
     return sandboxManager.getLedgerAdapter();
   }
 
+  public String getLedgerId() {
+    return sandboxManager.getLedgerId();
+  }
+
   public int getSandboxPort() {
     return sandboxManager.getPort();
   }
