@@ -115,7 +115,8 @@ public class SandboxManager {
   private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
-            SandboxRunnerFactory.getSandboxRunner(darPath, testModule, testScenario, sandboxPort, useWallclockTime);
+        SandboxRunnerFactory.getSandboxRunner(
+            darPath, testModule, testScenario, sandboxPort, useWallclockTime);
     sandboxRunner.startSandbox();
   }
 
