@@ -67,7 +67,7 @@ public class SandboxManager {
         darPath,
         setupApplication,
         useWallclockTime,
-        null);
+        Optional.empty());
   }
 
   public SandboxManager(
