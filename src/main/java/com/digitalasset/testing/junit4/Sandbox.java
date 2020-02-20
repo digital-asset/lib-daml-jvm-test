@@ -43,7 +43,7 @@ public class Sandbox {
     private boolean useWallclockTime = false;
     private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
-    private Optional<String> ledgerId;
+    private Optional<String> ledgerId = Optional.empty();
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
