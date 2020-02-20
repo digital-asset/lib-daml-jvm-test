@@ -6,7 +6,11 @@
 
 package com.digitalasset.testing.ledger;
 
-import org.junit.Test;
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.digitalasset.testing.TestCommons.DAR_PATH;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 public class SandboxManagerIT {
 
@@ -45,6 +46,47 @@ public class SandboxManagerIT {
     manager.stop();
 
     eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
+  }
+
+  @Test
+  public void managerReturnsAutomaticallyAssignedLedgerId() throws Exception {
+    SandboxManager manager =
+        new SandboxManager(
+            Optional.empty(),
+            Optional.empty(),
+            Duration.ofMinutes(1),
+            new String[0],
+            DAR_PATH,
+            (_ignore1, _ignore2) -> {},
+            false,
+            Optional.empty());
+    String ledgerIdPattern = "sandbox-[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
+    try {
+      manager.start();
+      assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
+    } finally {
+      manager.stop();
+    }
+  }
+
+  @Test
+  public void managerReturnsSpecifiedLedgerId() throws Exception {
+    SandboxManager manager =
+        new SandboxManager(
+            Optional.empty(),
+            Optional.empty(),
+            Duration.ofMinutes(1),
+            new String[0],
+            DAR_PATH,
+            (_ignore1, _ignore2) -> {},
+            false,
+            Optional.of("Test Ledger ID"));
+    try {
+      manager.start();
+      assertThat(manager.getLedgerId(), is("Test Ledger ID"));
+    } finally {
+      manager.stop();
+    }
   }
 
   private void eventually(Runnable code) throws InterruptedException {

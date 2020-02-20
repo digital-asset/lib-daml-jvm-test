@@ -6,14 +6,13 @@
 
 package com.digitalasset.testing.ledger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -22,6 +21,7 @@ public abstract class SandboxRunner {
   private final Optional<String> testScenario;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
+  private final Optional<String> ledgerId;
   private Process sandbox;
 
   public SandboxRunner(
@@ -29,12 +29,14 @@ public abstract class SandboxRunner {
       Optional<String> testModule,
       Optional<String> testScenario,
       Integer sandboxPort,
-      boolean useWallclockTime) {
+      boolean useWallclockTime,
+      Optional<String> ledgerId) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
+    this.ledgerId = ledgerId;
   }
 
   public final void startSandbox() throws IOException {
@@ -50,6 +52,11 @@ public abstract class SandboxRunner {
       commands.add("--scenario");
       commands.add(String.format("%s:%s", testModule.get(), testScenario.get()));
     }
+    ledgerId.ifPresent(
+        value -> {
+          commands.add("--ledgerid");
+          commands.add(value);
+        });
     commands.add(relativeDarPath);
     ProcessBuilder procBuilder = new ProcessBuilder(commands);
     ProcessBuilder.Redirect redirect =

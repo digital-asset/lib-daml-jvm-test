@@ -6,12 +6,12 @@
 
 package com.digitalasset.testing.junit4;
 
+import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
-import com.daml.ledger.javaapi.data.Identifier;
-import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import org.junit.rules.ExternalResource;
@@ -43,6 +43,7 @@ public class Sandbox {
     private boolean useWallclockTime = false;
     private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
+    private Optional<String> ledgerId = Optional.empty();
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -98,6 +99,11 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder ledgerId(String ledgerId) {
+      this.ledgerId = Optional.of(ledgerId);
+      return this;
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
@@ -123,7 +129,8 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
-          useReset);
+          useReset,
+          ledgerId);
     }
 
     private SandboxBuilder() {}
@@ -139,7 +146,8 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      boolean useReset) {
+      boolean useReset,
+      Optional<String> ledgerId) {
     this.sandboxManager =
         new SandboxManager(
             testModule,
@@ -148,7 +156,8 @@ public class Sandbox {
             parties,
             darPath,
             setupApplication,
-            useWallclockTime);
+            useWallclockTime,
+            ledgerId);
     this.useReset = useReset;
   }
 
@@ -158,6 +167,10 @@ public class Sandbox {
 
   public DefaultLedgerAdapter getLedgerAdapter() {
     return sandboxManager.getLedgerAdapter();
+  }
+
+  public String getLedgerId() {
+    return sandboxManager.getLedgerId();
   }
 
   public int getSandboxPort() {
