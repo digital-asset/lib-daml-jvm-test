@@ -11,13 +11,14 @@ import static org.junit.Assert.*;
 public class SandboxTest {
 
   @Test
-  public void logLevelIsSet()  {
-    Sandbox sandbox = Sandbox.builder()
+  public void logLevelIsSet() {
+    Sandbox sandbox =
+        Sandbox.builder()
             .dar(Paths.get("./src/test/resources/ping-pong.dar"))
             .ledgerId("sample-ledger")
-            .logLevel(Sandbox.LogLevel.TRACE).build();
+            .logLevel(Sandbox.LogLevel.TRACE)
+            .build();
 
     assertThat(sandbox.getLogLevel(), is(Optional.of(Sandbox.LogLevel.DEBUG)));
   }
-
 }
