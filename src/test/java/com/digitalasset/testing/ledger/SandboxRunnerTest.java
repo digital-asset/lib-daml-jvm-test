@@ -14,9 +14,30 @@ public class SandboxRunnerTest {
   @Test
   public void commandsAppearsToBeValidArgumentList() {
 
-    SandboxRunner sandboxRunner = SandboxRunnerFactory.getSandboxRunner(Paths.get("path-to-dar"), Optional.of("testModule"), Optional.of("testScenario"), 123, true, Optional.of("ledgerId"), Optional.of(Sandbox.LogLevel.TRACE));
+    SandboxRunner sandboxRunner =
+        SandboxRunnerFactory.getSandboxRunner(
+            Paths.get("path-to-dar"),
+            Optional.of("testModule"),
+            Optional.of("testScenario"),
+            123,
+            true,
+            Optional.of("ledgerId"),
+            Optional.of(Sandbox.LogLevel.TRACE));
     assertEquals(
-            Arrays.asList("daml", "sandbox", "--", "-p", "123", "-w", "--scenario", "testModule:testScenario", "--ledgerid", "ledgerId", "--log-level", "trace", "path-to-dar"), sandboxRunner.commands()
-    );
+        Arrays.asList(
+            "daml",
+            "sandbox",
+            "--",
+            "-p",
+            "123",
+            "-w",
+            "--scenario",
+            "testModule:testScenario",
+            "--ledgerid",
+            "ledgerId",
+            "--log-level",
+            "trace",
+            "path-to-dar"),
+        sandboxRunner.commands());
   }
 }

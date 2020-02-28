@@ -9,10 +9,8 @@ package com.digitalasset.testing.ledger;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import com.digitalasset.testing.junit4.Sandbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
