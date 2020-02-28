@@ -9,6 +9,7 @@ package com.digitalasset.testing.ledger;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +45,7 @@ public abstract class SandboxRunner {
     this.logLevel = logLevel;
   }
 
-  public final void startSandbox() throws IOException {
+  public List<String> commands() {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
@@ -68,7 +69,11 @@ public abstract class SandboxRunner {
           commands.add(value.toString().toLowerCase());
         });
     commands.add(relativeDarPath);
-    ProcessBuilder procBuilder = new ProcessBuilder(commands);
+    return commands;
+  }
+
+  public final void startSandbox() throws IOException {
+    ProcessBuilder procBuilder = new ProcessBuilder(commands());
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
     logger.debug("Executing: {}", String.join(" ", procBuilder.command()));
