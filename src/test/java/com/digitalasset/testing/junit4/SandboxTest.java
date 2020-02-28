@@ -18,7 +18,6 @@ public class SandboxTest {
             .ledgerId("sample-ledger")
             .logLevel(Sandbox.LogLevel.TRACE)
             .build();
-
-    assertThat(sandbox.getLogLevel(), is(Optional.of(Sandbox.LogLevel.DEBUG)));
+    assertThat(sandbox.getLogLevel(), is(Optional.of(Sandbox.LogLevel.TRACE)));
   }
 }
