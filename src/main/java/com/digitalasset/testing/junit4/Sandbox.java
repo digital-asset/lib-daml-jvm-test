@@ -113,6 +113,11 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder logLevel(LogLevel logLevel) {
+      this.logLevel = Optional.of(logLevel);
+      return this;
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
@@ -183,6 +188,10 @@ public class Sandbox {
 
   public String getLedgerId() {
     return sandboxManager.getLedgerId();
+  }
+
+  public Optional<LogLevel> getLogLevel() {
+    return sandboxManager.getLogLevel();
   }
 
   public int getSandboxPort() {

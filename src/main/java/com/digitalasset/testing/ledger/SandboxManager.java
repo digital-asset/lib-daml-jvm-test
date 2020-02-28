@@ -216,4 +216,8 @@ public class SandboxManager {
   public String getLedgerId() {
     return ledgerId.orElse(getClient().getLedgerId());
   }
+
+  public Optional<Sandbox.LogLevel> getLogLevel() {
+    return logLevel;
+  }
 }
