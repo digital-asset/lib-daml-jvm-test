@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import com.digitalasset.testing.junit4.Sandbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,7 @@ public abstract class SandboxRunner {
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
+  private final Optional<Sandbox.LogLevel> logLevel;
   private Process sandbox;
 
   public SandboxRunner(
@@ -30,13 +33,15 @@ public abstract class SandboxRunner {
       Optional<String> testScenario,
       Integer sandboxPort,
       boolean useWallclockTime,
-      Optional<String> ledgerId) {
+      Optional<String> ledgerId,
+      Optional<Sandbox.LogLevel> logLevel) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
+    this.logLevel = logLevel;
   }
 
   public final void startSandbox() throws IOException {
@@ -56,6 +61,11 @@ public abstract class SandboxRunner {
         value -> {
           commands.add("--ledgerid");
           commands.add(value);
+        });
+    logLevel.ifPresent(
+        value -> {
+          commands.add("--log-level");
+          commands.add(value.toString().toLowerCase());
         });
     commands.add(relativeDarPath);
     ProcessBuilder procBuilder = new ProcessBuilder(commands);
