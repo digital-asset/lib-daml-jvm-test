@@ -163,7 +163,7 @@ public class Sandbox {
       boolean useWallclockTime,
       boolean useReset,
       Optional<String> ledgerId,
-      Optional<LogLevel> logLevel) {
+      Optional<Sandbox.LogLevel> logLevel) {
     this.sandboxManager =
         new SandboxManager(
             testModule,
