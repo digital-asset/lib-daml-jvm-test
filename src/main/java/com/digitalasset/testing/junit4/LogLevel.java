@@ -5,5 +5,10 @@ public enum LogLevel {
   TRACE,
   DEBUG,
   WARN,
-  ERROR
+  ERROR;
+
+  @Override
+  public String toString() {
+    return super.toString().toLowerCase();
+  }
 }
