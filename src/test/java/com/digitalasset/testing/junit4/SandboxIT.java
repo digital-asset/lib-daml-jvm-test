@@ -22,6 +22,7 @@ public class SandboxIT {
       Sandbox.builder()
           .dar(Paths.get("./src/test/resources/ping-pong.dar"))
           .ledgerId("sample-ledger")
+          .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
 
   @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
