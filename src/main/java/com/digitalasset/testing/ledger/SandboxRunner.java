@@ -43,7 +43,7 @@ public abstract class SandboxRunner {
     this.logLevel = logLevel;
   }
 
-  public List<String> commands() {
+  private List<String> commands() {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
