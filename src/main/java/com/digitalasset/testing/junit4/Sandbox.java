@@ -34,7 +34,7 @@ public class Sandbox {
     return new SandboxBuilder();
   }
 
-    public static class SandboxBuilder {
+  public static class SandboxBuilder {
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testScenario = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
