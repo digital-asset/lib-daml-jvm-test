@@ -6,7 +6,7 @@
 
 package com.digitalasset.testing.ledger;
 
-import com.digitalasset.testing.junit4.Sandbox;
+import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.utils.OS;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -19,7 +19,7 @@ public class SandboxRunnerFactory {
       int sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
-      Optional<Sandbox.LogLevel> logLevel) {
+      Optional<LogLevel> logLevel) {
     if (OS.isWindows()) {
       return new WindowsSandboxRunner(
           darPath.toString(),

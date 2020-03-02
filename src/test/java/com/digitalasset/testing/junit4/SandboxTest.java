@@ -22,8 +22,8 @@ public class SandboxTest {
         Sandbox.builder()
             .dar(Paths.get("./src/test/resources/ping-pong.dar"))
             .ledgerId("sample-ledger")
-            .logLevel(Sandbox.LogLevel.TRACE)
+            .logLevel(LogLevel.TRACE)
             .build();
-    assertThat(sandbox.getLogLevel(), is(Optional.of(Sandbox.LogLevel.TRACE)));
+    assertThat(sandbox.getLogLevel(), is(Optional.of(LogLevel.TRACE)));
   }
 }

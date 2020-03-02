@@ -6,7 +6,7 @@
 
 package com.digitalasset.testing.ledger;
 
-import com.digitalasset.testing.junit4.Sandbox;
+import com.digitalasset.testing.junit4.LogLevel;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ public class UnixSandboxRunner extends SandboxRunner {
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
-      Optional<Sandbox.LogLevel> logLevel) {
+      Optional<LogLevel> logLevel) {
     super(
         relativeDarPath,
         testModule,

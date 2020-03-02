@@ -34,15 +34,7 @@ public class Sandbox {
     return new SandboxBuilder();
   }
 
-  public enum LogLevel {
-    INFO,
-    TRACE,
-    DEBUG,
-    WARN,
-    ERROR
-  }
-
-  public static class SandboxBuilder {
+    public static class SandboxBuilder {
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testScenario = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
@@ -163,7 +155,7 @@ public class Sandbox {
       boolean useWallclockTime,
       boolean useReset,
       Optional<String> ledgerId,
-      Optional<Sandbox.LogLevel> logLevel) {
+      Optional<LogLevel> logLevel) {
     this.sandboxManager =
         new SandboxManager(
             testModule,

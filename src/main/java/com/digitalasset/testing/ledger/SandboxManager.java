@@ -15,7 +15,7 @@ import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
-import com.digitalasset.testing.junit4.Sandbox;
+import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.ledger.clock.SystemTimeProvider;
 import com.digitalasset.testing.ledger.clock.TimeProvider;
@@ -44,7 +44,7 @@ public class SandboxManager {
   private final Optional<String> ledgerId;
   private final String[] parties;
   private final Path darPath;
-  private final Optional<Sandbox.LogLevel> logLevel;
+  private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
   private SandboxRunner sandboxRunner;
@@ -81,7 +81,7 @@ public class SandboxManager {
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       Optional<String> ledgerId,
-      Optional<Sandbox.LogLevel> logLevel) {
+      Optional<LogLevel> logLevel) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
@@ -217,7 +217,7 @@ public class SandboxManager {
     return ledgerId.orElse(getClient().getLedgerId());
   }
 
-  public Optional<Sandbox.LogLevel> getLogLevel() {
+  public Optional<LogLevel> getLogLevel() {
     return logLevel;
   }
 }
