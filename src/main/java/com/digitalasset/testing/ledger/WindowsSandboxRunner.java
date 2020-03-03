@@ -6,6 +6,8 @@
 
 package com.digitalasset.testing.ledger;
 
+import com.digitalasset.testing.junit4.LogLevel;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +20,16 @@ public class WindowsSandboxRunner extends SandboxRunner {
       Optional<String> testScenario,
       Integer sandboxPort,
       boolean useWallclockTime,
-      Optional<String> ledgerId) {
-    super(relativeDarPath, testModule, testScenario, sandboxPort, useWallclockTime, ledgerId);
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
+    super(
+        relativeDarPath,
+        testModule,
+        testScenario,
+        sandboxPort,
+        useWallclockTime,
+        ledgerId,
+        logLevel);
   }
 
   @Override

@@ -59,6 +59,7 @@ public class SandboxManagerIT {
             DAR_PATH,
             (_ignore1, _ignore2) -> {},
             false,
+            Optional.empty(),
             Optional.empty());
     String ledgerIdPattern = "sandbox-[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
     try {
@@ -80,7 +81,8 @@ public class SandboxManagerIT {
             DAR_PATH,
             (_ignore1, _ignore2) -> {},
             false,
-            Optional.of("Test Ledger ID"));
+            Optional.of("Test Ledger ID"),
+            Optional.empty());
     try {
       manager.start();
       assertThat(manager.getLedgerId(), is("Test Ledger ID"));

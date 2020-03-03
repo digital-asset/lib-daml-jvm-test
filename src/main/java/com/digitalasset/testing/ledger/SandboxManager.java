@@ -15,6 +15,7 @@ import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
 import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
+import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.ledger.clock.SystemTimeProvider;
 import com.digitalasset.testing.ledger.clock.TimeProvider;
@@ -43,6 +44,7 @@ public class SandboxManager {
   private final Optional<String> ledgerId;
   private final String[] parties;
   private final Path darPath;
+  private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
   private SandboxRunner sandboxRunner;
@@ -66,6 +68,7 @@ public class SandboxManager {
         darPath,
         setupApplication,
         useWallclockTime,
+        Optional.empty(),
         Optional.empty());
   }
 
@@ -77,7 +80,8 @@ public class SandboxManager {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      Optional<String> ledgerId) {
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
     this.testModule = testModule;
     this.testScenario = testScenario;
     this.waitTimeout = waitTimeout;
@@ -86,6 +90,7 @@ public class SandboxManager {
     this.setupApplication = setupApplication;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
+    this.logLevel = logLevel;
   }
 
   public int getPort() {
@@ -137,7 +142,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            darPath, testModule, testScenario, sandboxPort, useWallclockTime, ledgerId);
+            darPath, testModule, testScenario, sandboxPort, useWallclockTime, ledgerId, logLevel);
     sandboxRunner.startSandbox();
   }
 
@@ -210,5 +215,9 @@ public class SandboxManager {
 
   public String getLedgerId() {
     return ledgerId.orElse(getClient().getLedgerId());
+  }
+
+  public Optional<LogLevel> getLogLevel() {
+    return logLevel;
   }
 }

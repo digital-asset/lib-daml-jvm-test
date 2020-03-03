@@ -44,6 +44,7 @@ public class Sandbox {
     private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
     private Optional<String> ledgerId = Optional.empty();
+    private Optional<LogLevel> logLevel = Optional.empty();
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -104,6 +105,11 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder logLevel(LogLevel logLevel) {
+      this.logLevel = Optional.of(logLevel);
+      return this;
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
@@ -130,7 +136,8 @@ public class Sandbox {
           setupApplication,
           useWallclockTime,
           useReset,
-          ledgerId);
+          ledgerId,
+          logLevel);
     }
 
     private SandboxBuilder() {}
@@ -147,7 +154,8 @@ public class Sandbox {
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       boolean useReset,
-      Optional<String> ledgerId) {
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
     this.sandboxManager =
         new SandboxManager(
             testModule,
@@ -157,7 +165,8 @@ public class Sandbox {
             darPath,
             setupApplication,
             useWallclockTime,
-            ledgerId);
+            ledgerId,
+            logLevel);
     this.useReset = useReset;
   }
 
@@ -171,6 +180,10 @@ public class Sandbox {
 
   public String getLedgerId() {
     return sandboxManager.getLedgerId();
+  }
+
+  public Optional<LogLevel> getLogLevel() {
+    return sandboxManager.getLogLevel();
   }
 
   public int getSandboxPort() {
