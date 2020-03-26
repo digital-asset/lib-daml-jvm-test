@@ -227,8 +227,6 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-    Instant let = timeProvider.getCurrentTime();
-    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -240,8 +238,6 @@ public class DefaultLedgerAdapter {
                     .setApplicationId(APP_ID)
                     .setCommandId(cmdId)
                     .setParty(party.getValue())
-                    .setLedgerEffectiveTime(toProtobufTimestamp(let))
-                    .setMaximumRecordTime(toProtobufTimestamp(mrt))
                     .addCommands(command.toProtoCommand()));
     CommandEvent event = new CommandEvent(cmdId, party.getValue(), command);
     Dump.dump(wireLogger, event);
