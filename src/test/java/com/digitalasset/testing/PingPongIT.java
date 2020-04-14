@@ -45,7 +45,7 @@ public class PingPongIT {
       Sandbox.builder()
           .dar(DAR_PATH)
           .module("Test")
-          .scenario("testSetup")
+          .startScript("testSetup")
           .parties(ALICE, BOB, CHARLIE)
           .build();
 

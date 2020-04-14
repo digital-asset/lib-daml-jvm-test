@@ -36,7 +36,7 @@ public class Sandbox {
 
   public static class SandboxBuilder {
     private Optional<String> testModule = Optional.empty();
-    private Optional<String> testScenario = Optional.empty();
+    private Optional<String> testStartScript = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path darPath;
@@ -56,8 +56,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder scenario(String testScenario) {
-      this.testScenario = Optional.of(testScenario);
+    public SandboxBuilder startScript(String testStartScript) {
+      this.testStartScript = Optional.of(testStartScript);
       return this;
     }
 
@@ -113,12 +113,12 @@ public class Sandbox {
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
-      if (useReset && (testModule.isPresent() || testScenario.isPresent())) {
+      if (useReset && (testModule.isPresent() || testStartScript.isPresent())) {
         throw new IllegalStateException(
             "Reset mode cannot be used together with market setup module/scenario.");
       }
 
-      if (testModule.isPresent() ^ testScenario.isPresent()) {
+      if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
             "Market setup module and scenario need to be defined together.");
       }
@@ -129,7 +129,7 @@ public class Sandbox {
 
       return new Sandbox(
           testModule,
-          testScenario,
+              testStartScript,
           waitTimeout,
           parties,
           darPath,
@@ -147,7 +147,7 @@ public class Sandbox {
 
   private Sandbox(
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
@@ -159,7 +159,7 @@ public class Sandbox {
     this.sandboxManager =
         new SandboxManager(
             testModule,
-            testScenario,
+            testStartScript,
             waitTimeout,
             parties,
             darPath,

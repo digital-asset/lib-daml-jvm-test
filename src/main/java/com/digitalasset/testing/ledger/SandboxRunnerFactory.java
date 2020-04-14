@@ -15,7 +15,7 @@ public class SandboxRunnerFactory {
   public static SandboxRunner getSandboxRunner(
       Path darPath,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       int sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -24,7 +24,7 @@ public class SandboxRunnerFactory {
       return new WindowsSandboxRunner(
           darPath.toString(),
           testModule,
-          testScenario,
+          testStartScript,
           sandboxPort,
           useWallclockTime,
           ledgerId,
@@ -33,7 +33,7 @@ public class SandboxRunnerFactory {
       return new UnixSandboxRunner(
           darPath.toString(),
           testModule,
-          testScenario,
+          testStartScript,
           sandboxPort,
           useWallclockTime,
           ledgerId,

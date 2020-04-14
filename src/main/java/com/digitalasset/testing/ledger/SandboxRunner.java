@@ -20,7 +20,7 @@ public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
   private final String relativeDarPath;
   private final Optional<String> testModule;
-  private final Optional<String> testScenario;
+  private final Optional<String> testStartScript;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
@@ -30,14 +30,14 @@ public abstract class SandboxRunner {
   public SandboxRunner(
       String relativeDarPath,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.relativeDarPath = relativeDarPath;
     this.testModule = testModule;
-    this.testScenario = testScenario;
+    this.testStartScript = testStartScript;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
@@ -53,9 +53,9 @@ public abstract class SandboxRunner {
     commands.add("-p");
     commands.add(sandboxPort.toString());
     commands.add(useWallclockTime ? "-w" : "-s");
-    if (testModule.isPresent() && testScenario.isPresent()) {
+    if (testModule.isPresent() && testStartScript.isPresent()) {
       commands.add("--scenario");
-      commands.add(String.format("%s:%s", testModule.get(), testScenario.get()));
+      commands.add(String.format("%s:%s", testModule.get(), testStartScript.get()));
     }
     ledgerId.ifPresent(
         value -> {

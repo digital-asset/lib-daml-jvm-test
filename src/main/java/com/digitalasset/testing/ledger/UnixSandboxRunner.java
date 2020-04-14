@@ -15,7 +15,7 @@ public class UnixSandboxRunner extends SandboxRunner {
   public UnixSandboxRunner(
       String relativeDarPath,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -23,7 +23,7 @@ public class UnixSandboxRunner extends SandboxRunner {
     super(
         relativeDarPath,
         testModule,
-        testScenario,
+        testStartScript,
         sandboxPort,
         useWallclockTime,
         ledgerId,

@@ -17,7 +17,7 @@ public class WindowsSandboxRunner extends SandboxRunner {
   public WindowsSandboxRunner(
       String relativeDarPath,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -25,7 +25,7 @@ public class WindowsSandboxRunner extends SandboxRunner {
     super(
         relativeDarPath,
         testModule,
-        testScenario,
+        testStartScript,
         sandboxPort,
         useWallclockTime,
         ledgerId,

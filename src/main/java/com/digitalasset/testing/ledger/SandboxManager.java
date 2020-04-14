@@ -38,7 +38,7 @@ public class SandboxManager {
   private int sandboxPort;
 
   private final Optional<String> testModule;
-  private final Optional<String> testScenario;
+  private final Optional<String> testStartScript;
   private final Duration waitTimeout;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
@@ -54,7 +54,7 @@ public class SandboxManager {
 
   public SandboxManager(
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
@@ -62,7 +62,7 @@ public class SandboxManager {
       boolean useWallclockTime) {
     this(
         testModule,
-        testScenario,
+        testStartScript,
         waitTimeout,
         parties,
         darPath,
@@ -74,7 +74,7 @@ public class SandboxManager {
 
   public SandboxManager(
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
@@ -83,7 +83,7 @@ public class SandboxManager {
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.testModule = testModule;
-    this.testScenario = testScenario;
+    this.testStartScript = testStartScript;
     this.waitTimeout = waitTimeout;
     this.parties = parties;
     this.darPath = darPath;
@@ -142,7 +142,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            darPath, testModule, testScenario, sandboxPort, useWallclockTime, ledgerId, logLevel);
+            darPath, testModule, testStartScript, sandboxPort, useWallclockTime, ledgerId, logLevel);
     sandboxRunner.startSandbox();
   }
 
