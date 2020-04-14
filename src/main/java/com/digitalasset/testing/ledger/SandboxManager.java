@@ -10,11 +10,11 @@ import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
 import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
-import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
+import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
+import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.ledger.clock.SystemTimeProvider;

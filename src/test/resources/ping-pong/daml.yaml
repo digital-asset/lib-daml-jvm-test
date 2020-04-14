@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-sdk-version: 0.13.52
+sdk-version: 0.13.56-snapshot.20200411.3905.0.f050da78
 name: ping-pong
 source: daml/Test.daml
 scenario: testSetup

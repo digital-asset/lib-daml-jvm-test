@@ -37,7 +37,7 @@ Additional daml dependencies are required by the library, but these dependencies
     <dependency>
         <groupId>com.digitalasset</groupId>
         <artifactId>daml-lf-archive</artifactId>
-        <version>100.13.52</version>
+        <version>100.13.56-snapshot.20200411.3905.0.f050da78</version>
         <scope>test</scope>
     </dependency>
     ...

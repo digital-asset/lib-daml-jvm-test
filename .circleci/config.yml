@@ -67,11 +67,11 @@ workflows:
   build_and_test:
     jobs:
       - sbt_verify:
-          daml_sdk_version: "0.13.52"
+          daml_sdk_version: "0.13.56-snapshot.20200411.3905.0.f050da78"
           context: blackduck
   build_and_release:
     jobs:
       - sbt_publish:
           <<: *only-master
-          daml_sdk_version: "0.13.52"
+          daml_sdk_version: "0.13.56-snapshot.20200411.3905.0.f050da78"
           context: github-refapp-repo-context

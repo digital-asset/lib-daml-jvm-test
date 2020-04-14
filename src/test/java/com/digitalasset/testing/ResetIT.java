@@ -7,7 +7,7 @@
 package com.digitalasset.testing;
 
 import com.daml.ledger.javaapi.data.*;
-import com.digitalasset.daml_lf_dev.DamlLf1;
+import com.daml.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.junit4.Sandbox;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
