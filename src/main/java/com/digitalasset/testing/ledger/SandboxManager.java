@@ -160,7 +160,16 @@ public class SandboxManager {
             .build();
     DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
     ledgerClient = builder.build();
-    waitForSandbox(ledgerClient, waitTimeout, logger);
+    try {
+      waitForSandbox(ledgerClient, waitTimeout, logger);
+    } catch (TimeoutException e) {
+      try {
+        sandboxRunner.stopSandbox();
+      } catch (Exception ee) {
+        throw new IOException("Unable to connect to sandbox, and failed to kill it.", ee);
+      }
+      throw e;
+    }
 
     if (testModule.isPresent() && testStartScript.isPresent()) {
       DamlScriptRunner scriptRunner =
