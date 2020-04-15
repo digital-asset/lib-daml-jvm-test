@@ -12,6 +12,9 @@ resolvers ++= Seq(
     Resolver.ivyStylePatterns)
 )
 
+// do not try to run tests in parallel (each test has one sandbox)
+parallelExecution in ThisBuild := false
+
 credentials += Credentials(
   "Sonatype Nexus Repository Manager",
   "oss.sonatype.org",
