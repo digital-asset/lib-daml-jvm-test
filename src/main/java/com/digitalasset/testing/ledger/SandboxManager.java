@@ -248,12 +248,13 @@ public class SandboxManager {
   private void runScriptIfConfigured() throws IOException, InterruptedException {
     if (testModule.isPresent() && testStartScript.isPresent()) {
       DamlScriptRunner scriptRunner =
-              new DamlScriptRunner.Builder()
-                      .dar(darPath)
-                      .sandboxPort(sandboxPort)
-                      .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
-                      .useWallclockTime(useWallclockTime)
-                      .build();
+          new DamlScriptRunner.Builder()
+              .projectRoot(projectRoot)
+              .dar(darPath)
+              .sandboxPort(sandboxPort)
+              .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
+              .useWallclockTime(useWallclockTime)
+              .build();
       scriptRunner.run();
     }
   }
