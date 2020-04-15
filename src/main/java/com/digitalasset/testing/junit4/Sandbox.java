@@ -129,7 +129,7 @@ public class Sandbox {
 
       return new Sandbox(
           testModule,
-              testStartScript,
+          testStartScript,
           waitTimeout,
           parties,
           darPath,

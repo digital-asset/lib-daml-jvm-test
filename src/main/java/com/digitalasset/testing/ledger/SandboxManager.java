@@ -109,11 +109,11 @@ public class SandboxManager {
     return channel;
   }
 
-  public void start() throws TimeoutException, IOException {
+  public void start() throws TimeoutException, IOException, InterruptedException {
     start(getSandboxPort());
   }
 
-  public void start(int port) throws TimeoutException, IOException {
+  public void start(int port) throws TimeoutException, IOException, InterruptedException {
     startSandbox(port);
     startCommChannels();
   }
@@ -123,7 +123,7 @@ public class SandboxManager {
     stopSandbox();
   }
 
-  public void restart() throws TimeoutException, IOException {
+  public void restart() throws TimeoutException, IOException, InterruptedException {
     stop();
     start();
   }
@@ -138,12 +138,21 @@ public class SandboxManager {
     startCommChannels();
   }
 
-  private void startSandbox(int port) throws IOException {
+  private void startSandbox(int port) throws IOException, InterruptedException {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
             darPath, testModule, testStartScript, sandboxPort, useWallclockTime, ledgerId, logLevel);
     sandboxRunner.startSandbox();
+    if (testModule.isPresent() && testStartScript.isPresent()) {
+      DamlScriptRunner scriptRunner = new DamlScriptRunner.Builder()
+              .dar(darPath)
+              .sandboxPort(sandboxPort)
+              .scriptName(String.format("%s:%s", testModule, testStartScript))
+              .useWallclockTime(useWallclockTime)
+              .build();
+      scriptRunner.run();
+    }
   }
 
   private void startCommChannels() throws TimeoutException {
