@@ -4,6 +4,8 @@
 daml 1.2
 module Main where
 
+import Daml.Script
+
 import PingPong
 
 main = scenario $ do
@@ -22,3 +24,16 @@ main = scenario $ do
     <- alice `submit` do
         exercise pong1 RespondPing
   return ()
+
+init : Script ()
+init = do
+    alice <- allocate "Alice"
+    bob   <- allocate "Bob"
+
+    ping1 <- submit alice $ createCmd Ping with sender = alice; receiver = bob; count = 2
+    pong1 <- submit bob   $ exerciseCmd ping1 RespondPong
+    ping2 <- submit alice $ exerciseCmd pong1 RespondPing
+    pure ()
+
+allocate : Text -> Script Party
+allocate name = allocatePartyWithHint name (PartyIdHint name)

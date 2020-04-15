@@ -5,8 +5,8 @@
 
 sdk-version: 0.13.56-snapshot.20200411.3905.0.f050da78
 name: ping-pong
-source: daml/Test.daml
-scenario: testSetup
+source: daml
+init-script: Main:init
 parties:
   - Alice
   - Bob
@@ -15,3 +15,4 @@ exposed-modules: []
 dependencies:
   - daml-prim
   - daml-stdlib
+  - daml-script
