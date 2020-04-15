@@ -74,11 +74,6 @@ public class DamlScriptRunner {
       return this;
     }
 
-    public Builder useWallclockTime() {
-      this.useWallclockTime = true;
-      return this;
-    }
-
     public DamlScriptRunner build() {
       File logFile = new File(String.format("integration-test-%s.log", scriptName));
       ProcessBuilder processBuilder =
