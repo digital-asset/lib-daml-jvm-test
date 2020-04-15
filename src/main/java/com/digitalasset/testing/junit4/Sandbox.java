@@ -115,7 +115,7 @@ public class Sandbox {
 
       if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
-            "Market setup module and script need to be defined together or none of them shall be specifid.");
+            "Market setup module and script need to be defined together or none of them shall be specified.");
       }
 
       if (setupApplication == null) {
