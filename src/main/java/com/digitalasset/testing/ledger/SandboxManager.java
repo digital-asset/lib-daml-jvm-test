@@ -142,7 +142,13 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            darPath, testModule, testStartScript, sandboxPort, useWallclockTime, ledgerId, logLevel);
+            darPath,
+            testModule,
+            testStartScript,
+            sandboxPort,
+            useWallclockTime,
+            ledgerId,
+            logLevel);
     sandboxRunner.startSandbox();
   }
 
@@ -157,7 +163,8 @@ public class SandboxManager {
     waitForSandbox(ledgerClient, waitTimeout, logger);
 
     if (testModule.isPresent() && testStartScript.isPresent()) {
-      DamlScriptRunner scriptRunner = new DamlScriptRunner.Builder()
+      DamlScriptRunner scriptRunner =
+          new DamlScriptRunner.Builder()
               .dar(darPath)
               .sandboxPort(sandboxPort)
               .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))

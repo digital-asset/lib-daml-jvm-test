@@ -20,12 +20,7 @@ public class UnixSandboxRunner extends SandboxRunner {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    super(
-        relativeDarPath,
-        sandboxPort,
-        useWallclockTime,
-        ledgerId,
-        logLevel);
+    super(relativeDarPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
   }
 
   @Override
