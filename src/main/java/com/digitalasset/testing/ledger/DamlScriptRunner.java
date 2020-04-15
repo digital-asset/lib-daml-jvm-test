@@ -1,7 +1,9 @@
 /*
- * Copyright (c) 2020, Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package com.digitalasset.testing.ledger;
 
 import org.slf4j.Logger;
