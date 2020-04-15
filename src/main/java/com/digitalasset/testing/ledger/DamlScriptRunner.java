@@ -6,11 +6,15 @@
 
 package com.digitalasset.testing.ledger;
 
+import static com.digitalasset.testing.utils.SandboxUtils.damlYamlP;
+import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -43,14 +47,14 @@ public class DamlScriptRunner {
   }
 
   public static class Builder {
-
-    private String darPath;
+    private Path projectRoot;
+    private Path darPath;
     private String scriptName;
     private String sandboxPort;
     private boolean useWallClockTime = false;
 
     public Builder dar(Path path) {
-      this.darPath = path.toString();
+      this.darPath = path;
       return this;
     }
 
@@ -69,7 +73,23 @@ public class DamlScriptRunner {
       return this;
     }
 
+    public Builder projectRoot(Path projectRoot) {
+      try {
+        if (Files.list(projectRoot).noneMatch(damlYamlP()))
+          throw new IllegalArgumentException("Project root must contain a daml.yaml");
+
+        this.projectRoot = projectRoot;
+        return this;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     public DamlScriptRunner build() {
+      if (projectRoot == null) {
+        projectRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
+      }
+
       File logFile = new File(String.format("integration-test-%s.log", scriptName));
       ProcessBuilder processBuilder =
           command()
@@ -81,11 +101,12 @@ public class DamlScriptRunner {
     private ProcessBuilder command() {
       String sandboxHost = "localhost";
       return new ProcessBuilder()
+          .directory(projectRoot.toFile())
           .command(
               "daml",
               "script",
               "--dar",
-              darPath,
+              darPath.toString(),
               "--script-name",
               scriptName,
               "--ledger-host",

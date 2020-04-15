@@ -17,16 +17,21 @@ import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.cucumber.utils.Config;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.digitalasset.testing.utils.PackageUtils;
+import com.digitalasset.testing.utils.SandboxUtils;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
 import io.cucumber.datatable.DataTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -45,21 +50,35 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
+  private void startSandbox(Path projectRoot, Path darPath, String[] parties)
+      throws InterruptedException, IOException, TimeoutException {
+    sandboxManager =
+        new SandboxManager(
+            projectRoot,
+            Optional.empty(),
+            Optional.empty(),
+            Duration.ofSeconds(30),
+            parties,
+            darPath,
+            (client, channel) -> {},
+            false);
+    sandboxManager.start();
+  }
+
   public LedgerInteractions(Config config) {
     Given(
-        "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
-        (String darPath, DataTable dataTable) -> {
+        "^Sandbox is started in directory \"([^\"]+)\" with DAR \"([^\"]+)\" and the following parties$",
+        (String projectRoot, String darPath, DataTable dataTable) -> {
           String[] parties = dataTable.asList().toArray(new String[] {});
-          sandboxManager =
-              new SandboxManager(
-                  Optional.empty(),
-                  Optional.empty(),
-                  Duration.ofSeconds(30),
-                  parties,
-                  Paths.get(darPath),
-                  (client, channel) -> {},
-                  false);
-          sandboxManager.start();
+          startSandbox(Paths.get(projectRoot), Paths.get(darPath), parties);
+        });
+    Given(
+        "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
+        (String darPathS, DataTable dataTable) -> {
+          Path darPath = Paths.get(darPathS);
+          Path projectRoot = SandboxUtils.findDamlYaml(darPath.getParent());
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          startSandbox(projectRoot, darPath, parties);
         });
     After(
         () -> {

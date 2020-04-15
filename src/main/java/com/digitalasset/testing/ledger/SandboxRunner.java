@@ -8,6 +8,7 @@ package com.digitalasset.testing.ledger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,19 +19,22 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final String relativeDarPath;
+  private final Path relativeDarPath;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
+  private final Path projectRoot;
   private Process sandbox;
 
   public SandboxRunner(
-      String relativeDarPath,
+      Path projectRoot,
+      Path relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
+    this.projectRoot = projectRoot;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
@@ -57,12 +61,14 @@ public abstract class SandboxRunner {
           commands.add("--log-level");
           commands.add(value.toString());
         });
-    commands.add(relativeDarPath);
+    commands.add(relativeDarPath.toString());
     return commands;
   }
 
   public final void startSandbox() throws IOException {
-    ProcessBuilder procBuilder = new ProcessBuilder(getDamlSandboxStarterCommand());
+    ProcessBuilder procBuilder =
+        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(projectRoot.toFile());
+
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
     logger.debug("Executing: {}", String.join(" ", procBuilder.command()));

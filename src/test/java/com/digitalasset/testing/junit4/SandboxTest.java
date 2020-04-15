@@ -6,13 +6,14 @@
 
 package com.digitalasset.testing.junit4;
 
-import org.junit.Test;
-
-import java.nio.file.Paths;
-import java.util.Optional;
-
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+
+import java.util.Optional;
 
 public class SandboxTest {
 
@@ -20,7 +21,8 @@ public class SandboxTest {
   public void logLevelIsSet() {
     Sandbox sandbox =
         Sandbox.builder()
-            .dar(Paths.get("./src/test/resources/ping-pong.dar"))
+            .projectRoot(PINGPONG_PATH)
+            .dar(DAR_PATH)
             .ledgerId("sample-ledger")
             .logLevel(LogLevel.TRACE)
             .build();

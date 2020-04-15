@@ -6,41 +6,41 @@
 
 package com.digitalasset.testing;
 
-import com.daml.ledger.javaapi.data.*;
-import com.daml.daml_lf_dev.DamlLf1;
-import com.digitalasset.testing.comparator.ledger.ContractCreated;
+import static com.digitalasset.testing.Dsl.int64;
+import static com.digitalasset.testing.Dsl.record;
+import static com.digitalasset.testing.TestCommons.ALICE;
+import static com.digitalasset.testing.TestCommons.BOB;
+import static com.digitalasset.testing.TestCommons.CHARLIE;
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
+import static com.digitalasset.testing.TestCommons.PING_PONG_MODULE;
+import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 import com.digitalasset.testing.junit4.Sandbox;
-import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.utils.ContractWithId;
+
+import com.daml.ledger.javaapi.data.ContractId;
+import com.daml.ledger.javaapi.data.Identifier;
+import com.daml.ledger.javaapi.data.Int64;
+import com.daml.ledger.javaapi.data.Record;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.grpc.StatusRuntimeException;
-import org.hamcrest.BaseMatcher;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.ExternalResource;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
-
-import static com.digitalasset.testing.Dsl.*;
-import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static com.digitalasset.testing.TestCommons.*;
 
 public class ResetIT {
   private static Sandbox sandbox =
       Sandbox.builder()
+          .projectRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .useReset()
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())

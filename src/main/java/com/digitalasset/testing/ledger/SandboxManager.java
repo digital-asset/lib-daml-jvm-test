@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
+  private final Path projectRoot;
   private int sandboxPort;
 
   private final Optional<String> testModule;
@@ -53,6 +54,7 @@ public class SandboxManager {
   private ManagedChannel channel;
 
   public SandboxManager(
+      Path projectRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
       Duration waitTimeout,
@@ -61,6 +63,7 @@ public class SandboxManager {
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
     this(
+        projectRoot,
         testModule,
         testStartScript,
         waitTimeout,
@@ -73,6 +76,7 @@ public class SandboxManager {
   }
 
   public SandboxManager(
+      Path projectRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
       Duration waitTimeout,
@@ -82,6 +86,7 @@ public class SandboxManager {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
+    this.projectRoot = projectRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
     this.waitTimeout = waitTimeout;
@@ -150,6 +155,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
+            projectRoot,
             darPath,
             testModule,
             testStartScript,

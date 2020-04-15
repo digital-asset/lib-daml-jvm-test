@@ -6,10 +6,11 @@
 
 package com.digitalasset.testing.junit4;
 
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -20,7 +21,8 @@ public class SandboxIT {
 
   private static Sandbox sandbox =
       Sandbox.builder()
-          .dar(Paths.get("./src/test/resources/ping-pong.dar"))
+          .projectRoot(PINGPONG_PATH)
+          .dar(DAR_PATH)
           .ledgerId("sample-ledger")
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
