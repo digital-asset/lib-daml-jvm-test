@@ -138,6 +138,14 @@ public class SandboxManager {
     startCommChannels();
   }
 
+  public String getLedgerId() {
+    return ledgerId.orElse(getClient().getLedgerId());
+  }
+
+  public Optional<LogLevel> getLogLevel() {
+    return logLevel;
+  }
+
   private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
@@ -171,16 +179,7 @@ public class SandboxManager {
       throw e;
     }
 
-    if (testModule.isPresent() && testStartScript.isPresent()) {
-      DamlScriptRunner scriptRunner =
-          new DamlScriptRunner.Builder()
-              .dar(darPath)
-              .sandboxPort(sandboxPort)
-              .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
-              .useWallclockTime(useWallclockTime)
-              .build();
-      scriptRunner.run();
-    }
+    runScriptIfConfigured();
 
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)
@@ -240,11 +239,16 @@ public class SandboxManager {
     sandboxRunner = null;
   }
 
-  public String getLedgerId() {
-    return ledgerId.orElse(getClient().getLedgerId());
-  }
-
-  public Optional<LogLevel> getLogLevel() {
-    return logLevel;
+  private void runScriptIfConfigured() throws IOException, InterruptedException {
+    if (testModule.isPresent() && testStartScript.isPresent()) {
+      DamlScriptRunner scriptRunner =
+              new DamlScriptRunner.Builder()
+                      .dar(darPath)
+                      .sandboxPort(sandboxPort)
+                      .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
+                      .useWallclockTime(useWallclockTime)
+                      .build();
+      scriptRunner.run();
+    }
   }
 }

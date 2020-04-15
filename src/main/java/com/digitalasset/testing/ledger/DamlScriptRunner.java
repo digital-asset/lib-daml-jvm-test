@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 public class DamlScriptRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass().getCanonicalName());
@@ -31,10 +32,14 @@ public class DamlScriptRunner {
   public void run() throws IOException, InterruptedException {
     logger.debug("Executing: {}", String.join(" ", processBuilder.command()));
     script = processBuilder.start();
-    if (script.waitFor() != 0) {
+    if (!scriptRunSuccessfully()) {
       throw new IllegalStateException("Unexpected termination of DAML script.");
     }
     logger.info("DAML Script has run successfully.");
+  }
+
+  private boolean scriptRunSuccessfully() throws InterruptedException {
+    return script.waitFor(4, TimeUnit.MINUTES) && script.exitValue() == 0;
   }
 
   public static class Builder {
@@ -42,7 +47,7 @@ public class DamlScriptRunner {
     private String darPath;
     private String scriptName;
     private String sandboxPort;
-    private boolean useWallclockTime = false;
+    private boolean useWallClockTime = false;
 
     public Builder dar(Path path) {
       this.darPath = path.toString();
@@ -60,7 +65,7 @@ public class DamlScriptRunner {
     }
 
     public Builder useWallclockTime(boolean useWallclockTime) {
-      this.useWallclockTime = useWallclockTime;
+      this.useWallClockTime = useWallclockTime;
       return this;
     }
 
@@ -87,7 +92,7 @@ public class DamlScriptRunner {
               sandboxHost,
               "--ledger-port",
               sandboxPort,
-              useWallclockTime ? "--wall-clock-time" : "--static-time");
+              useWallClockTime ? "--wall-clock-time" : "--static-time");
     }
   }
 }
