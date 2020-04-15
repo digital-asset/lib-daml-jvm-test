@@ -22,8 +22,6 @@ public class UnixSandboxRunner extends SandboxRunner {
       Optional<LogLevel> logLevel) {
     super(
         relativeDarPath,
-        testModule,
-        testStartScript,
         sandboxPort,
         useWallclockTime,
         ledgerId,

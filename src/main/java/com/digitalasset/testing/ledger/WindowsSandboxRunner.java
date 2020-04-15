@@ -24,8 +24,6 @@ public class WindowsSandboxRunner extends SandboxRunner {
       Optional<LogLevel> logLevel) {
     super(
         relativeDarPath,
-        testModule,
-        testStartScript,
         sandboxPort,
         useWallclockTime,
         ledgerId,

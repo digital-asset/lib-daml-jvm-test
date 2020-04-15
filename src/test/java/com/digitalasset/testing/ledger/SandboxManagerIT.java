@@ -61,7 +61,7 @@ public class SandboxManagerIT {
             false,
             Optional.empty(),
             Optional.empty());
-    String ledgerIdPattern = "sandbox-[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
+    String ledgerIdPattern = "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
     try {
       manager.start();
       assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
