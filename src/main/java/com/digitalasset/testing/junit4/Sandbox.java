@@ -113,11 +113,6 @@ public class Sandbox {
     public Sandbox build() {
       Objects.requireNonNull(darPath);
 
-      if (useReset && (testModule.isPresent() || testStartScript.isPresent())) {
-        throw new IllegalStateException(
-            "Reset mode cannot be used together with market setup module/scenario.");
-      }
-
       if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
             "Market setup module and script need to be defined together or none of them shall be specifid.");
