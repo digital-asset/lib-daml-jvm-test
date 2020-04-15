@@ -37,16 +37,6 @@ public class DamlScriptRunner {
     logger.info("DAML Script has run successfully.");
   }
 
-  public void kill() {
-    try {
-      if (script.isAlive()) {
-        script.destroyForcibly().waitFor();
-      }
-    } catch (InterruptedException e) {
-      logger.error("Could not stop DAML script.", e);
-    }
-  }
-
   public static class Builder {
 
     private String darPath;
