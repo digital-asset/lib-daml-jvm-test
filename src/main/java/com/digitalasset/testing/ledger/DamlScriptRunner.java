@@ -88,34 +88,19 @@ public class DamlScriptRunner {
 
     private ProcessBuilder command() {
       String sandboxHost = "localhost";
-      if (useWallclockTime) {
-        return new ProcessBuilder()
-            .command(
-                "daml",
-                "script",
-                "--dar",
-                darPath,
-                "--script-name",
-                scriptName,
-                "--ledger-host",
-                sandboxHost,
-                "--ledger-port",
-                sandboxPort,
-                "-w");
-      } else {
-        return new ProcessBuilder()
-            .command(
-                "daml",
-                "script",
-                "--dar",
-                darPath,
-                "--script-name",
-                scriptName,
-                "--ledger-host",
-                sandboxHost,
-                "--ledger-port",
-                sandboxPort);
-      }
+      return new ProcessBuilder()
+          .command(
+              "daml",
+              "script",
+              "--dar",
+              darPath,
+              "--script-name",
+              scriptName,
+              "--ledger-host",
+              sandboxHost,
+              "--ledger-port",
+              sandboxPort,
+              useWallclockTime ? "--wall-clock-time" : "--static-time");
     }
   }
 }
