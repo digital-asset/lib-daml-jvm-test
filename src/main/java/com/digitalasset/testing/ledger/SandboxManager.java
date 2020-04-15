@@ -128,7 +128,7 @@ public class SandboxManager {
     start();
   }
 
-  public void reset() throws TimeoutException {
+  public void reset() throws TimeoutException, IOException, InterruptedException {
     ResetServiceGrpc.newBlockingStub(channel)
         .reset(
             ResetServiceOuterClass.ResetRequest.newBuilder()
@@ -138,12 +138,24 @@ public class SandboxManager {
     startCommChannels();
   }
 
-  private void startSandbox(int port) throws IOException, InterruptedException {
+  private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
             darPath, testModule, testStartScript, sandboxPort, useWallclockTime, ledgerId, logLevel);
     sandboxRunner.startSandbox();
+  }
+
+  private void startCommChannels() throws TimeoutException, IOException, InterruptedException {
+    channel =
+        ManagedChannelBuilder.forAddress("localhost", sandboxPort)
+            .usePlaintext()
+            .maxInboundMessageSize(Integer.MAX_VALUE)
+            .build();
+    DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
+    ledgerClient = builder.build();
+    waitForSandbox(ledgerClient, waitTimeout, logger);
+
     if (testModule.isPresent() && testStartScript.isPresent()) {
       DamlScriptRunner scriptRunner = new DamlScriptRunner.Builder()
               .dar(darPath)
@@ -153,17 +165,7 @@ public class SandboxManager {
               .build();
       scriptRunner.run();
     }
-  }
 
-  private void startCommChannels() throws TimeoutException {
-    channel =
-        ManagedChannelBuilder.forAddress("localhost", sandboxPort)
-            .usePlaintext()
-            .maxInboundMessageSize(Integer.MAX_VALUE)
-            .build();
-    DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
-    ledgerClient = builder.build();
-    waitForSandbox(ledgerClient, waitTimeout, logger);
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)
             .getLedgerIdentity(
