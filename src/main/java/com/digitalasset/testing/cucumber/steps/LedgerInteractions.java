@@ -17,7 +17,6 @@ import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.cucumber.utils.Config;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.digitalasset.testing.utils.PackageUtils;
-import com.digitalasset.testing.utils.SandboxUtils;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
@@ -70,13 +69,16 @@ public class LedgerInteractions implements En {
         "^Sandbox is started in directory \"([^\"]+)\" with DAR \"([^\"]+)\" and the following parties$",
         (String projectRoot, String darPath, DataTable dataTable) -> {
           String[] parties = dataTable.asList().toArray(new String[] {});
-          startSandbox(Paths.get(projectRoot), Paths.get(darPath), parties);
+          startSandbox(
+              Paths.get(projectRoot).toAbsolutePath().normalize(),
+              Paths.get(darPath).toAbsolutePath().normalize(),
+              parties);
         });
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPathS, DataTable dataTable) -> {
-          Path darPath = Paths.get(darPathS);
-          Path projectRoot = SandboxUtils.findDamlYaml(darPath.getParent());
+          Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
+          Path projectRoot = darPath.getParent();
           String[] parties = dataTable.asList().toArray(new String[] {});
           startSandbox(projectRoot, darPath, parties);
         });
