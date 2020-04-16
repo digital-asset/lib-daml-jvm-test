@@ -6,31 +6,28 @@
 
 package com.digitalasset.testing;
 
-import com.daml.ledger.javaapi.data.*;
-import com.digitalasset.daml_lf_dev.DamlLf1;
+import static com.digitalasset.testing.TestCommons.ALICE;
+import static com.digitalasset.testing.TestCommons.BOB;
+import static com.digitalasset.testing.TestCommons.CHARLIE;
+import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
+import static org.junit.Assert.assertTrue;
+
 import com.digitalasset.testing.junit4.Sandbox;
-import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.digitalasset.testing.Dsl.*;
-import static com.digitalasset.testing.TestCommons.*;
-import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class SetupAppCallbackIT {
   private static AtomicBoolean boolFlag = new AtomicBoolean(false);
 
   private static Sandbox sandbox =
       Sandbox.builder()
+          .projectRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .setupAppCallback(client -> boolFlag.set(true))

@@ -2,7 +2,7 @@ Feature: Cucumber support in the Functional Testing library
   Cucumber support needs to work.
 
   Background:
-    Given Sandbox is started with DAR "src/test/resources/ping-pong.dar" and the following parties
+    Given Sandbox is started in directory "src/test/resources/ping-pong" with DAR "src/test/resources/ping-pong.dar" and the following parties
     | Alice |
     | Bob   |
 

@@ -6,8 +6,8 @@
 
 package com.digitalasset.testing.ledger.clock;
 
-import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
-import com.digitalasset.ledger.api.v1.testing.TimeServiceOuterClass;
+import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.api.v1.testing.TimeServiceOuterClass;
 
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Monitor;

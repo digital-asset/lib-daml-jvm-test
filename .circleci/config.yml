@@ -27,7 +27,9 @@ jobs:
       - restore_cache:
           keys:
             - m2-{{ checksum "build.sbt" }}
-            - daml-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
+      - restore_cache:
+          keys:
+            - daml-{{ checksum "build.sbt" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
       - run:
           command: |
             ./scripts/install-daml.sh << parameters.daml_sdk_version >>
@@ -67,11 +69,11 @@ workflows:
   build_and_test:
     jobs:
       - sbt_verify:
-          daml_sdk_version: "0.13.52"
+          daml_sdk_version: "1.0.0"
           context: blackduck
   build_and_release:
     jobs:
       - sbt_publish:
           <<: *only-master
-          daml_sdk_version: "0.13.52"
+          daml_sdk_version: "1.0.0"
           context: github-refapp-repo-context

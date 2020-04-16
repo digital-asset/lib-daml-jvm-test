@@ -7,6 +7,7 @@
 package com.digitalasset.testing.ledger;
 
 import static com.digitalasset.testing.TestCommons.DAR_PATH;
+import static com.digitalasset.testing.TestCommons.RESOURCE_DIR;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +33,7 @@ public class SandboxManagerIT {
 
     SandboxManager manager =
         new SandboxManager(
+            RESOURCE_DIR,
             Optional.empty(),
             Optional.empty(),
             Duration.ofMinutes(1),
@@ -52,6 +54,7 @@ public class SandboxManagerIT {
   public void managerReturnsAutomaticallyAssignedLedgerId() throws Exception {
     SandboxManager manager =
         new SandboxManager(
+            RESOURCE_DIR,
             Optional.empty(),
             Optional.empty(),
             Duration.ofMinutes(1),
@@ -61,7 +64,7 @@ public class SandboxManagerIT {
             false,
             Optional.empty(),
             Optional.empty());
-    String ledgerIdPattern = "sandbox-[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
+    String ledgerIdPattern = "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
     try {
       manager.start();
       assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
@@ -74,6 +77,7 @@ public class SandboxManagerIT {
   public void managerReturnsSpecifiedLedgerId() throws Exception {
     SandboxManager manager =
         new SandboxManager(
+            RESOURCE_DIR,
             Optional.empty(),
             Optional.empty(),
             Duration.ofMinutes(1),

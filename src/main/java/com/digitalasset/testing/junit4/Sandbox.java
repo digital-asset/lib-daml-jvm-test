@@ -9,13 +9,15 @@ package com.digitalasset.testing.junit4;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.digitalasset.daml_lf_dev.DamlLf1;
+import com.daml.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 import org.junit.rules.ExternalResource;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -24,6 +26,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.digitalasset.testing.utils.PackageUtils.findPackage;
+import static com.digitalasset.testing.utils.SandboxUtils.damlYamlP;
+import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
 
 public class Sandbox {
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
@@ -36,9 +40,10 @@ public class Sandbox {
 
   public static class SandboxBuilder {
     private Optional<String> testModule = Optional.empty();
-    private Optional<String> testScenario = Optional.empty();
+    private Optional<String> testStartScript = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
+    private Path projectRoot;
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useReset = false;
@@ -56,8 +61,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder scenario(String testScenario) {
-      this.testScenario = Optional.of(testScenario);
+    public SandboxBuilder startScript(String testStartScript) {
+      this.testStartScript = Optional.of(testStartScript);
       return this;
     }
 
@@ -110,17 +115,27 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder projectRoot(Path projectRoot) {
+      try {
+        if (Files.list(projectRoot).noneMatch(damlYamlP()))
+          throw new IllegalArgumentException("Project root must contain a daml.yaml");
+
+        this.projectRoot = projectRoot;
+        return this;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     public Sandbox build() {
       Objects.requireNonNull(darPath);
-
-      if (useReset && (testModule.isPresent() || testScenario.isPresent())) {
-        throw new IllegalStateException(
-            "Reset mode cannot be used together with market setup module/scenario.");
+      if (projectRoot == null) {
+        projectRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
       }
 
-      if (testModule.isPresent() ^ testScenario.isPresent()) {
+      if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
-            "Market setup module and scenario need to be defined together.");
+            "Market setup module and script need to be defined together or none of them shall be specified.");
       }
 
       if (setupApplication == null) {
@@ -128,8 +143,9 @@ public class Sandbox {
       }
 
       return new Sandbox(
+          projectRoot,
           testModule,
-          testScenario,
+          testStartScript,
           waitTimeout,
           parties,
           darPath,
@@ -146,8 +162,9 @@ public class Sandbox {
   private final boolean useReset;
 
   private Sandbox(
+      Path projectRoot,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
@@ -158,8 +175,9 @@ public class Sandbox {
       Optional<LogLevel> logLevel) {
     this.sandboxManager =
         new SandboxManager(
+            projectRoot,
             testModule,
-            testScenario,
+            testStartScript,
             waitTimeout,
             parties,
             darPath,

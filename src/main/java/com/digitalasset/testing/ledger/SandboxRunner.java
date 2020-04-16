@@ -8,6 +8,7 @@ package com.digitalasset.testing.ledger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,33 +19,30 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final String relativeDarPath;
-  private final Optional<String> testModule;
-  private final Optional<String> testScenario;
+  private final Path relativeDarPath;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
+  private final Path projectRoot;
   private Process sandbox;
 
   public SandboxRunner(
-      String relativeDarPath,
-      Optional<String> testModule,
-      Optional<String> testScenario,
+      Path projectRoot,
+      Path relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
+    this.projectRoot = projectRoot;
     this.relativeDarPath = relativeDarPath;
-    this.testModule = testModule;
-    this.testScenario = testScenario;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
   }
 
-  private List<String> commands() {
+  private List<String> getDamlSandboxStarterCommand() {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
@@ -53,10 +51,6 @@ public abstract class SandboxRunner {
     commands.add("-p");
     commands.add(sandboxPort.toString());
     commands.add(useWallclockTime ? "-w" : "-s");
-    if (testModule.isPresent() && testScenario.isPresent()) {
-      commands.add("--scenario");
-      commands.add(String.format("%s:%s", testModule.get(), testScenario.get()));
-    }
     ledgerId.ifPresent(
         value -> {
           commands.add("--ledgerid");
@@ -67,12 +61,14 @@ public abstract class SandboxRunner {
           commands.add("--log-level");
           commands.add(value.toString());
         });
-    commands.add(relativeDarPath);
+    commands.add(relativeDarPath.toString());
     return commands;
   }
 
   public final void startSandbox() throws IOException {
-    ProcessBuilder procBuilder = new ProcessBuilder(commands());
+    ProcessBuilder procBuilder =
+        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(projectRoot.toFile());
+
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
     logger.debug("Executing: {}", String.join(" ", procBuilder.command()));

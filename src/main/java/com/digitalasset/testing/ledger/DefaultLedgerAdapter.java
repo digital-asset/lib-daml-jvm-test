@@ -6,12 +6,12 @@
 
 package com.digitalasset.testing.ledger;
 
-import com.digitalasset.ledger.api.v1.CommandServiceGrpc;
-import com.digitalasset.ledger.api.v1.CommandServiceOuterClass;
-import com.digitalasset.ledger.api.v1.CommandsOuterClass;
-import com.digitalasset.ledger.api.v1.LedgerOffsetOuterClass;
-import com.digitalasset.ledger.api.v1.TransactionServiceGrpc;
-import com.digitalasset.ledger.api.v1.TransactionServiceOuterClass;
+import com.daml.ledger.api.v1.CommandServiceGrpc;
+import com.daml.ledger.api.v1.CommandServiceOuterClass;
+import com.daml.ledger.api.v1.CommandsOuterClass;
+import com.daml.ledger.api.v1.LedgerOffsetOuterClass;
+import com.daml.ledger.api.v1.TransactionServiceGrpc;
+import com.daml.ledger.api.v1.TransactionServiceOuterClass;
 import com.digitalasset.testing.comparator.MessageTester;
 import com.digitalasset.testing.comparator.ledger.ContractCreated;
 import com.digitalasset.testing.ledger.clock.TimeProvider;
@@ -214,15 +214,16 @@ public class DefaultLedgerAdapter {
       response
           .getTransactionsList()
           .forEach(
-              tree ->
-                  tree.getEventsByIdMap()
-                      .values()
-                      .forEach(
-                          protoEvent -> {
-                            TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
-                            Dump.dump(wireLogger, new ObserveEvent(party, event));
-                            storage.onMessage(event);
-                          }));
+              tree -> {
+                tree.getEventsByIdMap()
+                    .values()
+                    .forEach(
+                        protoEvent -> {
+                          TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
+                          Dump.dump(wireLogger, new ObserveEvent(party, event));
+                          storage.onMessage(event);
+                        });
+              });
     }
   }
 
@@ -240,8 +241,6 @@ public class DefaultLedgerAdapter {
                     .setApplicationId(APP_ID)
                     .setCommandId(cmdId)
                     .setParty(party.getValue())
-                    .setLedgerEffectiveTime(toProtobufTimestamp(let))
-                    .setMaximumRecordTime(toProtobufTimestamp(mrt))
                     .addCommands(command.toProtoCommand()));
     CommandEvent event = new CommandEvent(cmdId, party.getValue(), command);
     Dump.dump(wireLogger, event);

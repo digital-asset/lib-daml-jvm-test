@@ -8,26 +8,21 @@ package com.digitalasset.testing.ledger;
 
 import com.digitalasset.testing.junit4.LogLevel;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class UnixSandboxRunner extends SandboxRunner {
 
   public UnixSandboxRunner(
-      String relativeDarPath,
+      Path projectRoot,
+      Path relativeDarPath,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    super(
-        relativeDarPath,
-        testModule,
-        testScenario,
-        sandboxPort,
-        useWallclockTime,
-        ledgerId,
-        logLevel);
+    super(projectRoot, relativeDarPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
   }
 
   @Override

@@ -10,11 +10,11 @@ import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
 import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceGrpc;
-import com.digitalasset.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceGrpc;
-import com.digitalasset.ledger.api.v1.testing.ResetServiceOuterClass;
-import com.digitalasset.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
+import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
+import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.ledger.clock.SystemTimeProvider;
@@ -35,10 +35,11 @@ import org.slf4j.LoggerFactory;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
+  private final Path projectRoot;
   private int sandboxPort;
 
   private final Optional<String> testModule;
-  private final Optional<String> testScenario;
+  private final Optional<String> testStartScript;
   private final Duration waitTimeout;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
@@ -53,16 +54,18 @@ public class SandboxManager {
   private ManagedChannel channel;
 
   public SandboxManager(
+      Path projectRoot,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
     this(
+        projectRoot,
         testModule,
-        testScenario,
+        testStartScript,
         waitTimeout,
         parties,
         darPath,
@@ -73,8 +76,9 @@ public class SandboxManager {
   }
 
   public SandboxManager(
+      Path projectRoot,
       Optional<String> testModule,
-      Optional<String> testScenario,
+      Optional<String> testStartScript,
       Duration waitTimeout,
       String[] parties,
       Path darPath,
@@ -82,8 +86,9 @@ public class SandboxManager {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
+    this.projectRoot = projectRoot;
     this.testModule = testModule;
-    this.testScenario = testScenario;
+    this.testStartScript = testStartScript;
     this.waitTimeout = waitTimeout;
     this.parties = parties;
     this.darPath = darPath;
@@ -109,11 +114,11 @@ public class SandboxManager {
     return channel;
   }
 
-  public void start() throws TimeoutException, IOException {
+  public void start() throws TimeoutException, IOException, InterruptedException {
     start(getSandboxPort());
   }
 
-  public void start(int port) throws TimeoutException, IOException {
+  public void start(int port) throws TimeoutException, IOException, InterruptedException {
     startSandbox(port);
     startCommChannels();
   }
@@ -123,12 +128,12 @@ public class SandboxManager {
     stopSandbox();
   }
 
-  public void restart() throws TimeoutException, IOException {
+  public void restart() throws TimeoutException, IOException, InterruptedException {
     stop();
     start();
   }
 
-  public void reset() throws TimeoutException {
+  public void reset() throws TimeoutException, IOException, InterruptedException {
     ResetServiceGrpc.newBlockingStub(channel)
         .reset(
             ResetServiceOuterClass.ResetRequest.newBuilder()
@@ -138,15 +143,30 @@ public class SandboxManager {
     startCommChannels();
   }
 
+  public String getLedgerId() {
+    return ledgerId.orElse(getClient().getLedgerId());
+  }
+
+  public Optional<LogLevel> getLogLevel() {
+    return logLevel;
+  }
+
   private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            darPath, testModule, testScenario, sandboxPort, useWallclockTime, ledgerId, logLevel);
+            projectRoot,
+            darPath,
+            testModule,
+            testStartScript,
+            sandboxPort,
+            useWallclockTime,
+            ledgerId,
+            logLevel);
     sandboxRunner.startSandbox();
   }
 
-  private void startCommChannels() throws TimeoutException {
+  private void startCommChannels() throws TimeoutException, IOException, InterruptedException {
     channel =
         ManagedChannelBuilder.forAddress("localhost", sandboxPort)
             .usePlaintext()
@@ -154,7 +174,19 @@ public class SandboxManager {
             .build();
     DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
     ledgerClient = builder.build();
-    waitForSandbox(ledgerClient, waitTimeout, logger);
+    try {
+      waitForSandbox(ledgerClient, waitTimeout, logger);
+    } catch (TimeoutException e) {
+      try {
+        sandboxRunner.stopSandbox();
+      } catch (Exception ee) {
+        throw new IOException("Unable to connect to sandbox, and failed to kill it.", ee);
+      }
+      throw e;
+    }
+
+    runScriptIfConfigured();
+
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)
             .getLedgerIdentity(
@@ -213,11 +245,17 @@ public class SandboxManager {
     sandboxRunner = null;
   }
 
-  public String getLedgerId() {
-    return ledgerId.orElse(getClient().getLedgerId());
-  }
-
-  public Optional<LogLevel> getLogLevel() {
-    return logLevel;
+  private void runScriptIfConfigured() throws IOException, InterruptedException {
+    if (testModule.isPresent() && testStartScript.isPresent()) {
+      DamlScriptRunner scriptRunner =
+          new DamlScriptRunner.Builder()
+              .projectRoot(projectRoot)
+              .dar(darPath)
+              .sandboxPort(sandboxPort)
+              .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
+              .useWallclockTime(useWallclockTime)
+              .build();
+      scriptRunner.run();
+    }
   }
 }

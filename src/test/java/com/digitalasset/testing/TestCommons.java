@@ -7,7 +7,7 @@
 package com.digitalasset.testing;
 
 import com.daml.ledger.javaapi.data.Party;
-import com.digitalasset.daml_lf_dev.DamlLf1;
+import com.daml.daml_lf_dev.DamlLf1;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
