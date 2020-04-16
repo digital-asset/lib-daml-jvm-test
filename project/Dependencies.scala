@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val DAML_SDK_VERSION = "0.13.56-snapshot.20200411.3905.0.f050da78"
+  val DAML_SDK_VERSION = "1.0.0"
   val scalapbVersion = "0.9.2"
   val yamlVersion = "1.23"
   val cucumberVersion = "4.3.1"
