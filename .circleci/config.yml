@@ -27,6 +27,8 @@ jobs:
       - restore_cache:
           keys:
             - m2-{{ checksum "build.sbt" }}
+      - restore_cache:
+          keys:
             - daml-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
       - run:
           command: |
