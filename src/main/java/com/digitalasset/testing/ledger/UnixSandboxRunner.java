@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class UnixSandboxRunner extends SandboxRunner {
 
-  public UnixSandboxRunner(
+  UnixSandboxRunner(
       Path damlRoot,
       Path relativeDarPath,
       Integer sandboxPort,

@@ -26,7 +26,7 @@ public abstract class SandboxRunner {
   private final File damlRoot;
   private Process sandbox;
 
-  public SandboxRunner(
+  SandboxRunner(
       Path damlRoot,
       Path relativeDarPath,
       Integer sandboxPort,

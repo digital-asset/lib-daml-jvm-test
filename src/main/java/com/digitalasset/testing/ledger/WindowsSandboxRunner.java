@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class WindowsSandboxRunner extends SandboxRunner {
 
-  public WindowsSandboxRunner(
+  WindowsSandboxRunner(
       Path damlRoot,
       Path relativeDarPath,
       Integer sandboxPort,
