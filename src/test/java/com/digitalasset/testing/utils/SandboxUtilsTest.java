@@ -7,7 +7,6 @@
 package com.digitalasset.testing.utils;
 
 import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
-import static com.digitalasset.testing.TestCommons.RESOURCE_DIR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -22,6 +21,6 @@ public class SandboxUtilsTest {
 
   @Test
   public void damlYamlIsNotSearched() {
-    assertFalse(SandboxUtils.isDamlRoot(RESOURCE_DIR));
+    assertFalse(SandboxUtils.isDamlRoot(PINGPONG_PATH.getParent()));
   }
 }
