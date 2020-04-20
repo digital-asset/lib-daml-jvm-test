@@ -1,7 +1,7 @@
 /*
- *  Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
+ * Copyright 2019 Digital Asset (Switzerland) GmbH and/or its affiliates
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package com.digitalasset.testing.utils;
