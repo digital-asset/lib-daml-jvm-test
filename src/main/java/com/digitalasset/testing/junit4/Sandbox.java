@@ -17,7 +17,6 @@ import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
@@ -27,8 +26,8 @@ import java.util.function.Consumer;
 import org.junit.rules.ExternalResource;
 
 public class Sandbox {
-  private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
-  private static String[] DEFAULT_PARTIES = new String[] {};
+  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
+  private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 
   public static SandboxBuilder builder() {
