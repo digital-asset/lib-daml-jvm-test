@@ -9,8 +9,6 @@ package com.digitalasset.testing.utils;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
-import org.slf4j.Logger;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import org.slf4j.Logger;
 
 public class SandboxUtils {
   private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
@@ -76,5 +75,9 @@ public class SandboxUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static boolean isDamlRoot(Path path) throws IOException {
+    return Files.list(path).anyMatch(damlYamlP());
   }
 }
