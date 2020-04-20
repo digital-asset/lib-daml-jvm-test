@@ -82,12 +82,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder module(String testModule) {
+    public SandboxBuilder moduleAndScript(String testModule, String testStartScript) {
       this.testModule = Optional.of(testModule);
-      return this;
-    }
-
-    public SandboxBuilder startScript(String testStartScript) {
       this.testStartScript = Optional.of(testStartScript);
       return this;
     }
@@ -151,11 +147,6 @@ public class Sandbox {
     }
 
     public Sandbox build() {
-      if (testModule.isPresent() ^ testStartScript.isPresent()) {
-        throw new IllegalStateException(
-            "Market setup module and script need to be defined together or none of them shall be specified.");
-      }
-
       return new Sandbox(
           damlRoot,
           testModule,

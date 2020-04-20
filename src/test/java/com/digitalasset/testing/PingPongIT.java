@@ -41,12 +41,11 @@ import java.util.concurrent.TimeoutException;
 import static com.digitalasset.testing.TestCommons.*;
 
 public class PingPongIT {
-  private static Sandbox sandbox =
+  private static final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
-          .module("Test")
-          .startScript("testSetup")
+          .moduleAndScript("Test", "testSetup")
           .parties(ALICE, BOB, CHARLIE)
           .build();
 
