@@ -73,11 +73,12 @@ public class Sandbox {
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useReset = false;
-    private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
+    private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
 
     public SandboxBuilder dar(Path darPath) {
+      Objects.requireNonNull(darPath);
       this.darPath = darPath;
       return this;
     }
@@ -117,6 +118,7 @@ public class Sandbox {
 
     public SandboxBuilder setupAppCallback(
         BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication) {
+      Objects.requireNonNull(setupApplication);
       this.setupApplication = setupApplication;
       return this;
     }
@@ -150,15 +152,9 @@ public class Sandbox {
     }
 
     public Sandbox build() {
-      Objects.requireNonNull(darPath);
-
       if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
             "Market setup module and script need to be defined together or none of them shall be specified.");
-      }
-
-      if (setupApplication == null) {
-        setupApplication = (t, u) -> {};
       }
 
       return new Sandbox(
