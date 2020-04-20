@@ -15,32 +15,16 @@ public class SandboxRunnerFactory {
   public static SandboxRunner getSandboxRunner(
       Path damlRoot,
       Path darPath,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
       int sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     if (OS.isWindows()) {
       return new WindowsSandboxRunner(
-          damlRoot,
-          darPath,
-          testModule,
-          testStartScript,
-          sandboxPort,
-          useWallclockTime,
-          ledgerId,
-          logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
     } else {
       return new UnixSandboxRunner(
-          damlRoot,
-          darPath,
-          testModule,
-          testStartScript,
-          sandboxPort,
-          useWallclockTime,
-          ledgerId,
-          logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
     }
   }
 }

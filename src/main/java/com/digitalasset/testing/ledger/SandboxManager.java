@@ -155,14 +155,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            damlRoot,
-            darPath,
-            testModule,
-            testStartScript,
-            sandboxPort,
-            useWallclockTime,
-            ledgerId,
-            logLevel);
+            damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
     sandboxRunner.startSandbox();
   }
 

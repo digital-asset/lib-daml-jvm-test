@@ -17,8 +17,6 @@ public class WindowsSandboxRunner extends SandboxRunner {
   public WindowsSandboxRunner(
       Path damlRoot,
       Path relativeDarPath,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,

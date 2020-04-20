@@ -15,8 +15,6 @@ public class UnixSandboxRunner extends SandboxRunner {
   public UnixSandboxRunner(
       Path damlRoot,
       Path relativeDarPath,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
