@@ -43,7 +43,7 @@ import static com.digitalasset.testing.TestCommons.*;
 public class PingPongIT {
   private static Sandbox sandbox =
       Sandbox.builder()
-          .projectRoot(PINGPONG_PATH)
+          .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .module("Test")
           .startScript("testSetup")

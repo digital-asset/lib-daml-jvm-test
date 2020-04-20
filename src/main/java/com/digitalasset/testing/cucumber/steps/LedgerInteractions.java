@@ -49,11 +49,11 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
-  private void startSandbox(Path projectRoot, Path darPath, String[] parties)
+  private void startSandbox(Path damlRoot, Path darPath, String[] parties)
       throws InterruptedException, IOException, TimeoutException {
     sandboxManager =
         new SandboxManager(
-            projectRoot,
+            damlRoot,
             Optional.empty(),
             Optional.empty(),
             Duration.ofSeconds(30),
@@ -67,10 +67,10 @@ public class LedgerInteractions implements En {
   public LedgerInteractions(Config config) {
     Given(
         "^Sandbox is started in directory \"([^\"]+)\" with DAR \"([^\"]+)\" and the following parties$",
-        (String projectRoot, String darPath, DataTable dataTable) -> {
+        (String damlRoot, String darPath, DataTable dataTable) -> {
           String[] parties = dataTable.asList().toArray(new String[] {});
           startSandbox(
-              Paths.get(projectRoot).toAbsolutePath().normalize(),
+              Paths.get(damlRoot).toAbsolutePath().normalize(),
               Paths.get(darPath).toAbsolutePath().normalize(),
               parties);
         });
@@ -78,9 +78,9 @@ public class LedgerInteractions implements En {
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPathS, DataTable dataTable) -> {
           Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
-          Path projectRoot = darPath.getParent();
+          Path damlRoot = darPath.getParent();
           String[] parties = dataTable.asList().toArray(new String[] {});
-          startSandbox(projectRoot, darPath, parties);
+          startSandbox(damlRoot, darPath, parties);
         });
     After(
         () -> {

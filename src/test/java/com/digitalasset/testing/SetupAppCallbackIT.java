@@ -27,7 +27,7 @@ public class SetupAppCallbackIT {
 
   private static Sandbox sandbox =
       Sandbox.builder()
-          .projectRoot(PINGPONG_PATH)
+          .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .setupAppCallback(client -> boolFlag.set(true))

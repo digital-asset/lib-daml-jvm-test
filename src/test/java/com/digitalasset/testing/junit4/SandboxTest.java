@@ -21,7 +21,7 @@ public class SandboxTest {
   public void logLevelIsSet() {
     Sandbox sandbox =
         Sandbox.builder()
-            .projectRoot(PINGPONG_PATH)
+            .damlRoot(PINGPONG_PATH)
             .dar(DAR_PATH)
             .ledgerId("sample-ledger")
             .logLevel(LogLevel.TRACE)

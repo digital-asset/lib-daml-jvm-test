@@ -6,28 +6,26 @@
 
 package com.digitalasset.testing.junit4;
 
+import static com.digitalasset.testing.utils.PackageUtils.findPackage;
+import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
+import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
+
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.daml.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import org.junit.rules.ExternalResource;
-
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import static com.digitalasset.testing.utils.PackageUtils.findPackage;
-import static com.digitalasset.testing.utils.SandboxUtils.damlYamlP;
-import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
+import org.junit.rules.ExternalResource;
 
 public class Sandbox {
   private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
@@ -38,12 +36,41 @@ public class Sandbox {
     return new SandboxBuilder();
   }
 
+  private Sandbox(
+      Path damlRoot,
+      Optional<String> testModule,
+      Optional<String> testStartScript,
+      Duration waitTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
+      boolean useReset,
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
+    this.sandboxManager =
+        new SandboxManager(
+            damlRoot,
+            testModule,
+            testStartScript,
+            waitTimeout,
+            parties,
+            darPath,
+            setupApplication,
+            useWallclockTime,
+            ledgerId,
+            logLevel);
+    this.useReset = useReset;
+  }
+
+  private final boolean useReset;
+
   public static class SandboxBuilder {
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
-    private Path projectRoot;
+    private Path damlRoot;
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useReset = false;
@@ -115,12 +142,12 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder projectRoot(Path projectRoot) {
+    public SandboxBuilder damlRoot(Path damlRoot) {
       try {
-        if (Files.list(projectRoot).noneMatch(damlYamlP()))
-          throw new IllegalArgumentException("Project root must contain a daml.yaml");
+        if (!isDamlRoot(damlRoot))
+          throw new IllegalArgumentException("DAML root must contain a daml.yaml");
 
-        this.projectRoot = projectRoot;
+        this.damlRoot = damlRoot;
         return this;
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -129,8 +156,8 @@ public class Sandbox {
 
     public Sandbox build() {
       Objects.requireNonNull(darPath);
-      if (projectRoot == null) {
-        projectRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
+      if (damlRoot == null) {
+        damlRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
       }
 
       if (testModule.isPresent() ^ testStartScript.isPresent()) {
@@ -143,7 +170,7 @@ public class Sandbox {
       }
 
       return new Sandbox(
-          projectRoot,
+          damlRoot,
           testModule,
           testStartScript,
           waitTimeout,
@@ -157,35 +184,6 @@ public class Sandbox {
     }
 
     private SandboxBuilder() {}
-  }
-
-  private final boolean useReset;
-
-  private Sandbox(
-      Path projectRoot,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
-      Duration waitTimeout,
-      String[] parties,
-      Path darPath,
-      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
-      boolean useWallclockTime,
-      boolean useReset,
-      Optional<String> ledgerId,
-      Optional<LogLevel> logLevel) {
-    this.sandboxManager =
-        new SandboxManager(
-            projectRoot,
-            testModule,
-            testStartScript,
-            waitTimeout,
-            parties,
-            darPath,
-            setupApplication,
-            useWallclockTime,
-            ledgerId,
-            logLevel);
-    this.useReset = useReset;
   }
 
   public DamlLedgerClient getClient() {

@@ -21,7 +21,7 @@ public class SandboxIT {
 
   private static Sandbox sandbox =
       Sandbox.builder()
-          .projectRoot(PINGPONG_PATH)
+          .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .ledgerId("sample-ledger")
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override

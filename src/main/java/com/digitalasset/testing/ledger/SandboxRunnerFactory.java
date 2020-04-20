@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class SandboxRunnerFactory {
   public static SandboxRunner getSandboxRunner(
-      Path projectRoot,
+      Path damlRoot,
       Path darPath,
       Optional<String> testModule,
       Optional<String> testStartScript,
@@ -23,7 +23,7 @@ public class SandboxRunnerFactory {
       Optional<LogLevel> logLevel) {
     if (OS.isWindows()) {
       return new WindowsSandboxRunner(
-          projectRoot,
+          damlRoot,
           darPath,
           testModule,
           testStartScript,
@@ -33,7 +33,7 @@ public class SandboxRunnerFactory {
           logLevel);
     } else {
       return new UnixSandboxRunner(
-          projectRoot,
+          damlRoot,
           darPath,
           testModule,
           testStartScript,

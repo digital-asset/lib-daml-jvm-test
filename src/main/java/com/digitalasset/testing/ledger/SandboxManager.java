@@ -9,12 +9,12 @@ package com.digitalasset.testing.ledger;
 import static com.digitalasset.testing.utils.SandboxUtils.getSandboxPort;
 import static com.digitalasset.testing.utils.SandboxUtils.waitForSandbox;
 
-import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
 import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
 import com.digitalasset.testing.ledger.clock.SystemTimeProvider;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
-  private final Path projectRoot;
+  private final Path damlRoot;
   private int sandboxPort;
 
   private final Optional<String> testModule;
@@ -54,7 +54,7 @@ public class SandboxManager {
   private ManagedChannel channel;
 
   public SandboxManager(
-      Path projectRoot,
+      Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
       Duration waitTimeout,
@@ -63,7 +63,7 @@ public class SandboxManager {
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
     this(
-        projectRoot,
+        damlRoot,
         testModule,
         testStartScript,
         waitTimeout,
@@ -76,7 +76,7 @@ public class SandboxManager {
   }
 
   public SandboxManager(
-      Path projectRoot,
+      Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
       Duration waitTimeout,
@@ -86,7 +86,7 @@ public class SandboxManager {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    this.projectRoot = projectRoot;
+    this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
     this.waitTimeout = waitTimeout;
@@ -155,7 +155,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            projectRoot,
+            damlRoot,
             darPath,
             testModule,
             testStartScript,
@@ -249,7 +249,7 @@ public class SandboxManager {
     if (testModule.isPresent() && testStartScript.isPresent()) {
       DamlScriptRunner scriptRunner =
           new DamlScriptRunner.Builder()
-              .projectRoot(projectRoot)
+              .damlRoot(damlRoot)
               .dar(darPath)
               .sandboxPort(sandboxPort)
               .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))

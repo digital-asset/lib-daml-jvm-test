@@ -6,14 +6,13 @@
 
 package com.digitalasset.testing.ledger;
 
+import com.digitalasset.testing.junit4.LogLevel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import com.digitalasset.testing.junit4.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,17 +23,17 @@ public abstract class SandboxRunner {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
-  private final Path projectRoot;
+  private final File damlRoot;
   private Process sandbox;
 
   public SandboxRunner(
-      Path projectRoot,
+      Path damlRoot,
       Path relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    this.projectRoot = projectRoot;
+    this.damlRoot = damlRoot != null ? damlRoot.toFile() : null;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
@@ -67,7 +66,7 @@ public abstract class SandboxRunner {
 
   public final void startSandbox() throws IOException {
     ProcessBuilder procBuilder =
-        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(projectRoot.toFile());
+        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(damlRoot);
 
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
