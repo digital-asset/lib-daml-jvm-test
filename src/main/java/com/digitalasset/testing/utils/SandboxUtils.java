@@ -68,15 +68,6 @@ public class SandboxUtils {
     return p -> Objects.equals("daml.yaml", p.getFileName().toString());
   }
 
-  public static Path findDamlYaml(Path p) {
-    try {
-      if (Files.list(p).anyMatch(damlYamlP())) return p;
-      else return findDamlYaml(Objects.requireNonNull(p.getParent(), "No daml.yaml found."));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static boolean isDamlRoot(Path path) throws IOException {
     return Files.list(path).anyMatch(damlYamlP());
   }

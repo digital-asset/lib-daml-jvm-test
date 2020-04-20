@@ -7,7 +7,6 @@
 package com.digitalasset.testing.junit4;
 
 import static com.digitalasset.testing.utils.PackageUtils.findPackage;
-import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
 import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
 
 import com.daml.daml_lf_dev.DamlLf1;
@@ -156,9 +155,6 @@ public class Sandbox {
 
     public Sandbox build() {
       Objects.requireNonNull(darPath);
-      if (damlRoot == null) {
-        damlRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
-      }
 
       if (testModule.isPresent() ^ testStartScript.isPresent()) {
         throw new IllegalStateException(
