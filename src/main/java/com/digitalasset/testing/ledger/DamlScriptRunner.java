@@ -71,15 +71,11 @@ public class DamlScriptRunner {
     }
 
     public Builder damlRoot(Path damlRoot) {
-      try {
-        if (!isDamlRoot(damlRoot))
-          throw new IllegalArgumentException("Project root must contain a daml.yaml");
+      if (!isDamlRoot(damlRoot))
+        throw new IllegalArgumentException("DAML root must contain a daml.yaml");
 
-        this.damlRoot = damlRoot.toFile();
-        return this;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      this.damlRoot = damlRoot.toFile();
+      return this;
     }
 
     public DamlScriptRunner build() {

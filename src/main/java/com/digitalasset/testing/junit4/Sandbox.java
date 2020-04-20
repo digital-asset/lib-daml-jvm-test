@@ -142,15 +142,11 @@ public class Sandbox {
     }
 
     public SandboxBuilder damlRoot(Path damlRoot) {
-      try {
-        if (!isDamlRoot(damlRoot))
-          throw new IllegalArgumentException("DAML root must contain a daml.yaml");
+      if (!isDamlRoot(damlRoot))
+        throw new IllegalArgumentException("DAML root must contain a daml.yaml");
 
-        this.damlRoot = damlRoot;
-        return this;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      this.damlRoot = damlRoot;
+      return this;
     }
 
     public Sandbox build() {

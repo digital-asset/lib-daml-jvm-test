@@ -64,7 +64,11 @@ public class SandboxUtils {
     else throw new TimeoutException("Can't connect to sandbox");
   }
 
-  public static boolean isDamlRoot(Path path) throws IOException {
-    return Files.list(path).anyMatch(p -> p.endsWith(DAML_YAML));
+  public static boolean isDamlRoot(Path path) {
+    try {
+      return Files.list(path).anyMatch(p -> p.endsWith(DAML_YAML));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

@@ -11,18 +11,17 @@ import static com.digitalasset.testing.TestCommons.RESOURCE_DIR;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import org.junit.Test;
 
 public class SandboxUtilsTest {
 
   @Test
-  public void pathWithDamlYamlIsDamlRoot() throws IOException {
+  public void pathWithDamlYamlIsDamlRoot() {
     assertTrue(SandboxUtils.isDamlRoot(PINGPONG_PATH));
   }
 
   @Test
-  public void damlYamlIsNotSearched() throws IOException {
+  public void damlYamlIsNotSearched() {
     assertFalse(SandboxUtils.isDamlRoot(RESOURCE_DIR));
   }
 }
