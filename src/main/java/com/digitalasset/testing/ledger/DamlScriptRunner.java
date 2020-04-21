@@ -6,6 +6,7 @@
 
 package com.digitalasset.testing.ledger;
 
+import static com.digitalasset.testing.utils.Preconditions.require;
 import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
 
 import java.io.File;
@@ -44,7 +45,7 @@ public class DamlScriptRunner {
   }
 
   public static class Builder {
-    private File damlRoot;
+    private Path damlRoot;
     private Path darPath;
     private String scriptName;
     private String sandboxPort;
@@ -71,14 +72,14 @@ public class DamlScriptRunner {
     }
 
     public Builder damlRoot(Path damlRoot) {
-      if (!isDamlRoot(damlRoot))
-        throw new IllegalArgumentException("DAML root must contain a daml.yaml");
-
-      this.damlRoot = damlRoot.toFile();
+      this.damlRoot = damlRoot;
       return this;
     }
 
     public DamlScriptRunner build() {
+      require(
+          isDamlRoot(damlRoot),
+          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
       File logFile = new File(String.format("integration-test-%s.log", scriptName));
       ProcessBuilder processBuilder =
           command()
@@ -90,7 +91,7 @@ public class DamlScriptRunner {
     private ProcessBuilder command() {
       String sandboxHost = "localhost";
       return new ProcessBuilder()
-          .directory(damlRoot)
+          .directory(damlRoot.toFile())
           .command(
               "daml",
               "script",
