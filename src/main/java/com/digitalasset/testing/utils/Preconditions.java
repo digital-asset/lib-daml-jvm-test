@@ -7,9 +7,9 @@
 package com.digitalasset.testing.utils;
 
 public class Preconditions {
-  public static void require(boolean expression, String message, Object... args) {
+  public static void require(boolean expression, String message) {
     if (!expression) {
-      throw new IllegalStateException(String.format(message, args));
+      throw new IllegalStateException(message);
     }
   }
 }
