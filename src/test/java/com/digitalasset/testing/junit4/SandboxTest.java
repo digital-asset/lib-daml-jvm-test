@@ -10,8 +10,12 @@ import static com.digitalasset.testing.TestCommons.DAR_PATH;
 import static com.digitalasset.testing.TestCommons.PINGPONG_PATH;
 import static com.digitalasset.testing.TestCommons.RESOURCE_DIR;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 import org.junit.Test;
 

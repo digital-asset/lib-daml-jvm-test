@@ -23,7 +23,7 @@ public abstract class SandboxRunner {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
-  private final File damlRoot;
+  private final Path damlRoot;
   private Process sandbox;
 
   SandboxRunner(
@@ -33,7 +33,7 @@ public abstract class SandboxRunner {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    this.damlRoot = damlRoot != null ? damlRoot.toFile() : null;
+    this.damlRoot = damlRoot;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
@@ -65,14 +65,20 @@ public abstract class SandboxRunner {
   }
 
   public final void startSandbox() throws IOException {
+    File workingDirectory = getWorkingDirectory(damlRoot);
     ProcessBuilder procBuilder =
-        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(damlRoot);
+        new ProcessBuilder(getDamlSandboxStarterCommand()).directory(workingDirectory);
 
     ProcessBuilder.Redirect redirect =
         ProcessBuilder.Redirect.appendTo(new File("integration-test-sandbox.log"));
     logger.debug("Executing: {}", String.join(" ", procBuilder.command()));
+    logger.debug("Working directory: {}", workingDirectory);
     sandbox = procBuilder.redirectError(redirect).redirectOutput(redirect).start();
     logger.info("Starting sandbox...");
+  }
+
+  private File getWorkingDirectory(Path path) {
+    return path != null ? path.toFile() : null;
   }
 
   protected void addCustomCommands(List<String> commands) {}
