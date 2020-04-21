@@ -162,9 +162,7 @@ public class Sandbox {
     }
 
     private void validate() {
-      require(
-          darPath != null && Files.isRegularFile(darPath),
-          String.format("DAR path '%s' must point to a file.", darPath));
+      require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
       require(
           isDamlRoot(damlRoot),
