@@ -7,6 +7,7 @@
 package com.digitalasset.testing.junit4;
 
 import static com.digitalasset.testing.utils.PackageUtils.findPackage;
+import static com.digitalasset.testing.utils.Preconditions.require;
 import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
 
 import com.daml.daml_lf_dev.DamlLf1;
@@ -17,9 +18,10 @@ import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -64,11 +66,12 @@ public class Sandbox {
   private final boolean useReset;
 
   public static class SandboxBuilder {
+    private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
-    private Path damlRoot;
+    private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useReset = false;
@@ -77,7 +80,6 @@ public class Sandbox {
     private Optional<LogLevel> logLevel = Optional.empty();
 
     public SandboxBuilder dar(Path darPath) {
-      Objects.requireNonNull(darPath);
       this.darPath = darPath;
       return this;
     }
@@ -113,7 +115,6 @@ public class Sandbox {
 
     public SandboxBuilder setupAppCallback(
         BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication) {
-      Objects.requireNonNull(setupApplication);
       this.setupApplication = setupApplication;
       return this;
     }
@@ -139,14 +140,13 @@ public class Sandbox {
     }
 
     public SandboxBuilder damlRoot(Path damlRoot) {
-      if (!isDamlRoot(damlRoot))
-        throw new IllegalArgumentException("DAML root must contain a daml.yaml");
-
       this.damlRoot = damlRoot;
       return this;
     }
 
     public Sandbox build() {
+      validate();
+
       return new Sandbox(
           damlRoot,
           testModule,
@@ -161,7 +161,15 @@ public class Sandbox {
           logLevel);
     }
 
-    private SandboxBuilder() {}
+    private void validate() {
+      require(
+          darPath != null && Files.isRegularFile(darPath),
+          String.format("DAR path '%s' must point to a file.", darPath));
+      require(setupApplication != null, "Application setup function cannot be null.");
+      require(
+          isDamlRoot(damlRoot),
+          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
+    }
   }
 
   public DamlLedgerClient getClient() {
