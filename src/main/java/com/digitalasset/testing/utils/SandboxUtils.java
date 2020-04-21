@@ -66,7 +66,7 @@ public class SandboxUtils {
 
   public static boolean isDamlRoot(Path path) {
     try {
-      return Files.list(path).anyMatch(p -> p.endsWith(DAML_YAML));
+      return Files.isDirectory(path) && Files.list(path).anyMatch(p -> p.endsWith(DAML_YAML));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

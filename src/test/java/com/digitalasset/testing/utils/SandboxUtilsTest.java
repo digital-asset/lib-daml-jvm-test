@@ -23,4 +23,9 @@ public class SandboxUtilsTest {
   public void damlYamlIsNotSearched() {
     assertFalse(SandboxUtils.isDamlRoot(PINGPONG_PATH.getParent()));
   }
+
+  @Test
+  public void fileIsNotDamlYamlRoot() {
+    assertFalse(SandboxUtils.isDamlRoot(PINGPONG_PATH.resolve("daml.yaml")));
+  }
 }
