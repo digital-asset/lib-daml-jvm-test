@@ -6,48 +6,76 @@
 
 package com.digitalasset.testing.junit4;
 
+import static com.digitalasset.testing.utils.PackageUtils.findPackage;
+import static com.digitalasset.testing.utils.Preconditions.require;
+import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
+
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.daml.daml_lf_dev.DamlLf1;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import org.junit.rules.ExternalResource;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import static com.digitalasset.testing.utils.PackageUtils.findPackage;
-import static com.digitalasset.testing.utils.SandboxUtils.damlYamlP;
-import static com.digitalasset.testing.utils.SandboxUtils.findDamlYaml;
+import org.junit.rules.ExternalResource;
 
 public class Sandbox {
-  private static Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
-  private static String[] DEFAULT_PARTIES = new String[] {};
+  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
+  private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 
   public static SandboxBuilder builder() {
     return new SandboxBuilder();
   }
 
+  private Sandbox(
+      Path damlRoot,
+      Optional<String> testModule,
+      Optional<String> testStartScript,
+      Duration waitTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
+      boolean useReset,
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
+    this.sandboxManager =
+        new SandboxManager(
+            damlRoot,
+            testModule,
+            testStartScript,
+            waitTimeout,
+            parties,
+            darPath,
+            setupApplication,
+            useWallclockTime,
+            ledgerId,
+            logLevel);
+    this.useReset = useReset;
+  }
+
+  private final boolean useReset;
+
   public static class SandboxBuilder {
+    private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
     private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
-    private Path projectRoot;
+    private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useReset = false;
-    private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
+    private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
 
@@ -56,12 +84,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder module(String testModule) {
+    public SandboxBuilder moduleAndScript(String testModule, String testStartScript) {
       this.testModule = Optional.of(testModule);
-      return this;
-    }
-
-    public SandboxBuilder startScript(String testStartScript) {
       this.testStartScript = Optional.of(testStartScript);
       return this;
     }
@@ -115,35 +139,16 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder projectRoot(Path projectRoot) {
-      try {
-        if (Files.list(projectRoot).noneMatch(damlYamlP()))
-          throw new IllegalArgumentException("Project root must contain a daml.yaml");
-
-        this.projectRoot = projectRoot;
-        return this;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+    public SandboxBuilder damlRoot(Path damlRoot) {
+      this.damlRoot = damlRoot;
+      return this;
     }
 
     public Sandbox build() {
-      Objects.requireNonNull(darPath);
-      if (projectRoot == null) {
-        projectRoot = findDamlYaml(darPath.toAbsolutePath().getParent());
-      }
-
-      if (testModule.isPresent() ^ testStartScript.isPresent()) {
-        throw new IllegalStateException(
-            "Market setup module and script need to be defined together or none of them shall be specified.");
-      }
-
-      if (setupApplication == null) {
-        setupApplication = (t, u) -> {};
-      }
+      validate();
 
       return new Sandbox(
-          projectRoot,
+          damlRoot,
           testModule,
           testStartScript,
           waitTimeout,
@@ -156,36 +161,13 @@ public class Sandbox {
           logLevel);
     }
 
-    private SandboxBuilder() {}
-  }
-
-  private final boolean useReset;
-
-  private Sandbox(
-      Path projectRoot,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
-      Duration waitTimeout,
-      String[] parties,
-      Path darPath,
-      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
-      boolean useWallclockTime,
-      boolean useReset,
-      Optional<String> ledgerId,
-      Optional<LogLevel> logLevel) {
-    this.sandboxManager =
-        new SandboxManager(
-            projectRoot,
-            testModule,
-            testStartScript,
-            waitTimeout,
-            parties,
-            darPath,
-            setupApplication,
-            useWallclockTime,
-            ledgerId,
-            logLevel);
-    this.useReset = useReset;
+    private void validate() {
+      require(darPath != null, "DAR path cannot be null.");
+      require(setupApplication != null, "Application setup function cannot be null.");
+      require(
+          isDamlRoot(damlRoot),
+          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
+    }
   }
 
   public DamlLedgerClient getClient() {

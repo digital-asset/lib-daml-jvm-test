@@ -40,7 +40,7 @@ import java.util.concurrent.TimeoutException;
 public class ResetIT {
   private static Sandbox sandbox =
       Sandbox.builder()
-          .projectRoot(PINGPONG_PATH)
+          .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .useReset()
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())

@@ -13,34 +13,18 @@ import java.util.Optional;
 
 public class SandboxRunnerFactory {
   public static SandboxRunner getSandboxRunner(
-      Path projectRoot,
+      Path damlRoot,
       Path darPath,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
       int sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     if (OS.isWindows()) {
       return new WindowsSandboxRunner(
-          projectRoot,
-          darPath,
-          testModule,
-          testStartScript,
-          sandboxPort,
-          useWallclockTime,
-          ledgerId,
-          logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
     } else {
       return new UnixSandboxRunner(
-          projectRoot,
-          darPath,
-          testModule,
-          testStartScript,
-          sandboxPort,
-          useWallclockTime,
-          ledgerId,
-          logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
     }
   }
 }
