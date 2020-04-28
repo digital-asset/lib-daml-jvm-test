@@ -60,7 +60,6 @@ public class DefaultLedgerAdapter {
 
   private static final String APP_ID = "func-test";
 
-  private static final Duration TIMEOUT = Duration.ofSeconds(10);
   private static final Duration TTL = Duration.ofSeconds(10);
 
   private static final String ChannelName = "ledger";
@@ -71,8 +70,8 @@ public class DefaultLedgerAdapter {
   // TODO(lt) figure out an interface for interacting with the value store
   public final ValueStore valueStore;
   private final Supplier<TimeProvider> timeProviderFactory;
+  private final Duration timeout;
 
-  private Duration timeout = TIMEOUT;
   private TimeProvider timeProvider;
   private ManagedChannel channel;
   private String ledgerId;
@@ -83,10 +82,12 @@ public class DefaultLedgerAdapter {
       ValueStore valueStore,
       String ledgerId,
       ManagedChannel channel,
+      Duration timeout,
       Supplier<TimeProvider> timeProviderFactory) {
     this.valueStore = valueStore;
     this.ledgerId = ledgerId;
     this.channel = channel;
+    this.timeout = timeout;
     this.timeProviderFactory = timeProviderFactory;
   }
 

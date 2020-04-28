@@ -18,7 +18,7 @@ import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import java.nio.file.Files;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -29,6 +29,7 @@ import org.junit.rules.ExternalResource;
 
 public class Sandbox {
   private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
+  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
   private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 
@@ -40,7 +41,8 @@ public class Sandbox {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
-      Duration waitTimeout,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
       String[] parties,
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
@@ -53,7 +55,8 @@ public class Sandbox {
             damlRoot,
             testModule,
             testStartScript,
-            waitTimeout,
+            sandboxWaitTimeout,
+            observationTimeout,
             parties,
             darPath,
             setupApplication,
@@ -69,7 +72,8 @@ public class Sandbox {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
-    private Duration waitTimeout = DEFAULT_WAIT_TIMEOUT;
+    private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
+    private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
@@ -90,8 +94,13 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder timeout(Duration waitTimeout) {
-      this.waitTimeout = waitTimeout;
+    public SandboxBuilder sandboxWaitTimeout(Duration waitTimeout) {
+      this.sandboxWaitTimeout = waitTimeout;
+      return this;
+    }
+
+    public SandboxBuilder observationTimeout(Duration timeout) {
+      this.observationTimeout = timeout;
       return this;
     }
 
@@ -151,7 +160,8 @@ public class Sandbox {
           damlRoot,
           testModule,
           testStartScript,
-          waitTimeout,
+          sandboxWaitTimeout,
+          observationTimeout,
           parties,
           darPath,
           setupApplication,

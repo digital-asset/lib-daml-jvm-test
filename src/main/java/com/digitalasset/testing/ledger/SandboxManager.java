@@ -40,7 +40,8 @@ public class SandboxManager {
 
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
-  private final Duration waitTimeout;
+  private final Duration sandboxWaitTimeout;
+  private final Duration observationTimeout;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final String[] parties;
@@ -57,7 +58,8 @@ public class SandboxManager {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
-      Duration waitTimeout,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
       String[] parties,
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
@@ -66,7 +68,8 @@ public class SandboxManager {
         damlRoot,
         testModule,
         testStartScript,
-        waitTimeout,
+        sandboxWaitTimeout,
+        observationTimeout,
         parties,
         darPath,
         setupApplication,
@@ -79,7 +82,8 @@ public class SandboxManager {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
-      Duration waitTimeout,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
       String[] parties,
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
@@ -89,7 +93,8 @@ public class SandboxManager {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
-    this.waitTimeout = waitTimeout;
+    this.sandboxWaitTimeout = sandboxWaitTimeout;
+    this.observationTimeout = observationTimeout;
     this.parties = parties;
     this.darPath = darPath;
     this.setupApplication = setupApplication;
@@ -168,7 +173,7 @@ public class SandboxManager {
     DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
     ledgerClient = builder.build();
     try {
-      waitForSandbox(ledgerClient, waitTimeout, logger);
+      waitForSandbox(ledgerClient, sandboxWaitTimeout, logger);
     } catch (TimeoutException e) {
       try {
         sandboxRunner.stopSandbox();
@@ -193,7 +198,7 @@ public class SandboxManager {
       timeProviderFactory = SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId);
     }
     ledgerAdapter =
-        new DefaultLedgerAdapter(new DefaultValueStore(), ledgerId, channel, timeProviderFactory);
+        new DefaultLedgerAdapter(new DefaultValueStore(), ledgerId, channel, observationTimeout, timeProviderFactory);
     ledgerAdapter.start(parties);
     setupApplication.accept(ledgerClient, channel);
   }
