@@ -4,13 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-if [ $# -eq 1 ]
-then
-    SDK_VERSION=$1
-else
-    echo "Usage: ${BASH_SOURCE[0]} [SDK_VERSION]"
-    exit 1
-fi
+SDK_VERSION=${1:?SDK version not specified.}
 
 set -e
 
