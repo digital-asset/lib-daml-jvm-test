@@ -198,7 +198,8 @@ public class SandboxManager {
       timeProviderFactory = SandboxTimeProvider.factory(TimeServiceGrpc.newStub(channel), ledgerId);
     }
     ledgerAdapter =
-        new DefaultLedgerAdapter(new DefaultValueStore(), ledgerId, channel, observationTimeout, timeProviderFactory);
+        new DefaultLedgerAdapter(
+            new DefaultValueStore(), ledgerId, channel, observationTimeout, timeProviderFactory);
     ledgerAdapter.start(parties);
     setupApplication.accept(ledgerClient, channel);
   }
