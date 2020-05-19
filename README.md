@@ -43,7 +43,7 @@ Additional daml dependencies are required by the library, but these dependencies
     ...
   </dependencies>
 ```
-**Note:** versioning of this library is not tied to DAML SDK versions. The above artifacts are considered stable, changing rarely. The testing library is compatible with minor version changes in the SDK. We will release new version of the library for incompatible SDK versions. You can test a desired SDK version by upgrading the Ping Pong test, simply edit `daml.yaml` or use `scripts/upgrade-sdk.sh`, and run the tests.
+**Note:** versioning of this library is not tied to DAML SDK versions. The above artifacts are considered stable, changing rarely. The testing library is compatible with minor version changes in the SDK. We will release new version of the library for incompatible SDK versions. You can test a desired SDK version by using `scripts/upgrade-sdk.sh`, and running the tests.
 ## Using the library in Java projects
 
 ### Using the library with the Sandbox JUnit4 Rule
