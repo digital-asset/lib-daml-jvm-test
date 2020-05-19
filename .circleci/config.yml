@@ -75,5 +75,5 @@ workflows:
     jobs:
       - sbt_publish:
           <<: *only-master
-          daml_sdk_version: "1.0.0"
+          daml_sdk_version: "1.1.1"
           context: github-refapp-repo-context
