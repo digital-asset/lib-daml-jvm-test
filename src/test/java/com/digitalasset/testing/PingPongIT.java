@@ -40,10 +40,15 @@ import java.util.concurrent.TimeoutException;
 import static com.digitalasset.testing.TestCommons.*;
 
 public class PingPongIT {
-  private static final Sandbox sandbox =
+  private final Party alice = getUniqueParty("Alice");
+  private final Party bob = getUniqueParty("Bob");
+  private final Party charlie = getUniqueParty("Charlie");
+
+  private final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
+          .parties(alice, bob, charlie)
           .moduleAndScript("Test", "testSetup")
           .build();
 
@@ -55,8 +60,6 @@ public class PingPongIT {
 
   @Test
   public void testCreate() throws InvalidProtocolBufferException {
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
     ledger().createContract(charlie, pingTemplateId(), record(charlie, bob, int64(777)));
 
     ContractWithId<ContractId> pingContract =
@@ -70,8 +73,6 @@ public class PingPongIT {
 
   @Test
   public void testObservationWithMatcher() throws InvalidProtocolBufferException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
     Record recordMatcher =
         record(field("sender", alice), field("receiver", bob), field("count", int64(2)));
 

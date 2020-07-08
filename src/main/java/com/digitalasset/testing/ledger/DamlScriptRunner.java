@@ -11,8 +11,14 @@ import static com.digitalasset.testing.utils.SandboxUtils.isDamlRoot;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +56,7 @@ public class DamlScriptRunner {
     private String scriptName;
     private String sandboxPort;
     private boolean useWallClockTime = false;
+    private String[] parties;
 
     public Builder dar(Path path) {
       this.darPath = path;
@@ -76,19 +83,32 @@ public class DamlScriptRunner {
       return this;
     }
 
-    public DamlScriptRunner build() {
+    public Builder parties(String[] parties) {
+      this.parties = parties;
+      return this;
+    }
+
+    public DamlScriptRunner build() throws IOException {
       require(
           isDamlRoot(damlRoot),
           String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
       File logFile = new File(String.format("integration-test-%s.log", scriptName));
+
+      String partiesJson =
+          Arrays.stream(parties)
+              .map(p -> String.format("\"%s\"", p))
+              .collect(Collectors.joining(", ", "[ ", " ]"));
+      Path scriptInputPath = Files.createTempFile("daml-script-input", null);
+      Files.write(scriptInputPath, partiesJson.getBytes());
+
       ProcessBuilder processBuilder =
-          command()
+          command(scriptInputPath)
               .redirectError(ProcessBuilder.Redirect.appendTo(logFile))
               .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
       return new DamlScriptRunner(processBuilder);
     }
 
-    private ProcessBuilder command() {
+    private ProcessBuilder command(Path scriptInputPath) {
       String sandboxHost = "localhost";
       return new ProcessBuilder()
           .directory(damlRoot.toFile())
@@ -103,6 +123,8 @@ public class DamlScriptRunner {
               sandboxHost,
               "--ledger-port",
               sandboxPort,
+              "--input-file",
+              scriptInputPath.toString(),
               useWallClockTime ? "--wall-clock-time" : "--static-time");
     }
   }

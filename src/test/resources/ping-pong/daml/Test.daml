@@ -20,11 +20,12 @@ testSetup_ = scenario $ do
         receiver = bob
         count = 2
 
-testSetup: Script ()
-testSetup = void $ do
-  alice   <- allocate "Alice"
-  bob     <- allocate "Bob"
-  charlie <-allocate "Charlie"
+testSetup: [Text] -> Script ()
+testSetup parties = void $ do
+  let [alice, bob, charlie] = parties
+  alice <- allocate alice
+  bob <- allocate bob
+  charlie <-allocate charlie
   submit alice $
     createCmd Ping with
         sender = alice

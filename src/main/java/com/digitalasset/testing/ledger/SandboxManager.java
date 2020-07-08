@@ -250,6 +250,7 @@ public class SandboxManager {
           new DamlScriptRunner.Builder()
               .damlRoot(damlRoot)
               .dar(darPath)
+              .parties(parties)
               .sandboxPort(sandboxPort)
               .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
               .useWallclockTime(useWallclockTime)
