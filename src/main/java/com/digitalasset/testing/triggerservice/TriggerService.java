@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package com.digitalasset.testing.triggerservice;
 
 import java.io.File;

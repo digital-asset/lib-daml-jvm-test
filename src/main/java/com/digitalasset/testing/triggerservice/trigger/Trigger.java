@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package com.digitalasset.testing.triggerservice.trigger;
 
 import java.net.MalformedURLException;
@@ -67,7 +68,6 @@ public class Trigger extends ExternalResource {
   }
 
   private String getTriggerStarterJsonBody() {
-    return String.format(
-        "{ \"triggerName\" : \"%s:%s\" }", this.packageId, this.triggerName);
+    return String.format("{ \"triggerName\" : \"%s:%s\" }", this.packageId, this.triggerName);
   }
 }
