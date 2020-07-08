@@ -49,7 +49,6 @@ public class PingPongIT {
           .parties(ALICE, BOB, CHARLIE)
           .build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
   @Rule public ExternalResource sandboxRule = sandbox.getRule();
 
   private DefaultLedgerAdapter ledger() {

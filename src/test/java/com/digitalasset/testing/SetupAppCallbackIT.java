@@ -33,7 +33,6 @@ public class SetupAppCallbackIT {
           .setupAppCallback(client -> boolFlag.set(true))
           .build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
   @Rule public ExternalResource sandboxRule = sandbox.getRule();
 
   @Test

@@ -47,7 +47,6 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      boolean useReset,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.sandboxManager =
@@ -63,10 +62,7 @@ public class Sandbox {
             useWallclockTime,
             ledgerId,
             logLevel);
-    this.useReset = useReset;
   }
-
-  private final boolean useReset;
 
   public static class SandboxBuilder {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
@@ -78,7 +74,6 @@ public class Sandbox {
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
-    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
@@ -128,11 +123,6 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder useReset() {
-      this.useReset = true;
-      return this;
-    }
-
     public SandboxBuilder useWallclockTime() {
       this.useWallclockTime = true;
       return this;
@@ -166,7 +156,6 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
-          useReset,
           ledgerId,
           logLevel);
     }
@@ -207,35 +196,17 @@ public class Sandbox {
     return new Identifier(pkg, moduleName, entityName);
   }
 
-  public ExternalResource getClassRule() {
+  public ExternalResource getRule() {
     return new ExternalResource() {
       @Override
       protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.start();
-        }
+        sandboxManager.start();
       }
 
       @Override
       protected void after() {
         sandboxManager.stop();
       }
-    };
-  }
-
-  public ExternalResource getRule() {
-    return new ExternalResource() {
-      @Override
-      protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.reset();
-        } else {
-          sandboxManager.restart();
-        }
-      }
-
-      @Override
-      protected void after() {}
     };
   }
 }
