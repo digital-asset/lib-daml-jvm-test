@@ -6,13 +6,10 @@
 
 package com.digitalasset.testing;
 
-import com.daml.ledger.javaapi.data.Party;
 import com.daml.daml_lf_dev.DamlLf1;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static com.digitalasset.testing.Dsl.party;
 
 public class TestCommons {
   public static final Path RESOURCE_DIR = Paths.get("src", "test", "resources").toAbsolutePath();
@@ -21,7 +18,4 @@ public class TestCommons {
   public static final String PING_PONG_MODULE_NAME = "PingPong";
   public static final DamlLf1.DottedName PING_PONG_MODULE =
       DamlLf1.DottedName.newBuilder().addSegments(PING_PONG_MODULE_NAME).build();
-  public static final Party ALICE = party("Alice");
-  public static final Party BOB = party("Bob");
-  public static final Party CHARLIE = party("Charlie");
 }

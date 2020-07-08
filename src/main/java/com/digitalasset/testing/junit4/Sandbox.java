@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.junit.rules.ExternalResource;
@@ -208,5 +209,9 @@ public class Sandbox {
         sandboxManager.stop();
       }
     };
+  }
+
+  public static Party getUniqueParty(String party) {
+    return new Party(String.format("%s_%s", party, UUID.randomUUID()));
   }
 }
