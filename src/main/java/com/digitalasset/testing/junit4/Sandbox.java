@@ -14,11 +14,13 @@ import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
+import com.digitalasset.testing.ledger.DamlScriptRunner;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -63,6 +65,11 @@ public class Sandbox {
             useWallclockTime,
             ledgerId,
             logLevel);
+  }
+
+  public void runScript(String testModule, String testStartScript, Party... parties)
+      throws IOException, InterruptedException {
+    this.sandboxManager.runScript(testModule, testStartScript, parties);
   }
 
   public static class SandboxBuilder {

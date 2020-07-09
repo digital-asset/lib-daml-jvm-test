@@ -14,6 +14,7 @@ import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
 import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.digitalasset.testing.junit4.LogLevel;
 import com.digitalasset.testing.ledger.clock.SandboxTimeProvider;
@@ -25,6 +26,7 @@ import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -156,6 +158,13 @@ public class SandboxManager {
     return logLevel;
   }
 
+  public void runScript(String testModule, String testStartScript, Party... parties)
+      throws IOException, InterruptedException {
+    String[] unwrappedParties =
+        Arrays.stream(parties).map(p -> p.toString()).toArray(String[]::new);
+    runScript(testModule, testStartScript, unwrappedParties);
+  }
+
   private void startSandbox(int port) throws IOException {
     sandboxPort = port;
     sandboxRunner =
@@ -246,16 +255,21 @@ public class SandboxManager {
 
   private void runScriptIfConfigured() throws IOException, InterruptedException {
     if (testModule.isPresent() && testStartScript.isPresent()) {
-      DamlScriptRunner scriptRunner =
-          new DamlScriptRunner.Builder()
-              .damlRoot(damlRoot)
-              .dar(darPath)
-              .parties(parties)
-              .sandboxPort(sandboxPort)
-              .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
-              .useWallclockTime(useWallclockTime)
-              .build();
-      scriptRunner.run();
+      runScript(testModule.get(), testStartScript.get(), parties);
     }
+  }
+
+  private void runScript(String testModule, String testStartScript, String[] parties)
+      throws IOException, InterruptedException {
+    DamlScriptRunner scriptRunner =
+        new DamlScriptRunner.Builder()
+            .damlRoot(damlRoot)
+            .dar(darPath)
+            .parties(parties)
+            .sandboxPort(sandboxPort)
+            .scriptName(String.format("%s:%s", testModule, testStartScript))
+            .useWallclockTime(useWallclockTime)
+            .build();
+    scriptRunner.run();
   }
 }
