@@ -161,7 +161,7 @@ public class SandboxManager {
   public void runScript(String testModule, String testStartScript, Party... parties)
       throws IOException, InterruptedException {
     String[] unwrappedParties =
-        Arrays.stream(parties).map(p -> p.toString()).toArray(String[]::new);
+        Arrays.stream(parties).map(p -> p.getValue()).toArray(String[]::new);
     runScript(testModule, testStartScript, unwrappedParties);
   }
 

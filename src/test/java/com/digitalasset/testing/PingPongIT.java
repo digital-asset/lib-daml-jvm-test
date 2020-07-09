@@ -220,7 +220,8 @@ public class PingPongIT {
   }
 
   @Test
-  public void testPingPongFullWorkflowWAlternativeApiCalls() throws IOException, InterruptedException {
+  public void testPingPongFullWorkflowWAlternativeApiCalls()
+      throws IOException, InterruptedException {
     Party alice = getUniqueParty("Alice");
     Party bob = getUniqueParty("Bob");
     Party charlie = getUniqueParty("Charlie");
