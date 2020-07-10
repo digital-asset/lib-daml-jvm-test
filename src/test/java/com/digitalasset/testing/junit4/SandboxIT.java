@@ -27,8 +27,6 @@ public class SandboxIT {
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
 
-  @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
-
   @Rule public ExternalResource rule = sandbox.getRule();
 
   @Test

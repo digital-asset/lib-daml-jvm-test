@@ -14,17 +14,21 @@ import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
+import com.digitalasset.testing.ledger.DamlScriptRunner;
 import com.digitalasset.testing.ledger.DefaultLedgerAdapter;
 import com.digitalasset.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.junit.rules.ExternalResource;
 
 public class Sandbox {
@@ -47,7 +51,6 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      boolean useReset,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.sandboxManager =
@@ -63,10 +66,12 @@ public class Sandbox {
             useWallclockTime,
             ledgerId,
             logLevel);
-    this.useReset = useReset;
   }
 
-  private final boolean useReset;
+  public void runScript(String testModule, String testStartScript, Party... parties)
+      throws IOException, InterruptedException {
+    this.sandboxManager.runScript(testModule, testStartScript, parties);
+  }
 
   public static class SandboxBuilder {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
@@ -78,7 +83,6 @@ public class Sandbox {
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
-    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
@@ -128,11 +132,6 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder useReset() {
-      this.useReset = true;
-      return this;
-    }
-
     public SandboxBuilder useWallclockTime() {
       this.useWallclockTime = true;
       return this;
@@ -166,7 +165,6 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
-          useReset,
           ledgerId,
           logLevel);
     }
@@ -207,13 +205,11 @@ public class Sandbox {
     return new Identifier(pkg, moduleName, entityName);
   }
 
-  public ExternalResource getClassRule() {
+  public ExternalResource getRule() {
     return new ExternalResource() {
       @Override
       protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.start();
-        }
+        sandboxManager.start();
       }
 
       @Override
@@ -223,19 +219,7 @@ public class Sandbox {
     };
   }
 
-  public ExternalResource getRule() {
-    return new ExternalResource() {
-      @Override
-      protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.reset();
-        } else {
-          sandboxManager.restart();
-        }
-      }
-
-      @Override
-      protected void after() {}
-    };
+  public static Party getUniqueParty(String party) {
+    return new Party(String.format("%s_%s", party, UUID.randomUUID()));
   }
 }
