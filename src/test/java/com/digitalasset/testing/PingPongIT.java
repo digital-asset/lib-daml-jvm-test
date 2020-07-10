@@ -30,7 +30,6 @@ import com.daml.ledger.javaapi.data.Value;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
@@ -43,14 +42,14 @@ import static com.digitalasset.testing.TestCommons.*;
 
 public class PingPongIT {
   private static final Sandbox sandbox =
-      Sandbox.builder()
-          .damlRoot(PINGPONG_PATH)
-          .dar(DAR_PATH)
-          // .parties(alice, bob, charlie)
-          // .moduleAndScript("Test", "testSetup")
-          .build();
+      Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).build();
 
   @ClassRule public static ExternalResource sandboxRule = sandbox.getRule();
+
+  private final Party alice = getUniqueParty("Alice");
+  private final Party bob = getUniqueParty("Bob");
+  private final Party charlie = getUniqueParty("Charlie");
+  private final Party[] parties = new Party[] {alice, bob, charlie};
 
   private DefaultLedgerAdapter ledger() {
     return sandbox.getLedgerAdapter();
@@ -58,11 +57,7 @@ public class PingPongIT {
 
   @Test
   public void testCreate() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ledger().createContract(charlie, pingTemplateId(), record(charlie, bob, int64(777)));
 
@@ -77,11 +72,7 @@ public class PingPongIT {
 
   @Test
   public void testObservationWithMatcher() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     Record recordMatcher =
         record(field("sender", alice), field("receiver", bob), field("count", int64(2)));
@@ -91,22 +82,14 @@ public class PingPongIT {
 
   @Test
   public void testObservationWithoutMatcher() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ledger().getCreatedContractId(bob, pingTemplateId(), ContractId::new);
   }
 
   @Test
   public void testSimpleObservation() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     String key = "mykey";
     ledger()
@@ -119,11 +102,7 @@ public class PingPongIT {
 
   @Test
   public void testObservation() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bob, pingTemplateId(), ContractId::new);
@@ -132,11 +111,7 @@ public class PingPongIT {
 
   @Test
   public void testExercise() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bob, pingTemplateId(), ContractId::new);
@@ -146,11 +121,7 @@ public class PingPongIT {
 
   @Test
   public void testExerciseCommand() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bob, pingTemplateId(), ContractId::new);
@@ -163,11 +134,7 @@ public class PingPongIT {
 
   @Test(expected = TimeoutException.class)
   public void testDoubleObservationNotPossible() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ledger().getMatchedContract(bob, pingTemplateId(), ContractId::new);
     ledger().getMatchedContract(bob, pingTemplateId(), ContractId::new);
@@ -175,11 +142,7 @@ public class PingPongIT {
 
   @Test
   public void testPingPongFullWorkflow() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     // PingPong workflow
     // Bob's turn
@@ -222,11 +185,7 @@ public class PingPongIT {
   @Test
   public void testPingPongFullWorkflowWAlternativeApiCalls()
       throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ContractId pingCid = ledger().getCreatedContractId(bob, pingTemplateId(), ContractId::new);
     ledger().exerciseChoice(bob, pingTemplateId(), pingCid, "RespondPong", emptyRecord());
@@ -244,11 +203,7 @@ public class PingPongIT {
 
   @Test(expected = StatusRuntimeException.class)
   public void testTimedOperationFailsIfTimeIsWrong() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
@@ -270,11 +225,7 @@ public class PingPongIT {
 
   @Test
   public void testTimedOperationIfTimeIsOk() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
@@ -297,11 +248,7 @@ public class PingPongIT {
 
   @Test
   public void testNumeric() throws IOException, InterruptedException {
-    Party alice = getUniqueParty("Alice");
-    Party bob = getUniqueParty("Bob");
-    Party charlie = getUniqueParty("Charlie");
-
-    sandbox.runScript("Test", "testSetup", alice, bob, charlie);
+    sandbox.runScript("Test", "testSetup", parties);
 
     ledger()
         .createContract(
