@@ -146,4 +146,59 @@ Example to fetch at most two SettledDvPs and check if one of them has a payment 
 If the boolean argument (`exact`) is true, each incoming contract must match at least one predicate.
 Otherwise, it may skip several events until all predicates are matched.
 
+### Using triggers
+
+Triggers can be started on their own or using the trigger service.
+Use the Sandbox classrule as explained above with the following pattern to start the trigger service with triggers:
+
+```
+import com.digitalasset.testing.triggerservice.TriggerService;
+import com.digitalasset.testing.triggerservice.trigger.Trigger;
+
+  private Trigger trigger(String triggerName, Party party) {
+    return Trigger.builder()
+          .ledgerHost("localhost")
+          .triggerName(triggerName)
+          .party(party)
+          .build();
+  }
+
+  private TriggerService triggerService() {
+    return TriggerService.builder()
+        .ledgerPort(sandbox::getSandboxPort)
+        .dar(RELATIVE_DAR_PATH)
+        .ledgerHost("localhost")
+        .useWallClockTime()
+        .build();
+  }
+
+  @Rule
+  public TestRule sandboxWithTriggers =
+      RuleChain.outerRule(sandbox.getRule())
+          .around(triggerService())
+          .around(trigger("MyApp.MyTrigger:trigger1", SOME_PARTY1))
+          .around(trigger("MyApp.MyTrigger:trigger2", SOME_PARTY2));
+```
+
+To use standalone triggers, import Standalone Trigger:
+```
+import com.digitalasset.testing.standalonetrigger.StandaloneTrigger;
+
+  private StandaloneTrigger trigger(String triggerName, Party party) {
+    return StandaloneTrigger.builder()
+            .ledgerHost("localhost")
+            .ledgerPort(() -> sandbox.getSandboxPort())
+            .dar(DAR_PATH)
+            .triggerName(triggerName)
+            .party(party)
+            .build();
+  }
+
+  @Rule
+  public TestRule sandboxWithTriggers =
+          RuleChain.outerRule(sandbox.getRule())
+                  .around(trigger("MyApp.MyTrigger:trigger1", SOME_PARTY1))
+                  .around(trigger("MyApp.MyTrigger:trigger2", SOME_PARTY2));
+```
+
 © 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
