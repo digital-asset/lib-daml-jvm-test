@@ -145,4 +145,4 @@ The library uses JUnit4 to provide its functionalities. Several build systems (e
 In Maven, one can use either *maven-failsafe-plugin* or *maven-surefire-plugin* to run tests using this test library.
 To configure any of these, use the official documentation, to run, execute `mvn verify`.
 
-© 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+© 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
