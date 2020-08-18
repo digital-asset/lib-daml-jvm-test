@@ -144,5 +144,5 @@ Otherwise, it may skip several events until all predicates are matched.
 The library uses JUnit4 to provide its functionalities. Several build systems (e.g. Maven, Sbt) support running JUnit tests easily.
 In Maven, one can use either *maven-failsafe-plugin* or *maven-surefire-plugin* to run tests using this test library.
 To configure any of these, use the official documentation, to run, execute `mvn verify`.
-
+Example open source DAML reference applications using this plugin via Maven: [Bond issuance](https://github.com/digital-asset/ex-bond-issuance), [Healthcare](https://github.com/digital-asset/ex-healthcare-claims-processing), [Supply Chain](https://github.com/digital-asset/ex-supply-chain).
 © 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
