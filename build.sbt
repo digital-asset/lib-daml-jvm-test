@@ -25,10 +25,10 @@ credentials += Credentials(
 name := "functest-java"
 organization := "com.digitalasset"
 organizationName := "Digital Asset"
-startYear := Some(2019)
+startYear := Some(2020)
 headerLicense := Some(
   HeaderLicense.ALv2(
-    "2019",
+    "2020",
     "Digital Asset (Switzerland) GmbH and/or its affiliates",
     HeaderLicenseStyle.SpdxSyntax
   ))

@@ -19,7 +19,7 @@ Add the library as a test scoped dependency to your project. In case of a Maven 
     <dependency>
         <groupId>com.digitalasset</groupId>
         <artifactId>functest-java_2.12</artifactId>
-        <version>0.1.16</version>
+        <version>0.1.18</version>
         <scope>test</scope>
     </dependency>
     ...
@@ -34,12 +34,6 @@ Additional daml dependencies are required by the library, but these dependencies
         <artifactId>bindings-rxjava</artifactId>
         <version>1.0.0</version>
     </dependency>
-    <dependency>
-        <groupId>com.daml</groupId>
-        <artifactId>daml-lf-archive</artifactId>
-        <version>1.0.0</version>
-        <scope>test</scope>
-    </dependency>
     ...
   </dependencies>
 ```
@@ -53,8 +47,7 @@ One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
-          .module("Test")
-          .scenario("testSetup")
+          .moduleAndScript("Test", "testSetup")
           .parties(ALICE, BOB, CHARLIE)
           .build();
 
@@ -146,4 +139,10 @@ Example to fetch at most two SettledDvPs and check if one of them has a payment 
 If the boolean argument (`exact`) is true, each incoming contract must match at least one predicate.
 Otherwise, it may skip several events until all predicates are matched.
 
-© 2019 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+### Running tests
+
+The library uses JUnit4 to provide its functionalities. Several build systems (e.g. Maven, Sbt) support running JUnit tests easily.
+In Maven, one can use either *maven-failsafe-plugin* or *maven-surefire-plugin* to run tests using this test library.
+To configure any of these, use the official documentation, to run, execute `mvn verify`.
+Example open source DAML reference applications using this plugin via Maven: [Bond issuance](https://github.com/digital-asset/ex-bond-issuance), [Healthcare](https://github.com/digital-asset/ex-healthcare-claims-processing), [Supply Chain](https://github.com/digital-asset/ex-supply-chain).
+© 2020 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
