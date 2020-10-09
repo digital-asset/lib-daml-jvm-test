@@ -50,7 +50,14 @@ libraryDependencies ++= Seq(
   hamcrestOptional,
   cucumberJ8,
   cucumberJunit,
-  cucumberPicoContainer
+  cucumberPicoContainer,
+  aether1,
+  aether2,
+  aether3,
+  aether4,
+  aether5,
+  aether6,
+  aether7
 )
 
 scalaVersion := "2.12.8"
