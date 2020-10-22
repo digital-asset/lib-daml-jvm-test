@@ -78,6 +78,12 @@ package object ledger {
 
       case (Ast.Null, Ast.Null) =>
         Same()
+      
+      case (Ast.Null, _) => 
+        Diff(s"$path: Expected to be null, but actual value is: $actual")
+  
+      case (_, Ast.Null) => 
+        Diff(s"$path: Value is null, but was expected to be $expected")
 
       case _ =>
         Error(s"$path: Unexpected or unsupported case: $expected, $actual")
