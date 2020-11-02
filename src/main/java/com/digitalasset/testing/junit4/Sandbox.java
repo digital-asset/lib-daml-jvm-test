@@ -84,7 +84,7 @@ public class Sandbox {
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
-    private Path localDamlRoot = WORKING_DIRECTORY;
+    private Path damlRoot = WORKING_DIRECTORY;
     private Optional<Path> darPath = Optional.empty();
     private Optional<MavenCoordinates> darMavenCoordinates = Optional.empty();
     boolean downloadDamlYamlFromMaven;
@@ -165,12 +165,11 @@ public class Sandbox {
     }
 
     public SandboxBuilder damlRoot(Path damlRoot) {
-      this.localDamlRoot = damlRoot;
+      this.damlRoot = damlRoot;
       return this;
     }
 
     public Sandbox build() {
-      validate();
 
       final Path resolvedDarPath =
           darPath.orElseGet(
@@ -182,14 +181,16 @@ public class Sandbox {
                               new IllegalArgumentException(
                                   "you must specify either a local path to a dar file or some maven coordinates")));
 
-      final Path damlRootPath =
+      damlRoot =
           darMavenCoordinates
               .flatMap(MavenCoordinates::getYamlArtifact)
               .map(s -> this.setupDamlRootWithYamlFromMaven(darMavenCoordinates.get()))
-              .orElse(localDamlRoot);
+              .orElse(damlRoot);
+
+      validate();
 
       return new Sandbox(
-          damlRootPath,
+          damlRoot,
           testModule,
           testStartScript,
           sandboxWaitTimeout,
@@ -218,7 +219,6 @@ public class Sandbox {
 
     private Path setupDamlRootWithYamlFromMaven(MavenCoordinates coordinates) {
       return MavenDownloader.downloadDamlYamlFileFromMaven(coordinates, createTempDir())
-          .map(File::getParentFile)
           .map(File::toPath)
           .orElseThrow(
               () ->
@@ -236,8 +236,8 @@ public class Sandbox {
           "you cannot specify both a local path to a DAR file and coordinates that point to a DAR file in a maven repository");
       require(setupApplication != null, "Application setup function cannot be null.");
       require(
-          isDamlRoot(localDamlRoot),
-          String.format("DAML root '%s' must contain a daml.yaml.", localDamlRoot));
+          isDamlRoot(damlRoot),
+          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
     }
   }
 

@@ -60,9 +60,9 @@ public class MavenCoordinates {
     private String repoUrl;
     private String group;
     private String darArtifact;
-    private Optional<String> yamlArtifact;
+    private Optional<String> yamlArtifact = Optional.empty();
     private String version;
-    private Optional<MavenCredentials> mavenCredentials;
+    private Optional<MavenCredentials> mavenCredentials = Optional.empty();
 
     private Builder() {}
 
