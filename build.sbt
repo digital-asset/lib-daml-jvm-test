@@ -50,7 +50,14 @@ libraryDependencies ++= Seq(
   hamcrestOptional,
   cucumberJ8,
   cucumberJunit,
-  cucumberPicoContainer
+  cucumberPicoContainer,
+  aetherApi,
+  aetherSpi,
+  aetherImpl,
+  aetherConnectorBasic,
+  aetherTransportFile,
+  aetherTransportHttp,
+  mavenAetherProvider
 )
 
 scalaVersion := "2.12.8"
