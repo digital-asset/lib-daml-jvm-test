@@ -23,25 +23,13 @@ import java.time.temporal.ChronoUnit;
 public class SandboxIT {
 
   private static Sandbox sandbox =
-      Sandbox.builder()
-          .damlRoot(PINGPONG_PATH)
-          .darMavenCoordinates(
-              MavenCoordinates.builder()
-                  .repoUrl("https://nexus.liquid-share.io/repository/liquidshare-maven")
-                  .group("io.liquidshare.daml")
-                  .darArtifact("liquidshare-daml")
-                  .yamlArtifact("liquidshare-daml-manifest")
-                  .version("0.28.0")
-                  .mavenCredentials(
-                      MavenCredentials.builder()
-                          .userName("emil.kirschner")
-                          .password("uAU@UHQJQcE8_uZmed!RfJrY_JB6K2MVL4zzQLE@@3hfxsqz")
-                          .build())
-                  .build())
-          .ledgerId("sample-ledger")
-          .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
-          .sandboxWaitTimeout(Duration.of(1, ChronoUnit.MINUTES))
-          .build();
+          Sandbox.builder()
+                  .damlRoot(PINGPONG_PATH)
+                  .dar(DAR_PATH)
+                  .ledgerId("sample-ledger")
+                  .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+                  .build();
+
 
   @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
 
