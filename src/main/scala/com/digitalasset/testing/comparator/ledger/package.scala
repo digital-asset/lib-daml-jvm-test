@@ -48,22 +48,30 @@ package object ledger {
         Diff(
           s"$path: Expected list of size ${exp.size}, but got list of size ${act.size}")
 
-      case (Ast.Value(expectedCtor), Ast.Constructor(actualCtor, actualParams)) =>
+      case (Ast.Value(expectedCtor),
+            Ast.Constructor(actualCtor, actualParams)) =>
         compareCtor(expectedCtor, Ast.Null, actualCtor, actualParams, path)
 
-      case (Ast.Constructor(expectedCtor, expectedParams), Ast.Value(actualCtor)) =>
+      case (Ast.Constructor(expectedCtor, expectedParams),
+            Ast.Value(actualCtor)) =>
         compareCtor(expectedCtor, expectedParams, actualCtor, Ast.Null, path)
 
-      case (Ast.Constructor(expectedCtor, expectedParams), Ast.Constructor(actualCtor, actualParams)) =>
-        compareCtor(expectedCtor, expectedParams, actualCtor, actualParams, path)
+      case (Ast.Constructor(expectedCtor, expectedParams),
+            Ast.Constructor(actualCtor, actualParams)) =>
+        compareCtor(expectedCtor,
+                    expectedParams,
+                    actualCtor,
+                    actualParams,
+                    path)
 
       case (Ast.Map(expMap), Ast.Map(actMap)) =>
         (expMap.keySet ++ actMap.keySet).toList.sorted.foldMap { key =>
           (expMap.get(key), actMap.get(key)) match {
-            case (Some(expV), Some(actV)) => compareAst(expV, actV, s"$path.$key")
-            case (None, Some(actV))       => compareAst(Ast.Null, actV, s"$path.$key")
-            case (Some(expV), None)       => compareAst(expV, Ast.Null, s"$path.$key")
-            case (None, None)             => Error("Internal bug")
+            case (Some(expV), Some(actV)) =>
+              compareAst(expV, actV, s"$path.$key")
+            case (None, Some(actV)) => compareAst(Ast.Null, actV, s"$path.$key")
+            case (Some(expV), None) => compareAst(expV, Ast.Null, s"$path.$key")
+            case (None, None)       => Error("Internal bug")
           }
         }
 
