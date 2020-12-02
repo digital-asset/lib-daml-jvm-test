@@ -19,12 +19,6 @@ object Ast {
   case class Value(value: String) extends Ast
   case object Null extends Ast
 
-  object NullaryConstructor {
-    def unapply(ast: Ast): Option[String] = condOpt(ast) {
-      case Constructor((key, Ast.Null)) => key
-    }
-  }
-
   object Constructor {
     def unapply(ast: Ast): Option[(String, Ast)] = condOpt(ast) {
       case Map(map) if map.size == 1 => map.head
