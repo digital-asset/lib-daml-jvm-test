@@ -38,31 +38,6 @@ package object ledger {
     (expected, actual) match {
       case (Ast.Value(IgnoreRegex()), _) => Same()
 
-      case (Ast.Map(exp), Ast.Map(act))
-          if exp.size == act.size && exp.keySet == act.keySet =>
-        (exp.toList.sortBy(_._1) zip act.toList.sortBy(_._1)).map {
-          case ((expK, expV), (_, actV)) =>
-            compareAst(expV, actV, s"$path.$expK")
-        }.suml
-
-      case (Ast.Value(constructor), Ast.Map(kv))
-          if kv.size == 1 && kv.values.head == Ast.Null =>
-        compareValues(constructor, kv.keys.head, s"$path.$constructor")
-
-      case (Ast.Map(expMap), Ast.Map(actMap)) =>
-        val expectedKeys = expMap.keySet diff actMap.keySet
-        val unexpectedKeys = actMap.keySet diff expMap.keySet
-        val expected =
-          if (expectedKeys.isEmpty) ""
-          else
-            expectedKeys.mkString(" Expected keys which where not present: [",
-                                  ", ",
-                                  "].")
-        val unexpected =
-          if (unexpectedKeys.isEmpty) ""
-          else unexpectedKeys.mkString(" Unexpected keys: [", ", ", "].")
-        Diff(s"$path: Records have different key sets.$expected$unexpected")
-
       case (Ast.Seq(exp), Ast.Seq(act)) if exp.size == act.size =>
         (exp zip act).zipWithIndex
           .map { case ((e, a), ix) => compareAst(e, a, s"$path[$ix]") }
@@ -73,13 +48,64 @@ package object ledger {
         Diff(
           s"$path: Expected list of size ${exp.size}, but got list of size ${act.size}")
 
+      case (Ast.Value(expectedCtor),
+            Ast.Constructor(actualCtor, actualParams)) =>
+        compareCtor(expectedCtor, Ast.Null, actualCtor, actualParams, path)
+
+      case (Ast.Constructor(expectedCtor, expectedParams),
+            Ast.Value(actualCtor)) =>
+        compareCtor(expectedCtor, expectedParams, actualCtor, Ast.Null, path)
+
+      case (Ast.Constructor(expectedCtor, expectedParams),
+            Ast.Constructor(actualCtor, actualParams)) =>
+        compareCtor(expectedCtor,
+                    expectedParams,
+                    actualCtor,
+                    actualParams,
+                    path)
+
+      case (Ast.Map(expMap), Ast.Map(actMap)) =>
+        (expMap.keySet ++ actMap.keySet).toList.sorted.foldMap { key =>
+          (expMap.get(key), actMap.get(key)) match {
+            case (Some(expV), Some(actV)) =>
+              compareAst(expV, actV, s"$path.$key")
+            case (None, Some(actV)) => compareAst(Ast.Null, actV, s"$path.$key")
+            case (Some(expV), None) => compareAst(expV, Ast.Null, s"$path.$key")
+            case (None, None)       => Error("Internal bug")
+          }
+        }
+
       case (Ast.Value(exp), Ast.Value(act)) =>
         compareValues(exp, act, path)
 
       case (Ast.Null, Ast.Null) =>
         Same()
 
+      case (Ast.Null, Ast.Value(act)) =>
+        Diff(s"$path: Value [$act] not expected")
+
+      case (Ast.Value(exp), Ast.Null) =>
+        Diff(s"$path: Value [$exp] expected, but it is missing")
+
+      case (Ast.Null, _) =>
+        Diff(s"$path: Value [$actual] not expected")
+
+      case (_, Ast.Null) =>
+        Diff(s"$path: Value [$expected] expected, but it is missing")
+
       case _ =>
-        Error(s"$path: Unexpected or unsupported case: $expected, $actual")
+        Error(s"$path: Unexpected or unsupported case: [$expected], [$actual]")
+    }
+
+  private def compareCtor(expectedCtor: String,
+                          expectedParams: Ast,
+                          actualCtor: String,
+                          actualParams: Ast,
+                          path: String): ComparisonResult =
+    (expectedCtor, expectedParams, actualCtor, actualParams) match {
+      case (e, ep, a, ap) if e != a =>
+        Diff(
+          s"$path: Actual constructor / singleton map $a => $ap doesn't match expected constructor / singleton map $e => $ep")
+      case (c, e, _, a) => compareAst(e, a, s"$path.$c")
     }
 }
