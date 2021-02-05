@@ -50,7 +50,7 @@ public class SandboxUtils {
           throw ignored;
         }
         try {
-          logger.info("Waiting for sandbox bigyoka...");
+          logger.info("Waiting for sandbox...");
           TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
