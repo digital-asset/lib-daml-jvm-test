@@ -19,7 +19,7 @@ Add the library as a test scoped dependency to your project. In case of a Maven 
     <dependency>
         <groupId>com.digitalasset</groupId>
         <artifactId>functest-java_2.12</artifactId>
-        <version>0.1.18</version>
+        <version>0.1.19</version>
         <scope>test</scope>
     </dependency>
     ...
