@@ -40,7 +40,6 @@ public class SandboxUtils {
       throws TimeoutException {
     boolean connected = false;
     Stopwatch time = Stopwatch.createStarted();
-    int attempts = 0;
     while (!connected && time.elapsed().compareTo(waitTimeout) <= 0) {
       try {
         client.connect();
@@ -51,9 +50,8 @@ public class SandboxUtils {
           throw ignored;
         }
         try {
-          logger.info("Waiting for sandbox...");
-          TimeUnit.SECONDS.sleep(2 * attempts);
-          attempts += 1;
+          logger.info("Waiting for sandbox bigyoka...");
+          TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
