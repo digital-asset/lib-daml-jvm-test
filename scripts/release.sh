@@ -35,8 +35,10 @@ export GPG_SIGNING_KEY_ID
 export GPG_PASSPHRASE
 
 # Publishing
-sbt clean \
-    verify \
-    packageAll \
-    publishSigned \
-    sonatypeRelease
+echo drop
+sbt sonatypeDrop "comdigitalasset-1507"
+echo drop2
+sbt sonatypeDrop "comdigitalasset-1508"
+echo drop3
+sbt sonatypeDrop "comdigitalasset-1509"
+echo dr

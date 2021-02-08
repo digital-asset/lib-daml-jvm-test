@@ -15,6 +15,7 @@ only-master: &only-master
       only:
         - master
         - publish-to-mvn-central
+        - fix-sonatype-release
 
 jobs:
   sbt_verify:
