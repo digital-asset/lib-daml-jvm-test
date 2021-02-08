@@ -19,6 +19,8 @@ BASE_DIR="$(dirname "$(readlink -f "$0")")"
 
 ${BASE_DIR}/install-daml.sh ${SDK_VERSION}
 
+set -e
+
 # Import a key
 echo ${GPG_SIGNING_KEY} | base64 -d &> my.key
 gpg --import my.key &> gpg.out
