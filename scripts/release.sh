@@ -37,7 +37,6 @@ export GPG_PASSPHRASE
 
 # Publishing
 sbt clean \
-    verify \
     packageAll \
     publishSigned \
     sonatypeRelease
