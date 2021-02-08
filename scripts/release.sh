@@ -12,7 +12,7 @@ fi
 
 MAVEN_LOGIN="${1}"
 MAVEN_PASSWORD="${2}"
-SIGNING_KEY="${3}"
+GPG_SIGNING_KEY="${3}"
 GPG_PASSPHRASE="${4}"
 SDK_VERSION="${5}"
 BASE_DIR="$(dirname "$(readlink -f "$0")")"
