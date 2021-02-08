@@ -36,11 +36,6 @@ export GPG_PASSPHRASE
 
 # Publishing
 echo dropAll
-sbt sonatypeDropAll
+sbt sonatypeList
 eecho drop
-sbt 'sonatypeDrop("comdigitalasset-1507")'
-echo drop2
-sbt sonatypeDrop "comdigitalasset-1508"
-echo drop3
-sbt sonatypeDrop "comdigitalasset-1509"
-echo dr
+sbt 'sonatypeDrop comdigitalasset-1507'
