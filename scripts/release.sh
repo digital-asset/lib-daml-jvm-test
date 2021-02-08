@@ -35,8 +35,10 @@ export GPG_SIGNING_KEY_ID
 export GPG_PASSPHRASE
 
 # Publishing
-echo drop
-sbt sonatypeDrop "comdigitalasset-1507"
+echo dropAll
+sbt sonatypeDropAll
+eecho drop
+sbt 'sonatypeDrop("comdigitalasset-1507")'
 echo drop2
 sbt sonatypeDrop "comdigitalasset-1508"
 echo drop3
