@@ -9,11 +9,11 @@ executors:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
 
-only-master: &only-master
+only-main: &only-main
   filters:
     branches:
       only:
-        - master
+        - main
         - publish-to-mvn-central
 
 jobs:
@@ -49,7 +49,7 @@ jobs:
       - run:
           name: Run Blackduck Detect
           command: |
-            bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) ci-build digitalasset_refapps_func_test master --logging.level.com.synopsys.integration=DEBUG
+            bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) ci-build digitalasset_refapps_func_test main --logging.level.com.synopsys.integration=DEBUG
   sbt_publish:
     parameters:
       daml_sdk_version:
@@ -74,6 +74,6 @@ workflows:
   build_and_release:
     jobs:
       - sbt_publish:
-          <<: *only-master
+          <<: *only-main
           daml_sdk_version: "1.1.1"
           context: github-refapp-repo-context
