@@ -17,6 +17,15 @@ object Dependencies {
   lazy val snakeYaml = "org.yaml" % "snakeyaml" % yamlVersion
   lazy val hamcrestOptional = "com.spotify" % "hamcrest-optional" % "1.1.4"
 
+  lazy val aetherApi = "org.eclipse.aether" % "aether-api" % "1.1.0"
+  lazy val aetherSpi = "org.eclipse.aether" % "aether-spi" % "1.1.0"
+  lazy val aetherImpl = "org.eclipse.aether" % "aether-impl" % "1.1.0"
+  lazy val aetherConnectorBasic = "org.eclipse.aether" % "aether-connector-basic" % "1.1.0"
+  lazy val aetherTransportFile = "org.eclipse.aether" % "aether-transport-file" % "1.1.0"
+  lazy val aetherTransportHttp = "org.eclipse.aether" % "aether-transport-http" % "1.1.0"
+  lazy val mavenAetherProvider = "org.apache.maven" % "maven-aether-provider" % "3.3.9"
+
+
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.24"
   lazy val guava = "com.google.guava" % "guava" % "28.0-jre"
 

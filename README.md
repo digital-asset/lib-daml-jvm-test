@@ -43,7 +43,7 @@ Additional daml dependencies are required by the library, but these dependencies
 ### Using the library with the Sandbox JUnit4 Rule
 
 One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
-```
+```java
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
@@ -59,6 +59,37 @@ Sandbox has two modes, restart mode, in which it is restarted after each test ca
 Sandbox object `sandbox` offers the following tools:
 - a ledger adapter via `getLedgerAdapter` (which has the type *DefaultLedgerAdapter*)
 - a DAML ledger client via `getClient`
+
+#### Pulling the DAR file and daml.yaml files from a Maven repository
+
+It is possible to pull the DAR file and optionally the daml.yaml file from a Maven repository if your CI/CD 
+pipelines are publishing such artifacts.
+
+```java
+      Sandbox.builder()
+            .darMavenCoordinates(MavenCoordinates.builder()
+                    .repoUrl("https://repo.host/path/to/maven/repo")
+                    .group("name_of_maven_group")
+                    .darArtifact("name_of_dar_artifact")
+                    .yamlArtifact("name_of_yaml_artifact")
+                    .version("x.y.x")
+                    .mavenCredentials(MavenCredentials.builder()
+                            .userName("mavenUserName")
+                            .password("mavenPwd")
+                            .build())
+                    .build())
+            .moduleAndScript("Test", "testSetup")
+            .parties(ALICE, BOB, CHARLIE)
+            .build();
+```
+
+The advantage of doing it is that you won't have to manually copy the DAR file and store it in your source control repo.
+Moreover, if you use features in your build system to inject the version of your generated bindings in your test code
+using environment variables or VM parameters, you can make sure you're always testing against a DAR file that matches 
+your bindings.  
+
+
+The advantage of doing it is that you won't have to manually copy the DAR file and store it in your source control repo. 
 
 ### Testing with functions provided by a ledger adapter
 
