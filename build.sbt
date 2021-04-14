@@ -5,13 +5,6 @@ addCommandAlias("verify",
                 ";test;cucumber;scalafmtCheck;headerCheck;test:headerCheck")
 addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
-resolvers ++= Seq(
-  Resolver.bintrayRepo("digitalassetsdk", "DigitalAssetSDK"),
-  Resolver.url("hseeberger",
-               url("http://dl.bintray.com/hseeberger/sbt-plugins"))(
-    Resolver.ivyStylePatterns)
-)
-
 // do not try to run tests in parallel (each test has one sandbox)
 parallelExecution in ThisBuild := false
 
