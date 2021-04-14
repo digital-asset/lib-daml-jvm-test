@@ -23,7 +23,7 @@ credentials += Credentials(
 )
 
 name := "functest-java"
-organization := "com.digitalasset"
+organization := "com.daml"
 organizationName := "Digital Asset"
 startYear := Some(2020)
 headerLicense := Some(
@@ -104,4 +104,4 @@ compileDaml := {
 (test in Test) := (test in Test).dependsOn(compileDaml).value
 
 enablePlugins(CucumberPlugin)
-CucumberPlugin.glues := List("com/digitalasset/testing/steps")
+CucumberPlugin.glues := List("com/daml/extensions/testing/steps")
