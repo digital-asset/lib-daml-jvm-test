@@ -22,7 +22,7 @@ credentials += Credentials(
   sys.env.getOrElse("MAVEN_PASSWORD", "NO_MAVEN_PASSWORD_SPECIFIED")
 )
 
-name := "functest-java"
+name := "junit4-support"
 organization := "com.daml"
 organizationName := "Digital Asset"
 startYear := Some(2020)
