@@ -104,4 +104,4 @@ compileDaml := {
 (test in Test) := (test in Test).dependsOn(compileDaml).value
 
 enablePlugins(CucumberPlugin)
-CucumberPlugin.glues := List("com/daml/extensions/testing/steps")
+CucumberPlugin.glues := List("com/digitalasset/testing/steps")
