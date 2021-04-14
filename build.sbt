@@ -16,7 +16,7 @@ credentials += Credentials(
 )
 
 name := "junit4-support"
-organization := "com.daml"
+organization := "com.daml.extensions"
 organizationName := "Digital Asset"
 startYear := Some(2020)
 headerLicense := Some(
