@@ -17,7 +17,7 @@ Add the library as a test scoped dependency to your project. In case of a Maven 
   <dependencies>
     ...
     <dependency>
-        <groupId>com.daml</groupId>
+        <groupId>com.daml.extensions</groupId>
         <artifactId>junit4-support_2.12</artifactId>
         <version>0.1.19</version>
         <scope>test</scope>
@@ -30,7 +30,7 @@ Additional daml dependencies are required by the library, but these dependencies
   <dependencies>
     ...
     <dependency>
-        <groupId>com.daml</groupId>
+        <groupId>com.daml.extensions</groupId>
         <artifactId>bindings-rxjava</artifactId>
         <version>1.0.0</version>
     </dependency>
