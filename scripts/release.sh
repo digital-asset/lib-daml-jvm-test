@@ -15,9 +15,8 @@ MAVEN_PASSWORD="${2}"
 GPG_SIGNING_KEY="${3}"
 GPG_PASSPHRASE="${4}"
 SDK_VERSION="${5}"
-BASE_DIR="$(dirname "$(readlink -f "$0")")"
 
-"${BASE_DIR}"/install-daml.sh "${SDK_VERSION}"
+curl -sSL https://get.daml.com/ | sh /dev/stdin "${SDK_VERSION}"
 
 set -e
 

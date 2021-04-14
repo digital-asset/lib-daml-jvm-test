@@ -9,6 +9,20 @@ executors:
     docker:
       - image: circleci/openjdk:8-jdk-stretch
 
+commands:
+  install_sdk:
+    description: "Install Daml SDK"
+    parameters:
+      version:
+        type: string
+    steps:
+      - run:
+          name: Install Daml SDK
+          command: |
+            curl -sSL https://get.daml.com/ | sh /dev/stdin << parameters.version >>
+            # idea from https://circleci.com/docs/2.0/env-vars/
+            >> $BASH_ENV echo 'export PATH="$HOME/.daml/bin:$PATH"'
+
 only-main: &only-main
   filters:
     branches:
@@ -30,10 +44,10 @@ jobs:
       - restore_cache:
           keys:
             - daml-{{ checksum "build.sbt" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
+      - install_sdk:
+          version: << parameters.daml_sdk_version >>
       - run:
           command: |
-            ./scripts/install-daml.sh << parameters.daml_sdk_version >>
-            export PATH=$PATH:~/.daml/bin
             sbt verify packageAll
       - store_test_results:
           path: target/test-reports
