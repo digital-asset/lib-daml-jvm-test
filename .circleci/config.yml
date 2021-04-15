@@ -23,13 +23,6 @@ commands:
             # idea from https://circleci.com/docs/2.0/env-vars/
             >> $BASH_ENV echo 'export PATH="$HOME/.daml/bin:$PATH"'
 
-only-main: &only-main
-  filters:
-    branches:
-      only:
-        - main
-        - publish-to-mvn-central
-
 jobs:
   sbt_verify:
     parameters:
@@ -86,6 +79,10 @@ workflows:
   build_and_release:
     jobs:
       - sbt_publish:
-          <<: *only-main
           daml_sdk_version: "1.1.1"
           context: github-refapp-repo-context
+          filters:
+            branches:
+              only:
+                - main
+                - /.*publish-to-mvn-central/
