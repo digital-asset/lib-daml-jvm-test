@@ -64,10 +64,12 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - install_sdk:
+          version: << parameters.daml_sdk_version >>
       - run:
           command: |
               echo "Version file changed. Creating a release."
-              bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}" << parameters.daml_sdk_version >>
+              bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}"
 
 workflows:
   version: 2

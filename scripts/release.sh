@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-if [ $# -ne 5 ]
+if [ $# -ne 4 ]
 then
-    echo "ERROR: No parameters given! Usage: ${0} maven_login maven_password signing_key gpg_passphrase sdk_version"
+    echo "ERROR: No parameters given! Usage: ${0} maven_login maven_password signing_key gpg_passphrase"
     exit 1
 fi
 
@@ -14,9 +14,6 @@ MAVEN_LOGIN="${1}"
 MAVEN_PASSWORD="${2}"
 GPG_SIGNING_KEY="${3}"
 GPG_PASSPHRASE="${4}"
-SDK_VERSION="${5}"
-
-curl -sSL https://get.daml.com/ | sh /dev/stdin "${SDK_VERSION}"
 
 set -e
 
@@ -29,7 +26,6 @@ mkdir -p /home/circleci/.sbt/gpg/
 gpg -a --export-secret-keys > /home/circleci/.sbt/gpg/secring.asc
 
 # Export environment variables for SBT release process
-export PATH=$PATH:~/.daml/bin
 export MAVEN_LOGIN
 export MAVEN_PASSWORD
 export GPG_SIGNING_KEY_ID
