@@ -31,12 +31,12 @@ export MAVEN_PASSWORD
 export GPG_SIGNING_KEY_ID
 export GPG_PASSPHRASE
 
-sbt sonatypeList
 echo sbt sonatypeLog
 sbt sonatypeLog
 echo sbt sonatypeStagingProfiles
 sbt sonatypeStagingProfiles
 exit 0
+#sbt sonatypeList
 
 # Publishing
 sbt clean \
