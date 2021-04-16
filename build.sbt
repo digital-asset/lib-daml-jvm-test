@@ -16,6 +16,7 @@ credentials += Credentials(
 )
 
 name := "junit4-support"
+sonatypeProfileName := "com.daml.extensions"
 organization := "com.daml.extensions"
 organizationName := "Digital Asset"
 startYear := Some(2020)
