@@ -31,6 +31,9 @@ export MAVEN_PASSWORD
 export GPG_SIGNING_KEY_ID
 export GPG_PASSPHRASE
 
+sbt sonatypeList
+exit 0
+
 # Publishing
 sbt clean \
     packageAll \
