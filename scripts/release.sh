@@ -31,21 +31,11 @@ export MAVEN_PASSWORD
 export GPG_SIGNING_KEY_ID
 export GPG_PASSPHRASE
 
-sbt sonatypeLog
-echo sbt sonatypeLog
-sbt sonatypeLog
-echo sbt sonatypeStagingProfiles
-sbt sonatypeStagingProfiles
-echo drop 1518
-sbt 'sonatypeDrop comdaml-1518'
-echo drop 1519
-sbt 'sonatypeDrop comdaml-1519'
-echo sbt sonatypeLog
-sbt sonatypeLog
-echo sbt sonatypeStagingProfiles
-sbt sonatypeStagingProfiles
-exit 0
-#sbt sonatypeList
+# useful debugging commands:
+# sbt sonatypeLog
+# sbt sonatypeStagingProfiles
+# sbt 'sonatypeDrop comdaml-1518'
+# older version: sbt sonatypeList
 
 # Publishing
 sbt clean \
