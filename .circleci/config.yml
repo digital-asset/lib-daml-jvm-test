@@ -68,8 +68,10 @@ jobs:
           version: << parameters.daml_sdk_version >>
       - run:
           command: |
+            if git show --name-only HEAD | grep version.sbt; then
               echo "Version file changed. Creating a release."
               bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}"
+            fi
 
 workflows:
   version: 2
