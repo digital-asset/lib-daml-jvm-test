@@ -23,13 +23,6 @@ commands:
             # idea from https://circleci.com/docs/2.0/env-vars/
             >> $BASH_ENV echo 'export PATH="$HOME/.daml/bin:$PATH"'
 
-only-main: &only-main
-  filters:
-    branches:
-      only:
-        - main
-        - publish-to-mvn-central
-
 jobs:
   sbt_verify:
     parameters:
@@ -71,11 +64,13 @@ jobs:
     executor: jdk-executor
     steps:
       - checkout
+      - install_sdk:
+          version: << parameters.daml_sdk_version >>
       - run:
           command: |
             if git show --name-only HEAD | grep version.sbt; then
               echo "Version file changed. Creating a release."
-              bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}" << parameters.daml_sdk_version >>
+              bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}"
             fi
 
 workflows:
@@ -88,6 +83,10 @@ workflows:
   build_and_release:
     jobs:
       - sbt_publish:
-          <<: *only-main
           daml_sdk_version: "1.1.1"
           context: github-refapp-repo-context
+          filters:
+            branches:
+              only:
+                - main
+                - /.*publish-to-mvn-central/
