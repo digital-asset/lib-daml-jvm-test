@@ -15,9 +15,11 @@ import com.daml.daml_lf_dev.DamlLf1;
 import java.util.*;
 
 import static com.daml.extensions.testing.Dsl.*;
+import static com.daml.extensions.testing.utils.PackageUtils.getTypePrim;
 
 public class TableUtils {
-  public static DamlRecord fieldsToArgs(List<String> args, List<DamlLf1.FieldWithType> fields) {
+  public static DamlRecord fieldsToArgs(
+      List<String> args, List<DamlLf1.FieldWithType> fields, DamlLf1.Package lfPackage) {
     if (args.size() != fields.size()) {
       throw new IllegalArgumentException(
           "Wrong number of actual arguments: " + args.size() + " (formal: " + fields.size() + ")");
@@ -25,7 +27,8 @@ public class TableUtils {
     LinkedList<DamlRecord.Field> fieldList = new LinkedList<>();
     HashMap<String, String> m = new HashMap<>();
     for (int i = 0; i < args.size(); i++) {
-      DamlLf1.Type.Prim prim = fields.get(i).getType().getPrim();
+      DamlLf1.Type fieldType = fields.get(i).getType();
+      DamlLf1.Type.Prim prim = getTypePrim(fieldType, lfPackage);
       String arg = args.get(i);
       System.out.println(
           "Formal arg: "
