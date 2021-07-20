@@ -9,7 +9,7 @@ package com.daml.extensions.testing.comparator.ledger
 import com.daml.ledger.javaapi.data.{
   CreatedEvent,
   Identifier,
-  Record,
+  DamlRecord,
   TreeEvent
 }
 import com.daml.extensions.testing.comparator.MessageTester
@@ -21,7 +21,7 @@ object ContractCreated {
   private def apply(
       expectedTemplate: Identifier,
       expectedContractId: String,
-      captureOrexpectedArgumentsOpt: Either[String, Option[Record]])
+      captureOrexpectedArgumentsOpt: Either[String, Option[DamlRecord]])
     : MessageTester[TreeEvent] =
     new MessageTester[TreeEvent] {
       override def prettyPrintExpected: String =
@@ -59,7 +59,7 @@ object ContractCreated {
   def expectContractWithArguments(
       expectedTemplate: Identifier,
       expectedContractId: String,
-      expectedArguments: Record): MessageTester[TreeEvent] =
+      expectedArguments: DamlRecord): MessageTester[TreeEvent] =
     apply(expectedTemplate, expectedContractId, Right(Some(expectedArguments)))
 
   def capture(expectedTemplate: Identifier,

@@ -23,7 +23,7 @@ import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.ExerciseCommand;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.ledger.javaapi.data.TreeEvent;
 import com.daml.ledger.javaapi.data.Value;
 
@@ -63,7 +63,7 @@ public class PingPongIT {
     ContractWithId<ContractId> pingContract =
         ledger().getMatchedContract(CHARLIE, pingTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
-    Optional<Record> parameters = pingContract.record.asRecord();
+    Optional<DamlRecord> parameters = pingContract.record.asRecord();
     assertThat(
         parameters.flatMap(p -> p.getFieldsMap().get("count").asInt64().map(Int64::getValue)),
         is(optionalWithValue(equalTo(777L))));
@@ -71,7 +71,7 @@ public class PingPongIT {
 
   @Test
   public void testObservationWithMatcher() throws InvalidProtocolBufferException {
-    Record recordMatcher =
+    DamlRecord recordMatcher =
         record(field("sender", ALICE), field("receiver", BOB), field("count", int64(2)));
 
     ledger().getCreatedContractId(BOB, pingTemplateId(), recordMatcher, ContractId::new);
@@ -106,7 +106,8 @@ public class PingPongIT {
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
     ledger()
-        .exerciseChoice(BOB, pingTemplateId(), contract.contractId, "RespondPong", emptyRecord());
+        .exerciseChoice(
+            BOB, pingTemplateId(), contract.contractId, "RespondPong", emptyDamlRecord());
   }
 
   @Test
@@ -117,7 +118,10 @@ public class PingPongIT {
         .exerciseChoice(
             BOB,
             new ExerciseCommand(
-                pingTemplateId(), contract.contractId.getValue(), "RespondPong", emptyRecord()));
+                pingTemplateId(),
+                contract.contractId.getValue(),
+                "RespondPong",
+                emptyDamlRecord()));
   }
 
   @Test(expected = TimeoutException.class)
@@ -130,16 +134,16 @@ public class PingPongIT {
   public void testPingPongFullWorkflow() throws InvalidProtocolBufferException {
     // PingPong workflow
     // Bob's turn
-    Record recordMatcher =
+    DamlRecord recordMatcher =
         record(field("sender", ALICE), field("receiver", BOB), field("count", int64(2)));
 
     ContractId pingCid =
         ledger().getCreatedContractId(BOB, pingTemplateId(), recordMatcher, ContractId::new);
-    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyRecord());
+    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
 
     // Alice's turn
     ContractId pongCid = ledger().getCreatedContractId(ALICE, pongTemplateId(), ContractId::new);
-    ledger().exerciseChoice(ALICE, pongTemplateId(), pongCid, "RespondPing", emptyRecord());
+    ledger().exerciseChoice(ALICE, pongTemplateId(), pongCid, "RespondPing", emptyDamlRecord());
     ContractWithId<ContractId> pingContract =
         ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
 
@@ -169,14 +173,14 @@ public class PingPongIT {
   @Test
   public void testPingPongFullWorkflowWAlternativeApiCalls() throws InvalidProtocolBufferException {
     ContractId pingCid = ledger().getCreatedContractId(BOB, pingTemplateId(), ContractId::new);
-    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyRecord());
+    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
 
     // Alice's turn sending an exercise command, directly
     ContractId pongCid = ledger().getCreatedContractId(ALICE, pongTemplateId(), ContractId::new);
     ExerciseCommand exerciseCmd =
-        new ExerciseCommand(pongTemplateId(), pongCid.getValue(), "RespondPing", emptyRecord());
+        new ExerciseCommand(pongTemplateId(), pongCid.getValue(), "RespondPing", emptyDamlRecord());
     sandbox.getLedgerAdapter().exerciseChoice(ALICE, exerciseCmd);
-    Record recordMatcher =
+    DamlRecord recordMatcher =
         record(field("sender", ALICE), field("receiver", BOB), field("count", int64(4)));
 
     ContractId pingCid2 =
@@ -206,7 +210,7 @@ public class PingPongIT {
 
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(
-            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyRecord());
+            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
 
     sandbox.getLedgerAdapter().exerciseChoice(CHARLIE, exerciseCmd);
   }
@@ -227,7 +231,7 @@ public class PingPongIT {
 
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(
-            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyRecord());
+            timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
 
     sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
     sandbox.getLedgerAdapter().exerciseChoice(BOB, exerciseCmd);
@@ -245,7 +249,7 @@ public class PingPongIT {
     ContractWithId<ContractId> numericTesterContract =
         ledger().getMatchedContract(CHARLIE, numericTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
-    Optional<Record> parameters = numericTesterContract.record.asRecord();
+    Optional<DamlRecord> parameters = numericTesterContract.record.asRecord();
     assertThat(
         parameters
             .flatMap(p -> p.getFieldsMap().get("x").asNumeric().map(Numeric::getValue))

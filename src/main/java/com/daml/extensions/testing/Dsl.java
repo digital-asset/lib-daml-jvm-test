@@ -15,28 +15,28 @@ public class Dsl {
   private static final String key = "internal-cid-query";
   private static final String recordKey = "internal-recordKey";
 
-  public static Record record(Value... values) {
-    Record.Field[] records = new Record.Field[values.length];
+  public static DamlRecord record(Value... values) {
+    DamlRecord.Field[] records = new DamlRecord.Field[values.length];
     for (int i = 0; i < values.length; i++) {
-      records[i] = new Record.Field(values[i]);
+      records[i] = new DamlRecord.Field(values[i]);
     }
-    return new Record(records);
+    return new DamlRecord(records);
   }
 
-  public static Record record(Record.Field... fields) {
-    return new Record(fields);
+  public static DamlRecord record(DamlRecord.Field... fields) {
+    return new DamlRecord(fields);
   }
 
-  public static Record emptyRecord() {
-    return new Record();
+  public static DamlRecord emptyDamlRecord() {
+    return new DamlRecord();
   }
 
-  public static Record.Field field(String label, Value value) {
-    return new Record.Field(label, value);
+  public static DamlRecord.Field field(String label, Value value) {
+    return new DamlRecord.Field(label, value);
   }
 
-  public static Record.Field field(Value value) {
-    return new Record.Field(value);
+  public static DamlRecord.Field field(Value value) {
+    return new DamlRecord.Field(value);
   }
 
   public static Bool bool(String bool) {

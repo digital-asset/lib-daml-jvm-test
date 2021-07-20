@@ -9,7 +9,7 @@
 
 package com.daml.extensions.testing.cucumber.utils;
 
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.daml_lf_dev.DamlLf1;
 
 import java.util.*;
@@ -17,12 +17,12 @@ import java.util.*;
 import static com.daml.extensions.testing.Dsl.*;
 
 public class TableUtils {
-  public static Record fieldsToArgs(List<String> args, List<DamlLf1.FieldWithType> fields) {
+  public static DamlRecord fieldsToArgs(List<String> args, List<DamlLf1.FieldWithType> fields) {
     if (args.size() != fields.size()) {
       throw new IllegalArgumentException(
           "Wrong number of actual arguments: " + args.size() + " (formal: " + fields.size() + ")");
     }
-    LinkedList<Record.Field> fieldList = new LinkedList<>();
+    LinkedList<DamlRecord.Field> fieldList = new LinkedList<>();
     HashMap<String, String> m = new HashMap<>();
     for (int i = 0; i < args.size(); i++) {
       DamlLf1.Type.Prim prim = fields.get(i).getType().getPrim();
@@ -71,6 +71,6 @@ public class TableUtils {
         }
       }
     }
-    return new Record(fieldList);
+    return new DamlRecord(fieldList);
   }
 }

@@ -30,7 +30,7 @@ import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.LedgerOffset;
 import com.daml.ledger.javaapi.data.NoFilter;
 import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.ledger.javaapi.data.TreeEvent;
 import com.daml.ledger.javaapi.data.Value;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -122,7 +122,7 @@ public class DefaultLedgerAdapter {
     }
   }
 
-  public synchronized void createContract(Party party, Identifier templateId, Record payload)
+  public synchronized void createContract(Party party, Identifier templateId, DamlRecord payload)
       throws InvalidProtocolBufferException {
     logger.debug("Attempting to create a contract {}", templateId);
     submit(party, new CreateCommand(templateId, payload));
@@ -261,7 +261,7 @@ public class DefaultLedgerAdapter {
   private static final String recordKey = "internal-recordKey";
 
   public <Cid> Cid getCreatedContractId(
-      Party party, Identifier identifier, Record arguments, Function<String, Cid> ctor) {
+      Party party, Identifier identifier, DamlRecord arguments, Function<String, Cid> ctor) {
     observeEvent(
         party.getValue(),
         ContractCreated.expectContractWithArguments(

@@ -11,7 +11,7 @@ package com.daml.extensions.testing.cucumber.steps;
 
 import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.extensions.testing.comparator.ledger.ContractArchived;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.cucumber.utils.Config;
@@ -101,7 +101,7 @@ public class LedgerInteractions implements En {
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 checkTableIsTwoOrManyRows(dataTable);
                 for (int i = 1; i < dataTable.width(); i++) {
-                  Record args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields);
+                  DamlRecord args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields);
                   sandboxManager
                       .getLedgerAdapter()
                       .createContract(new Party(party), idWithArgs.identifier, args);
@@ -129,7 +129,11 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party), idWithArgs.identifier, contractId, choiceName, new Record());
+                        party(party),
+                        idWithArgs.identifier,
+                        contractId,
+                        choiceName,
+                        new DamlRecord());
               }
             });
     When(
@@ -144,7 +148,7 @@ public class LedgerInteractions implements En {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
-                Record args =
+                DamlRecord args =
                     fieldsToArgs(
                         checkTableIsOneOrTwoRowsAndGet(dataTable),
                         idWithArgs.choices.get(choiceName));
@@ -175,7 +179,7 @@ public class LedgerInteractions implements En {
         (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
-          Record args =
+          DamlRecord args =
               fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields);
           sandboxManager
               .getLedgerAdapter()

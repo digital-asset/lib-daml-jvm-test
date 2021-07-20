@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 package object ast {
   def toAst(v: Value): Ast = v match {
     case null          => Ast.Null
-    case r: Record     => Ast.Seq(r.getFields.asScala.map(f => toAst(f.getValue)))
+    case r: DamlRecord => Ast.Seq(r.getFields.asScala.map(f => toAst(f.getValue)))
     case v: Variant    => Ast.Map(Map(v.getConstructor -> toAst(v.getValue)))
     case b: Bool       => Ast.Value(b.getValue.toString)
     case c: ContractId => Ast.Value(c.getValue)

@@ -25,7 +25,7 @@ import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.hamcrest.CoreMatchers;
 import org.junit.ClassRule;
@@ -70,7 +70,7 @@ public class ResetIT {
     ContractWithId<ContractId> pingContract =
         sandbox.getLedgerAdapter().getMatchedContract(CHARLIE, pingTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
-    Optional<Record> parameters = pingContract.record.asRecord();
+    Optional<DamlRecord> parameters = pingContract.record.asRecord();
     assertThat(
         parameters.flatMap(p -> p.getFieldsMap().get("count").asInt64().map(Int64::getValue)),
         is(optionalWithValue(equalTo(777L))));
