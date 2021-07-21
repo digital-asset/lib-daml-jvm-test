@@ -19,7 +19,7 @@ Add the library as a test scoped dependency to your project. In case of a Maven 
     <dependency>
         <groupId>com.daml.extensions</groupId>
         <artifactId>junit4-support_2.12</artifactId>
-        <version>0.1.22</version>
+        <version>0.1.21</version>
         <scope>test</scope>
     </dependency>
     ...
