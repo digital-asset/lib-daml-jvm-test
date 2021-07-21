@@ -71,6 +71,8 @@ jobs:
             if git show --name-only HEAD | grep version.sbt; then
               echo "Version file changed. Creating a release."
               bash -x ./scripts/release.sh "${MAVEN_USERNAME}" "${MAVEN_PASSWORD}" "${GPG_SIGNING_KEY}" "${GPG_PASSPHRASE}"
+            else
+              echo "No new release. (Please make sure to use squash merge for new release.)
             fi
 
 workflows:
