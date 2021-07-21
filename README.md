@@ -66,7 +66,7 @@ Usage of class *DefaultLedgerAdapter* (`sandbox.getLedgerAdapter()`) can be demo
 
 To create a contract on the ledger (the last argument contains the parameters of the contract instantion):
 ```
-sandbox.getLedgerAdapter().createContract(ALICE_PARTY, MyTemplate.TEMPLATE_ID, new Record(...));
+sandbox.getLedgerAdapter().createContract(ALICE_PARTY, MyTemplate.TEMPLATE_ID, new DamlRecord(...));
 ```
 To observe the creation event and capture the contract id (in the store, as "cid01"):
 ```

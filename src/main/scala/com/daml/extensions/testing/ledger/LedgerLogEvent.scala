@@ -142,12 +142,12 @@ object Utils {
       obj.fold(EMPTY)(v => TextFormat.shortDebugString(v.toProto))
   }
 
-  implicit class RecordOpts(record: Record) {
+  implicit class RecordOpts(record: DamlRecord) {
     def pretty: String = AstHelper.prettyPrint(toAst(record))
     def proto: String = TextFormat.shortDebugString(record.toProto)
   }
 
-  implicit class OptionRecordOpts(val obj: Option[Record]) {
+  implicit class OptionRecordOpts(val obj: Option[DamlRecord]) {
     def pretty: String = obj.fold(EMPTY)(r => AstHelper.prettyPrint(toAst(r)))
     def proto: String =
       obj.fold(EMPTY)(r => TextFormat.shortDebugString(r.toProto))

@@ -127,6 +127,24 @@ public class PackageUtils {
     return lfPackage.getInternedStrings(internedNameId);
   }
 
+  private static DamlLf1.Type.Con getTypeCon(DamlLf1.Type t, DamlLf1.Package lfPackage) {
+    if (t.hasCon()) {
+      return t.getCon();
+    } else {
+      DamlLf1.Type resolved = lfPackage.getInternedTypes(t.getInterned());
+      return resolved.getCon();
+    }
+  }
+
+  public static DamlLf1.Type.Prim getTypePrim(DamlLf1.Type t, DamlLf1.Package lfPackage) {
+    if (t.hasPrim()) {
+      return t.getPrim();
+    } else {
+      DamlLf1.Type resolved = lfPackage.getInternedTypes(t.getInterned());
+      return resolved.getPrim();
+    }
+  }
+
   private static String getChoiceName(
       DamlLf1.TemplateChoice choice, // no .getNameDname()  and .hasNameDname() methods
       DamlLf1.Package lfPackage) {
@@ -175,6 +193,12 @@ public class PackageUtils {
     return archivePl.getDamlLf1();
   }
 
+  public static DamlLf1.Package findPackageObject(DamlLedgerClient ledgerClient, String moduleName)
+      throws InvalidProtocolBufferException {
+    return findPackageObject(
+        ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
+  }
+
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
       throws InvalidProtocolBufferException {
     String[] parts = moduleAndEntityName.split(":");
@@ -190,15 +214,14 @@ public class PackageUtils {
       Map<String, List<DamlLf1.FieldWithType>> m = new HashMap<>();
       for (Map.Entry<String, DamlLf1.Type> choiceArgEntry :
           dt.getTemplateChoices().get().entrySet()) {
-        String choiceArgName = choiceArgEntry.getKey();
-        DamlLf1.Type choiceArgType = choiceArgEntry.getValue();
 
-        DamlLf1.Package dl1 =
-            findPackageObject(
-                ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
+        DamlLf1.Package dl1 = findPackageObject(ledgerClient, moduleName);
+
+        String choiceArgName = choiceArgEntry.getKey();
+        DamlLf1.Type.Con choiceArgTypeCon = getTypeCon(choiceArgEntry.getValue(), dl1);
 
         String choiceDataTypeName =
-            dottedNameToString(getTypeConName(choiceArgType.getCon().getTycon(), dl1));
+            dottedNameToString(getTypeConName(choiceArgTypeCon.getTycon(), dl1));
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
         if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
           choiceDataTypeFqn = "DAInternalTemplate:Archive";

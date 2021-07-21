@@ -9,9 +9,10 @@
 
 package com.daml.extensions.testing.cucumber.steps;
 
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.Record;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.extensions.testing.comparator.ledger.ContractArchived;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.cucumber.utils.Config;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
 import static com.daml.extensions.testing.Dsl.party;
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
 import static com.daml.extensions.testing.utils.PackageUtils.findTemplate;
+import static com.daml.extensions.testing.utils.PackageUtils.findPackageObject;
 import static org.junit.Assert.assertTrue;
 
 // Notes:
@@ -99,9 +101,12 @@ public class LedgerInteractions implements En {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                DamlLf1.Package pkg =
+                    findPackageObject(
+                        sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
                 checkTableIsTwoOrManyRows(dataTable);
                 for (int i = 1; i < dataTable.width(); i++) {
-                  Record args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields);
+                  DamlRecord args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields, pkg);
                   sandboxManager
                       .getLedgerAdapter()
                       .createContract(new Party(party), idWithArgs.identifier, args);
@@ -129,7 +134,11 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party), idWithArgs.identifier, contractId, choiceName, new Record());
+                        party(party),
+                        idWithArgs.identifier,
+                        contractId,
+                        choiceName,
+                        new DamlRecord());
               }
             });
     When(
@@ -144,10 +153,14 @@ public class LedgerInteractions implements En {
               void run() throws InvalidProtocolBufferException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
-                Record args =
+                DamlLf1.Package pkg =
+                    findPackageObject(
+                        sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
+                DamlRecord args =
                     fieldsToArgs(
                         checkTableIsOneOrTwoRowsAndGet(dataTable),
-                        idWithArgs.choices.get(choiceName));
+                        idWithArgs.choices.get(choiceName),
+                        pkg);
                 ContractId contractId =
                     sandboxManager
                         .getLedgerAdapter()
@@ -175,8 +188,10 @@ public class LedgerInteractions implements En {
         (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
-          Record args =
-              fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields);
+          DamlLf1.Package pkg =
+              findPackageObject(sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
+          DamlRecord args =
+              fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields, pkg);
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
