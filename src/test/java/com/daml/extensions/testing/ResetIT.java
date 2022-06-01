@@ -6,26 +6,12 @@
 
 package com.daml.extensions.testing;
 
-import static com.daml.extensions.testing.Dsl.int64;
-import static com.daml.extensions.testing.Dsl.record;
-import static com.daml.extensions.testing.TestCommons.ALICE;
-import static com.daml.extensions.testing.TestCommons.BOB;
-import static com.daml.extensions.testing.TestCommons.CHARLIE;
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
-import static com.daml.extensions.testing.TestCommons.PING_PONG_MODULE;
-import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import com.daml.extensions.testing.junit4.Sandbox;
 import com.daml.extensions.testing.utils.ContractWithId;
-
 import com.daml.ledger.javaapi.data.ContractId;
+import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.DamlRecord;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.hamcrest.CoreMatchers;
 import org.junit.ClassRule;
@@ -36,6 +22,14 @@ import org.junit.rules.ExternalResource;
 
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+
+import static com.daml.extensions.testing.Dsl.int64;
+import static com.daml.extensions.testing.Dsl.record;
+import static com.daml.extensions.testing.TestCommons.*;
+import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class ResetIT {
   private static Sandbox sandbox =

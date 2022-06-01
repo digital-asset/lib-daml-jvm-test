@@ -6,15 +6,13 @@
 
 package com.daml.extensions.testing.junit4;
 
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
-import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import org.junit.Test;
 
 import java.util.Optional;
-import org.junit.Test;
+
+import static com.daml.extensions.testing.TestCommons.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class SandboxTest {
 
@@ -39,4 +37,5 @@ public class SandboxTest {
   public void damlRootIsRequiredForSandbox() {
     Sandbox.builder().dar(DAR_PATH).damlRoot(RESOURCE_DIR).build();
   }
+  
 }

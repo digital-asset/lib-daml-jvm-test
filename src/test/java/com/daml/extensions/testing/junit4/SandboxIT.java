@@ -6,40 +6,59 @@
 
 package com.daml.extensions.testing.junit4;
 
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static com.daml.extensions.testing.TestCommons.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
-
 public class SandboxIT {
 
-  private static Sandbox sandbox =
-      Sandbox.builder()
-          .damlRoot(PINGPONG_PATH)
-          .dar(DAR_PATH)
-          .ledgerId("sample-ledger")
-          .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
-          .build();
 
-  @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
-
-  @Rule public ExternalResource rule = sandbox.getRule();
+//  @ClassRule public static ExternalResource classRule = sandbox.getClassRule();
+//
+//  @Rule public ExternalResource rule = sandbox.getRule();
 
   @Test
-  public void portIsAssignedWhenSandboxIsStarted() {
-    int sandboxPort = sandbox.getSandboxPort();
-    assertsIsBetween(sandboxPort, 6860, 6890);
+  public void portIsAssignedAndSandboxIsStarted() {
+    try {
+      Sandbox sandbox =
+              Sandbox.builder()
+                      .damlRoot(PINGPONG_PATH)
+                      .dar(DAR_PATH)
+                      .ledgerId("sample-ledger")
+                      .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+                      .build();
+      sandbox.getSandboxManager().start();
+      int sandboxPort = sandbox.getSandboxPort();
+      Assert.assertTrue("Sandbox should be started", sandbox.isRunnning());
+      assertsIsBetween(sandboxPort, 6860, 6890);
+      assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+    } catch (Exception e) {
+      Assert.assertTrue("Sandbox Exception " + e.getLocalizedMessage(),false);
+    }
   }
 
   @Test
-  public void ledgerIdSpecified() {
-    assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+  public void portIsAssignedAndSandboxContainerIsStarted() {
+    try {
+      Sandbox sandbox =
+              Sandbox.builder()
+                      .damlRoot(RESOURCE_DIR.toAbsolutePath())
+                      .dar(DAR_PATH.getFileName())
+                      .useContainers()
+                      .ledgerId("sample-ledger")
+                      .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+                      .build();
+      sandbox.getSandboxManager().start();
+      int sandboxPort = sandbox.getSandboxPort();
+      Assert.assertTrue("Sandbox should be started", sandbox.isRunnning());
+      assertsIsBetween(sandboxPort, 6860, 6890);
+      assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+    } catch (Exception e) {
+      Assert.assertTrue("Sandbox Exception " + e.getLocalizedMessage(),false);
+    }
   }
 
   private void assertsIsBetween(int x, int low, int high) {

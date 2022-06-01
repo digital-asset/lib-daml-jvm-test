@@ -6,16 +6,11 @@
 
 package com.daml.extensions.testing.comparator.ledger
 
-import com.daml.ledger.javaapi.data.{
-  CreatedEvent,
-  Identifier,
-  DamlRecord,
-  TreeEvent
-}
+import com.daml.extensions.testing.ast.toAst
 import com.daml.extensions.testing.comparator.MessageTester
 import com.daml.extensions.testing.comparator.MessageTester.{Irrelevant, Same}
+import com.daml.ledger.javaapi.data.{CreatedEvent, DamlRecord, Identifier, TreeEvent}
 import scalaz.syntax.monoid.ToSemigroupOps
-import com.daml.extensions.testing.ast.toAst
 
 object ContractCreated {
   private def apply(

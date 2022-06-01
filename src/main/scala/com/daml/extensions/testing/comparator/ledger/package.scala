@@ -6,10 +6,10 @@
 
 package com.daml.extensions.testing.comparator
 
-import com.daml.ledger.javaapi.data.{ContractId, Identifier => JavaIdentifier}
 import com.daml.extensions.testing.Patterns._
 import com.daml.extensions.testing.ast.Ast
 import com.daml.extensions.testing.comparator.MessageTester._
+import com.daml.ledger.javaapi.data.ContractId
 import scalaz.std.list.listInstance
 import scalaz.syntax.foldable.ToFoldableOps
 

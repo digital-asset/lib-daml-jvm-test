@@ -9,6 +9,8 @@ package com.daml.extensions.testing.utils;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +19,6 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
 
 public class SandboxUtils {
   private static final Path DAML_YAML = Paths.get("daml.yaml");

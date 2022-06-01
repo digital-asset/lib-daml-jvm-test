@@ -8,7 +8,6 @@ package com.daml.extensions.testing.ledger.clock;
 
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.daml.ledger.api.v1.testing.TimeServiceOuterClass;
-
 import com.google.common.util.concurrent.Monitor;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;

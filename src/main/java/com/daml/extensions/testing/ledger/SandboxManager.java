@@ -6,22 +6,22 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
-import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
-
+import com.daml.extensions.testing.junit4.LogLevel;
+import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
+import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
+import com.daml.extensions.testing.ledger.clock.TimeProvider;
+import com.daml.extensions.testing.store.DefaultValueStore;
 import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
 import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.daml.extensions.testing.junit4.LogLevel;
-import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
-import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
-import com.daml.extensions.testing.ledger.clock.TimeProvider;
-import com.daml.extensions.testing.store.DefaultValueStore;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -30,14 +30,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
+import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private final Path damlRoot;
   private int sandboxPort;
-
+  private int adminApiPort;
+  private String[] configFiles;
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
   private final Duration sandboxWaitTimeout;
@@ -48,7 +50,8 @@ public class SandboxManager {
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
-
+  private boolean useContainers = false;
+  private Optional<String> damlImage;
   private SandboxRunner sandboxRunner;
   private DamlLedgerClient ledgerClient;
   private DefaultLedgerAdapter ledgerAdapter;
@@ -74,6 +77,39 @@ public class SandboxManager {
         darPath,
         setupApplication,
         useWallclockTime,
+        false,
+        Optional.empty(),
+        null,
+        Optional.empty(),
+        Optional.empty());
+  }
+
+  public SandboxManager(
+      Path damlRoot,
+      Optional<String> testModule,
+      Optional<String> testStartScript,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
+      boolean useContainers,
+      Optional<String> damlImage,
+      String[] configFiles) {
+    this(
+        damlRoot,
+        testModule,
+        testStartScript,
+        sandboxWaitTimeout,
+        observationTimeout,
+        parties,
+        darPath,
+        setupApplication,
+        useWallclockTime,
+        useContainers,
+        damlImage,
+        configFiles,
         Optional.empty(),
         Optional.empty());
   }
@@ -90,6 +126,38 @@ public class SandboxManager {
       boolean useWallclockTime,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
+    this(
+        damlRoot,
+        testModule,
+        testStartScript,
+        sandboxWaitTimeout,
+        observationTimeout,
+        parties,
+        darPath,
+        setupApplication,
+        useWallclockTime,
+        false,
+        Optional.empty(),
+        null,
+        ledgerId,
+        logLevel);
+  }
+
+  public SandboxManager(
+      Path damlRoot,
+      Optional<String> testModule,
+      Optional<String> testStartScript,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime,
+      boolean useContainers,
+      Optional<String> damlImage,
+      String[] configFiles,
+      Optional<String> ledgerId,
+      Optional<LogLevel> logLevel) {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
@@ -99,6 +167,9 @@ public class SandboxManager {
     this.darPath = darPath;
     this.setupApplication = setupApplication;
     this.useWallclockTime = useWallclockTime;
+    this.useContainers = useContainers;
+    this.damlImage = damlImage;
+    this.configFiles = configFiles;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
   }
@@ -120,11 +191,13 @@ public class SandboxManager {
   }
 
   public void start() throws TimeoutException, IOException, InterruptedException {
-    start(getSandboxPort());
+    int p = getSandboxPort();
+    start(p, p + 1);
   }
 
-  public void start(int port) throws TimeoutException, IOException, InterruptedException {
-    startSandbox(port);
+  public void start(int ledgerport, int apiport)
+      throws TimeoutException, IOException, InterruptedException {
+    startSandbox(ledgerport, apiport);
     startCommChannels();
   }
 
@@ -156,11 +229,25 @@ public class SandboxManager {
     return logLevel;
   }
 
-  private void startSandbox(int port) throws IOException {
-    sandboxPort = port;
+  public boolean isRunning() {
+    return sandboxRunner.isRunning();
+  }
+
+  private void startSandbox(int ledgerPort, int adminPort) throws IOException {
+    sandboxPort = ledgerPort;
+    adminApiPort = adminPort;
     sandboxRunner =
-        SandboxRunnerFactory.getSandboxRunner(
-            damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
+        new SandboxRunner(
+            damlRoot,
+            darPath,
+            sandboxPort,
+            adminApiPort,
+            useWallclockTime,
+            useContainers,
+            damlImage,
+            configFiles,
+            ledgerId,
+            logLevel);
     sandboxRunner.startSandbox();
   }
 
@@ -245,16 +332,7 @@ public class SandboxManager {
   }
 
   private void runScriptIfConfigured() throws IOException, InterruptedException {
-    if (testModule.isPresent() && testStartScript.isPresent()) {
-      DamlScriptRunner scriptRunner =
-          new DamlScriptRunner.Builder()
-              .damlRoot(damlRoot)
-              .dar(darPath)
-              .sandboxPort(sandboxPort)
-              .scriptName(String.format("%s:%s", testModule.get(), testStartScript.get()))
-              .useWallclockTime(useWallclockTime)
-              .build();
-      scriptRunner.run();
-    }
+    if (testModule.isPresent() && testStartScript.isPresent())
+      sandboxRunner.runScriptIfConfigured(testModule.get(), testStartScript.get());
   }
 }

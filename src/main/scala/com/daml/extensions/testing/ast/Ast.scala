@@ -6,7 +6,7 @@
 
 package com.daml.extensions.testing.ast
 
-import PartialFunction._
+import scala.PartialFunction._
 
 /**
   * ADTs representing typical hierarchical structure. This is the most generic common representation for YAML, JSON, and
