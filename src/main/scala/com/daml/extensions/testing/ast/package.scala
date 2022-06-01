@@ -6,8 +6,8 @@
 
 package com.daml.extensions.testing
 
-import com.daml.ledger.javaapi.data._
 import com.daml.extensions.testing.Patterns.SomeCtor
+import com.daml.ledger.javaapi.data._
 
 import scala.collection.JavaConverters._
 

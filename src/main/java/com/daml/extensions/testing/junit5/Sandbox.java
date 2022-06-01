@@ -26,11 +26,10 @@ import java.util.function.Consumer;
 
 import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
 import static com.daml.extensions.testing.utils.Preconditions.require;
-import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
 public class Sandbox {
-  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(40);
-  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(25);
+  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
+  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
   private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 
@@ -49,8 +48,12 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
+      boolean useContainers,
+      Optional<String> damlImage,
+      boolean useReset,
       Optional<String> ledgerId,
-      Optional<LogLevel> logLevel) {
+      Optional<LogLevel> logLevel,
+      String... configFiles) {
     this.sandboxManager =
         new SandboxManager(
             damlRoot,
@@ -63,8 +66,15 @@ public class Sandbox {
             darPath,
             setupApplication,
             useWallclockTime,
+            useContainers,
+            damlImage,
+            configFiles,
             ledgerId,
             logLevel);
+  }
+
+  public boolean isRunnning() {
+    return sandboxManager.isRunning();
   }
 
   public static class SandboxBuilder {
@@ -78,9 +88,13 @@ public class Sandbox {
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
+    private boolean useContainers = false;
+    private Optional<String> damlImage = Optional.empty();
+    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
+    private String[] configFiles;
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -137,6 +151,21 @@ public class Sandbox {
       return this;
     }
 
+    public SandboxBuilder useContainers() {
+      this.useContainers = true;
+      return this;
+    }
+
+    public SandboxBuilder damlImage(String image) {
+      this.damlImage = Optional.ofNullable(image);
+      return this;
+    }
+
+    public SandboxBuilder configFiles(String... configs) {
+      this.configFiles = configs;
+      return this;
+    }
+
     public SandboxBuilder ledgerId(String ledgerId) {
       this.ledgerId = Optional.of(ledgerId);
       return this;
@@ -166,16 +195,20 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
+          useContainers,
+          damlImage,
+          useReset,
           ledgerId,
-          logLevel);
+          logLevel,
+          configFiles);
     }
 
     private void validate() {
       require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
-      require(
-          isDamlRoot(damlRoot),
-          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
+      //      require(
+      //          isDamlRoot(damlRoot),
+      //          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
     }
   }
 
@@ -201,6 +234,10 @@ public class Sandbox {
 
   public int getSandboxPort() {
     return sandboxManager.getPort();
+  }
+
+  public SandboxManager getSandboxManager() {
+    return sandboxManager;
   }
 
   public Identifier templateIdentifier(

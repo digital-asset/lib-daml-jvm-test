@@ -6,15 +6,10 @@
 
 package com.daml.extensions.testing.comparator.ledger
 
-import com.daml.ledger.javaapi.data.{
-  ExercisedEvent,
-  Identifier,
-  TreeEvent,
-  Value
-}
 import com.daml.extensions.testing.ast.toAst
 import com.daml.extensions.testing.comparator.MessageTester
 import com.daml.extensions.testing.comparator.MessageTester.Irrelevant
+import com.daml.ledger.javaapi.data.{ExercisedEvent, Identifier, TreeEvent, Value}
 import grizzled.slf4j.Logging
 import scalaz.syntax.monoid.ToSemigroupOps
 

@@ -48,7 +48,12 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
-  private void startSandbox(Path damlRoot, Path darPath, String[] parties)
+  private void startSandbox(
+      Path damlRoot,
+      Path darPath,
+      String[] parties,
+      boolean useContainers,
+      Optional<String> damlImage)
       throws InterruptedException, IOException, TimeoutException {
     sandboxManager =
         new SandboxManager(
@@ -61,7 +66,10 @@ public class LedgerInteractions implements En {
             parties,
             darPath,
             (client, channel) -> {},
-            false);
+            false,
+            useContainers,
+            damlImage,
+            null);
     sandboxManager.start();
   }
 
@@ -73,7 +81,9 @@ public class LedgerInteractions implements En {
           startSandbox(
               Paths.get(damlRoot).toAbsolutePath().normalize(),
               Paths.get(darPath).toAbsolutePath().normalize(),
-              parties);
+              parties,
+              false,
+              Optional.empty());
         });
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
@@ -81,7 +91,26 @@ public class LedgerInteractions implements En {
           Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
           Path damlRoot = darPath.getParent();
           String[] parties = dataTable.asList().toArray(new String[] {});
-          startSandbox(damlRoot, darPath, parties);
+          startSandbox(damlRoot, darPath, parties, false, Optional.empty());
+        });
+    Given(
+        "^Sandbox Container \"([^\"]+)\" is started in directory \"([^\"]+)\" with DAR \"([^\"]+)\" and the following parties$",
+        (String damlImage, String damlRoot, String darPath, DataTable dataTable) -> {
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          startSandbox(
+              Paths.get(damlRoot).toAbsolutePath().normalize(),
+              Paths.get(darPath).toAbsolutePath().normalize(),
+              parties,
+              true,
+              Optional.ofNullable(damlImage));
+        });
+    Given(
+        "^Sandbox Container \"([^\"]+)\" is started with DAR \"([^\"]+)\" and the following parties$",
+        (String damlImage, String darPathS, DataTable dataTable) -> {
+          Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
+          Path damlRoot = darPath.getParent();
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          startSandbox(damlRoot, darPath, parties, true, Optional.ofNullable(damlImage));
         });
     After(
         () -> {

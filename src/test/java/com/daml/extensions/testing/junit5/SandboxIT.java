@@ -39,6 +39,27 @@ public class SandboxIT {
     assertThat(sandbox.getLedgerId(), is("sample-ledger"));
   }
 
+  @Test
+  public void portIsAssignedAndSandboxContainerIsStarted() {
+    try {
+      Sandbox sandbox =
+              Sandbox.builder()
+                      .damlRoot(RESOURCE_DIR.toAbsolutePath())
+                      .dar(DAR_PATH.getFileName())
+                      .useContainers()
+                      .ledgerId("sample-ledger")
+                      .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+                      .build();
+      sandbox.getSandboxManager().start();
+      int sandboxPort = sandbox.getSandboxPort();
+      Assert.assertTrue("Sandbox should be started", sandbox.isRunnning());
+      assertsIsBetween(sandboxPort, 6860, 6890);
+      assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+    } catch (Exception e) {
+      Assert.assertTrue("Sandbox Exception " + e.getLocalizedMessage(),false);
+    }
+  }
+
   private void assertsIsBetween(int x, int low, int high) {
     String message = String.format("Expected '%d' to be between '%d' and '%d'", x, low, high);
     assertTrue(low <= x && x <= high, message);

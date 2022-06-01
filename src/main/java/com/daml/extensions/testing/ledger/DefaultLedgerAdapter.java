@@ -17,6 +17,8 @@ import com.daml.ledger.api.v1.*;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
 import com.daml.ledger.javaapi.data.*;
+import com.daml.ledger.api.v1.*;
+import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;

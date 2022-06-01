@@ -42,6 +42,7 @@ libraryDependencies ++= Seq(
   junit5,
   junitInterface,
   hamcrestOptional,
+  testContainers,
   cucumberJ8,
   cucumberJunit,
   cucumberPicoContainer

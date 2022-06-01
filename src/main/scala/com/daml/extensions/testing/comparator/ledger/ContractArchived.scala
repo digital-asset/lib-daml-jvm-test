@@ -6,9 +6,9 @@
 
 package com.daml.extensions.testing.comparator.ledger
 
-import com.daml.ledger.javaapi.data.{ContractId, ExercisedEvent, TreeEvent}
 import com.daml.extensions.testing.comparator.MessageTester
 import com.daml.extensions.testing.comparator.MessageTester.Irrelevant
+import com.daml.ledger.javaapi.data.{ContractId, ExercisedEvent, TreeEvent}
 import grizzled.slf4j.Logging
 
 object ContractArchived extends Logging {

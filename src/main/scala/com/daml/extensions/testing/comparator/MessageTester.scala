@@ -6,8 +6,8 @@
 
 package com.daml.extensions.testing.comparator
 
-import com.daml.ledger.javaapi.data.Value
 import com.daml.extensions.testing.comparator.MessageTester.ComparisonResult
+import com.daml.ledger.javaapi.data.Value
 import scalaz.Monoid
 
 trait MessageTester[T] {

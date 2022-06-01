@@ -6,15 +6,16 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.utils.Preconditions.require;
-import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.daml.extensions.testing.utils.Preconditions.require;
+import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
 public class DamlScriptRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass().getCanonicalName());
@@ -50,9 +51,15 @@ public class DamlScriptRunner {
     private String scriptName;
     private String sandboxPort;
     private boolean useWallClockTime = false;
+    private boolean isTrigger = false;
 
     public Builder dar(Path path) {
       this.darPath = path;
+      return this;
+    }
+
+    public Builder isTrigger(boolean isTrigger) {
+      this.isTrigger = isTrigger;
       return this;
     }
 
@@ -90,14 +97,15 @@ public class DamlScriptRunner {
 
     private ProcessBuilder command() {
       String sandboxHost = "localhost";
+      String st = isTrigger ? "trigger" : "script";
       return new ProcessBuilder()
           .directory(damlRoot.toFile())
           .command(
               "daml",
-              "script",
+              st,
               "--dar",
               darPath.toString(),
-              "--script-name",
+              "--" + st + "-name",
               scriptName,
               "--ledger-host",
               sandboxHost,
