@@ -6,12 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +18,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.junit.Test;
+
+import static com.daml.extensions.testing.TestCommons.DAR_PATH;
+import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.*;
 
 public class SandboxManagerIT {
 
@@ -63,9 +62,7 @@ public class SandboxManagerIT {
             new String[0],
             DAR_PATH,
             (_ignore1, _ignore2) -> {},
-            false,
-            Optional.empty(),
-            Optional.empty());
+            false);
     String ledgerIdPattern = "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
     try {
       manager.start();

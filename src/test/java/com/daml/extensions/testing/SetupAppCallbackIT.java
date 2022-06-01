@@ -6,21 +6,16 @@
 
 package com.daml.extensions.testing;
 
-import static com.daml.extensions.testing.TestCommons.ALICE;
-import static com.daml.extensions.testing.TestCommons.BOB;
-import static com.daml.extensions.testing.TestCommons.CHARLIE;
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
-import static org.junit.Assert.assertTrue;
-
 import com.daml.extensions.testing.junit4.Sandbox;
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.daml.extensions.testing.TestCommons.*;
+import static org.junit.Assert.assertTrue;
 
 public class SetupAppCallbackIT {
   private static AtomicBoolean boolFlag = new AtomicBoolean(false);

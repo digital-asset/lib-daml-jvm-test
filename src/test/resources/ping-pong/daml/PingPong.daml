@@ -10,9 +10,10 @@ template NumericTester
     y: Numeric 4
   where
     signatory s
-    controller s can
-      Increment : ContractId NumericTester
-        do create NumericTester with s = s; x =x + 1.0; y = y+1.2345
+    choice Increment : ContractId NumericTester
+        controller s
+            do
+                create NumericTester with s = s; x =x + 1.0; y = y+1.2345
 
 template Ping
   with
@@ -23,9 +24,10 @@ template Ping
     signatory sender
     observer receiver
 
-    controller receiver can
-      RespondPong : ContractId Pong
-        do create Pong with sender = receiver; receiver = sender; count = count + 1
+    choice RespondPong : ContractId Pong
+        controller receiver
+            do
+                create Pong with sender = receiver; receiver = sender; count = count + 1
 
 template Pong
   with
@@ -36,9 +38,10 @@ template Pong
     signatory sender
     observer receiver
 
-    controller receiver can
-      RespondPing : ContractId Ping
-        do create Ping with sender = receiver; receiver = sender; count = count + 1
+    choice RespondPing : ContractId Ping
+        controller receiver
+            do
+                create Ping with sender = receiver; receiver = sender; count = count + 1
 
 
 template TimedPing
@@ -51,12 +54,12 @@ template TimedPing
     signatory sender
     observer receiver
 
-    controller receiver can
-      TimedPingRespondPong : ContractId Pong
-        do
-          now <- getTime
-          assertMsg ("TimedPingRespondPong should be called after " <> show expectedAfter) $ expectedAfter < now
-          create Pong with sender = receiver; receiver = sender; count = count + 1
+    choice TimedPingRespondPong : ContractId Pong
+        controller receiver
+            do
+              now <- getTime
+              assertMsg ("TimedPingRespondPong should be called after " <> show expectedAfter) $ expectedAfter < now
+              create Pong with sender = receiver; receiver = sender; count = count + 1
 
 template ArgumentPing
   with
@@ -67,9 +70,11 @@ template ArgumentPing
     signatory sender
     observer receiver
 
-    controller receiver can
-      ArgumentPingRespondPong : ContractId Pong
+
+    choice ArgumentPingRespondPong : ContractId Pong
         with
           intArg : Int
-        do create Pong with sender = receiver; receiver = sender; count = count + 1
+        controller receiver
+            do
+                create Pong with sender = receiver; receiver = sender; count = count + 1
 

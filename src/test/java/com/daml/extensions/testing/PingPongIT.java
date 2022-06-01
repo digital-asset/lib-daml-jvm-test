@@ -6,27 +6,11 @@
 
 package com.daml.extensions.testing;
 
-import static com.daml.extensions.testing.Dsl.*;
-import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import com.daml.ledger.javaapi.data.*;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.junit4.Sandbox;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.utils.ContractWithId;
-
-import com.daml.ledger.javaapi.data.ContractId;
-import com.daml.ledger.javaapi.data.ExerciseCommand;
-import com.daml.ledger.javaapi.data.Identifier;
-import com.daml.ledger.javaapi.data.Int64;
-import com.daml.ledger.javaapi.data.DamlRecord;
-import com.daml.ledger.javaapi.data.TreeEvent;
-import com.daml.ledger.javaapi.data.Value;
-
+import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
 import org.junit.ClassRule;
@@ -38,7 +22,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+
+import static com.daml.extensions.testing.Dsl.*;
 import static com.daml.extensions.testing.TestCommons.*;
+import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class PingPongIT {
   private static final Sandbox sandbox =
