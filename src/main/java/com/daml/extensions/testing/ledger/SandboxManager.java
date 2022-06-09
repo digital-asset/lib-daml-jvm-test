@@ -11,8 +11,6 @@ import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
 import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
-import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.extensions.testing.junit4.LogLevel;
@@ -136,16 +134,6 @@ public class SandboxManager {
   public void restart() throws TimeoutException, IOException, InterruptedException {
     stop();
     start();
-  }
-
-  public void reset() throws TimeoutException, IOException, InterruptedException {
-    ResetServiceGrpc.newBlockingStub(channel)
-        .reset(
-            ResetServiceOuterClass.ResetRequest.newBuilder()
-                .setLedgerId(ledgerClient.getLedgerId())
-                .build());
-    stopCommChannels();
-    startCommChannels();
   }
 
   public String getLedgerId() {

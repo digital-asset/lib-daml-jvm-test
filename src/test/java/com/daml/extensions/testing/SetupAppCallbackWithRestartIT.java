@@ -30,7 +30,6 @@ public class SetupAppCallbackWithRestartIT {
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
-          .useReset()
           .setupAppCallback(client -> boolFlag.set(true))
           .build();
 

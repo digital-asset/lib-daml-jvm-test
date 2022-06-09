@@ -42,7 +42,6 @@ public class ResetIT {
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
-          .useReset()
           .parties(ALICE.getValue(), BOB.getValue(), CHARLIE.getValue())
           .build();
 
