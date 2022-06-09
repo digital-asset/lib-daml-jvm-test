@@ -45,21 +45,10 @@ public abstract class SandboxRunner {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
-    commands.add("--");
     addCustomCommands(commands);
-    commands.add("-p");
+    commands.add("--port");
     commands.add(sandboxPort.toString());
-    commands.add(useWallclockTime ? "-w" : "-s");
-    ledgerId.ifPresent(
-        value -> {
-          commands.add("--ledgerid");
-          commands.add(value);
-        });
-    logLevel.ifPresent(
-        value -> {
-          commands.add("--log-level");
-          commands.add(value.toString());
-        });
+    commands.add("--dar");
     commands.add(relativeDarPath.toString());
     return commands;
   }
