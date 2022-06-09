@@ -10,8 +10,9 @@ template NumericTester
     y: Numeric 4
   where
     signatory s
-    controller s can
-      Increment : ContractId NumericTester
+    
+    choice Increment : ContractId NumericTester
+      controller s 
         do create NumericTester with s = s; x =x + 1.0; y = y+1.2345
 
 template Ping
@@ -23,8 +24,8 @@ template Ping
     signatory sender
     observer receiver
 
-    controller receiver can
-      RespondPong : ContractId Pong
+    choice RespondPong : ContractId Pong
+      controller receiver
         do create Pong with sender = receiver; receiver = sender; count = count + 1
 
 template Pong
@@ -36,8 +37,8 @@ template Pong
     signatory sender
     observer receiver
 
-    controller receiver can
-      RespondPing : ContractId Ping
+    choice RespondPing : ContractId Ping
+      controller receiver 
         do create Ping with sender = receiver; receiver = sender; count = count + 1
 
 
@@ -51,8 +52,8 @@ template TimedPing
     signatory sender
     observer receiver
 
-    controller receiver can
-      TimedPingRespondPong : ContractId Pong
+    choice TimedPingRespondPong : ContractId Pong
+      controller receiver 
         do
           now <- getTime
           assertMsg ("TimedPingRespondPong should be called after " <> show expectedAfter) $ expectedAfter < now
@@ -67,9 +68,9 @@ template ArgumentPing
     signatory sender
     observer receiver
 
-    controller receiver can
-      ArgumentPingRespondPong : ContractId Pong
-        with
-          intArg : Int
+    choice ArgumentPingRespondPong : ContractId Pong
+      with
+        intArg : Int
+      controller receiver 
         do create Pong with sender = receiver; receiver = sender; count = count + 1
 

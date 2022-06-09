@@ -3,27 +3,25 @@
 
 module Test where
 
-import PingPong
-import Main(allocate)
-
 import Daml.Script
-import DA.Functor(void)
 
-testSetup_ = scenario $ do
-  alice <- getParty "Alice"
-  bob <- getParty "Bob"
-  charlie <-getParty "Charlie"
+import PingPong
+
+testSetup_ = script  do
+  alice <- allocateParty "Alice"
+  bob <- allocateParty "Bob"
+  charlie <- allocateParty "Charlie"
   alice `submit` do
-    create Ping with
+    createCmd Ping with
         sender = alice
         receiver = bob
         count = 2
+  pure ()
 
-testSetup: Script ()
-testSetup = void $ do
-  alice   <- allocate "Alice"
-  bob     <- allocate "Bob"
-  charlie <-allocate "Charlie"
+testSetup = script do
+  alice   <- allocateParty "Alice"
+  bob     <- allocateParty "Bob"
+  charlie <- allocateParty "Charlie"
   submit alice $
     createCmd Ping with
         sender = alice
