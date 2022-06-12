@@ -7,3 +7,5 @@ project/project
 *.hie
 *.dar
 .daml
+*.gz
+log

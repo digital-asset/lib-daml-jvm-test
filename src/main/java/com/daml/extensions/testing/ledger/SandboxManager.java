@@ -173,11 +173,12 @@ public class SandboxManager {
 
     runScriptIfConfigured();
 
-    String ledgerId =
-        LedgerIdentityServiceGrpc.newBlockingStub(channel)
-            .getLedgerIdentity(
-                LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-            .getLedgerId();
+    String ledgerId = "sandbox";
+    //            LedgerIdentityServiceGrpc.newBlockingStub(channel)
+    //                .getLedgerIdentity(
+    //
+    // LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+    //                .getLedgerId();
 
     Supplier<TimeProvider> timeProviderFactory;
     if (useWallclockTime) {
