@@ -69,10 +69,10 @@ public class DefaultLedgerAdapter {
 
   // TODO(lt) figure out an interface for interacting with the value store
   public final ValueStore valueStore;
-  private final Supplier<TimeProvider> timeProviderFactory;
+  //  private final Supplier<TimeProvider> timeProviderFactory;
   private final Duration timeout;
 
-  private TimeProvider timeProvider;
+  //  private TimeProvider timeProvider;
   private ManagedChannel channel;
   private String ledgerId;
   private LedgerOffset startOffset;
@@ -88,7 +88,7 @@ public class DefaultLedgerAdapter {
     this.ledgerId = ledgerId;
     this.channel = channel;
     this.timeout = timeout;
-    this.timeProviderFactory = timeProviderFactory;
+    //    this.timeProviderFactory = timeProviderFactory;
   }
 
   private static Timestamp toProtobufTimestamp(Instant instant) {
@@ -105,7 +105,7 @@ public class DefaultLedgerAdapter {
   public synchronized void start(String[] explicitParties, LedgerOffset suggestStartOffset) {
     logger.info("Starting Ledger Adapter");
     this.startOffset = initStartOffset(suggestStartOffset);
-    this.timeProvider = timeProviderFactory.get();
+    //    this.timeProvider = timeProviderFactory.get();
     storageByParty = new ConcurrentHashMap<>();
     for (String explicitParty : explicitParties) {
       getStorage(explicitParty);
@@ -229,8 +229,8 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-    Instant let = timeProvider.getCurrentTime();
-    Instant mrt = let.plus(TTL);
+    //    Instant let = timeProvider.getCurrentTime();
+    //    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -249,13 +249,14 @@ public class DefaultLedgerAdapter {
     Dump.dump(interactionLogger, event);
   }
 
-  public Instant getCurrentTime() {
-    return timeProvider.getCurrentTime();
-  }
+  // Victor carefully commented this out
+  //  public Instant getCurrentTime() {
+  //    return timeProvider.getCurrentTime();
+  //  }
 
-  public void setCurrentTime(Instant time) {
-    timeProvider.setCurrentTime(time);
-  }
+  //  public void setCurrentTime(Instant time) {
+  //    timeProvider.setCurrentTime(time);
+  //  }
 
   private static final String key = "internal-cid-query";
   private static final String recordKey = "internal-recordKey";

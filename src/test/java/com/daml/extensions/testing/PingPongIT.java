@@ -233,7 +233,7 @@ public class PingPongIT {
         new ExerciseCommand(
             timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
 
-    sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
+//    sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
     sandbox.getLedgerAdapter().exerciseChoice(BOB, exerciseCmd);
   }
 
