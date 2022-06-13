@@ -37,8 +37,7 @@ public class SetupAppCallbackIT {
   @Rule public ExternalResource sandboxRule = sandbox.getRule();
 
   @Test
-  public void
-  testSetupAppCallback() {
+  public void testSetupAppCallback() {
     assertTrue("Setup should set the boolFlag.", boolFlag.get());
   }
 }

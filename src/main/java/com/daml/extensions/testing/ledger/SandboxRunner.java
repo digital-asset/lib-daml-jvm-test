@@ -57,7 +57,7 @@ public abstract class SandboxRunner {
         });
     logLevel.ifPresent(
         value -> {
-          commands.add("--log-level");
+          commands.add("--log-level-root");
           commands.add(value.toString());
         });
     commands.add("--dar");
