@@ -6,10 +6,6 @@
 sdk-version: 2.2.0
 name: ping-pong
 source: daml
-init-script: Main:init
-parties:
-  - Alice
-  - Bob
 version: 2.0.0
 dependencies:
   - daml-prim

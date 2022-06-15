@@ -25,7 +25,7 @@ main = script do
   return ()
 
 init : Script ()
-init = do
+init = script do
     alice <- allocate "Alice"
     bob   <- allocate "Bob"
 
