@@ -6,18 +6,15 @@
 
 package com.daml.extensions.testing.junit4;
 
-import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
-import static com.daml.extensions.testing.utils.Preconditions.require;
-import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
-
 import com.daml.daml_lf_dev.DamlLf1;
+import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
+import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
-import com.daml.extensions.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
+import org.junit.rules.ExternalResource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +22,10 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import org.junit.rules.ExternalResource;
+
+import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
+import static com.daml.extensions.testing.utils.Preconditions.require;
+import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
 public class Sandbox {
   private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
@@ -176,6 +176,10 @@ public class Sandbox {
 
   public DefaultLedgerAdapter getLedgerAdapter() {
     return sandboxManager.getLedgerAdapter();
+  }
+
+  public Party getPartyId( Party partyName ){
+    return sandboxManager.getPartyId(partyName);
   }
 
   public String getLedgerId() {

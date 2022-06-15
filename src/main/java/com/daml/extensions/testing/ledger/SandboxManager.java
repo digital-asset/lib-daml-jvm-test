@@ -6,30 +6,31 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
-import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
-
-import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
-import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
-import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.extensions.testing.junit4.LogLevel;
 import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
 import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
 import com.daml.extensions.testing.store.DefaultValueStore;
+import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.javaapi.data.Party;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Hashtable;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
+import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
@@ -43,6 +44,7 @@ public class SandboxManager {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final String[] parties;
+  private Hashtable <Party, Party> partyIdHashTable;
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -53,15 +55,15 @@ public class SandboxManager {
   private ManagedChannel channel;
 
   public SandboxManager(
-      Path damlRoot,
-      Optional<String> testModule,
-      Optional<String> testStartScript,
-      Duration sandboxWaitTimeout,
-      Duration observationTimeout,
-      String[] parties,
-      Path darPath,
-      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
-      boolean useWallclockTime) {
+          Path damlRoot,
+          Optional<String> testModule,
+          Optional<String> testStartScript,
+          Duration sandboxWaitTimeout,
+          Duration observationTimeout,
+          String[] parties,
+          Path darPath,
+          BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+          boolean useWallclockTime) {
     this(
         damlRoot,
         testModule,
@@ -124,6 +126,23 @@ public class SandboxManager {
   public void start(int port) throws TimeoutException, IOException, InterruptedException {
     startSandbox(port);
     startCommChannels();
+    mapParties();
+  }
+
+  private void allocateParty(String partyName) {
+    ledgerAdapter.allocatePartyOnLedger(partyName);
+  }
+
+  public void mapParties(){
+    this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
+  }
+
+  public Party getPartyId(Party partyName){
+    if (!partyIdHashTable.containsKey(partyName)){
+      allocateParty(partyName.getValue());
+      mapParties();
+    }
+    return partyIdHashTable.get(partyName);
   }
 
   public void stop() {
@@ -174,11 +193,6 @@ public class SandboxManager {
     runScriptIfConfigured();
 
     String ledgerId = "sandbox";
-    //            LedgerIdentityServiceGrpc.newBlockingStub(channel)
-    //                .getLedgerIdentity(
-    //
-    // LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
-    //                .getLedgerId();
 
     Supplier<TimeProvider> timeProviderFactory;
     if (useWallclockTime) {
