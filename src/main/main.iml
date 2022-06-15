@@ -12,5 +12,8 @@
     <orderEntry type="library" name="sbt: com.daml:bindings-rxjava:2.2.0:jar" level="project" />
     <orderEntry type="library" name="sbt: org.slf4j:slf4j-api:1.7.26:jar" level="project" />
     <orderEntry type="library" name="sbt: io.grpc:grpc-stub:1.44.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.daml:daml-lf-dev-archive-java-proto:2.2.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: junit:junit:4.12:jar" level="project" />
+    <orderEntry type="library" name="sbt: com.google.protobuf:protobuf-java:3.19.3:jar" level="project" />
   </component>
 </module>

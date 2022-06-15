@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
 import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
+
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private final Path damlRoot;
@@ -44,7 +45,7 @@ public class SandboxManager {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final String[] parties;
-  private Hashtable <Party, Party> partyIdHashTable;
+  private Hashtable<Party, Party> partyIdHashTable;
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -129,16 +130,18 @@ public class SandboxManager {
     mapParties();
   }
 
-  private void allocateParty(String partyName) {
+  public void allocateParty(String partyName) {
     ledgerAdapter.allocatePartyOnLedger(partyName);
   }
 
-  public void mapParties(){
+  public void mapParties() {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }
 
-  public Party getPartyId(Party partyName){
-    if (!partyIdHashTable.containsKey(partyName)){
+  public Party getPartyId(Party partyName) {
+    // todo elaborate how to handle party is not yet allocated case?
+    // allocate it as follows?
+    if (!partyIdHashTable.containsKey(partyName)) {
       allocateParty(partyName.getValue());
       mapParties();
     }

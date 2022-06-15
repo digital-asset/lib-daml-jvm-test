@@ -229,18 +229,28 @@ public class DefaultLedgerAdapter {
 
   public Hashtable<Party, Party> getMapKnownParties() {
     PartyManagementServiceOuterClass.ListKnownPartiesResponse listOfParties =
-            PartyManagementServiceGrpc.newBlockingStub(channel).listKnownParties(PartyManagementServiceOuterClass.ListKnownPartiesRequest.newBuilder().build());
+        PartyManagementServiceGrpc.newBlockingStub(channel)
+            .listKnownParties(
+                PartyManagementServiceOuterClass.ListKnownPartiesRequest.newBuilder().build());
     Hashtable<Party, Party> mapPartyId = new Hashtable<>();
-    listOfParties.getPartyDetailsList().forEach(p -> mapPartyId.put(new Party(p.getDisplayName()), new Party(p.getParty()) ));
+    listOfParties
+        .getPartyDetailsList()
+        .forEach(p -> mapPartyId.put(new Party(p.getDisplayName()), new Party(p.getParty())));
     return mapPartyId;
   }
 
   public void allocatePartyOnLedger(String p) {
-    PartyManagementServiceGrpc.newBlockingStub(channel).allocateParty(
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    PartyManagementServiceGrpc.newBlockingStub(channel)
+        .allocateParty(
             PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
-                    .setPartyIdHint(p)
-                    .setDisplayName(p)
-                    .build());
+                .setPartyIdHint(p)
+                .setDisplayName(p)
+                .build());
   }
 
   public Instant getCurrentTime() {
@@ -323,5 +333,4 @@ public class DefaultLedgerAdapter {
     }
     return true;
   }
-
 }

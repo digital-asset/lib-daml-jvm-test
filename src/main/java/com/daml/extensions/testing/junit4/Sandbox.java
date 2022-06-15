@@ -178,7 +178,7 @@ public class Sandbox {
     return sandboxManager.getLedgerAdapter();
   }
 
-  public Party getPartyId( Party partyName ){
+  public Party getPartyId(Party partyName) {
     return sandboxManager.getPartyId(partyName);
   }
 
