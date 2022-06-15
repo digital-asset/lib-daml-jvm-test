@@ -6,7 +6,7 @@ addCommandAlias("verify",
 addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
 // do not try to run tests in parallel (each test has one sandbox)
-parallelExecution in ThisBuild := false
+Test / parallelExecution := false
 
 credentials += Credentials(
   "Sonatype Nexus Repository Manager",
@@ -95,7 +95,7 @@ compileDaml := {
       s"$pwd/src/test/resources/ping-pong.dar").!
 }
 
-(test in Test) := (test in Test).dependsOn(compileDaml).value
+(Test / test) := (Test / test).dependsOn(compileDaml).value
 
 enablePlugins(CucumberPlugin)
 CucumberPlugin.glues := List("com/daml/extensions/testing/steps")
