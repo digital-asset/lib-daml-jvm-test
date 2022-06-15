@@ -7,7 +7,7 @@ version: 2.1
 executors:
   jdk-executor:
     docker:
-      - image: circleci/openjdk:8-jdk-stretch
+      - image: circleci/openjdk:11-jdk-stretch
 
 commands:
   install_sdk:
@@ -85,7 +85,7 @@ workflows:
   build_and_release:
     jobs:
       - sbt_publish:
-          daml_sdk_version: "1.15.0"
+          daml_sdk_version: "2.2.0"
           context: github-refapp-repo-context
           filters:
             branches:
