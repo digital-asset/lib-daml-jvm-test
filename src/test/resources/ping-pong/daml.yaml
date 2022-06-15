@@ -7,6 +7,8 @@ sdk-version: 2.2.0
 name: ping-pong
 source: daml
 version: 2.0.0
+navigator-options:
+  - --feature-user-management=false
 dependencies:
   - daml-prim
   - daml-stdlib

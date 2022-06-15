@@ -12,7 +12,7 @@ testSetup_ = script  do
   bob <- allocateParty "Bob"
   charlie <- allocateParty "Charlie"
   alice `submit` do
-    createCmd Ping with
+    createCmd MyPing with
         sender = alice
         receiver = bob
         count = 2
@@ -23,7 +23,7 @@ testSetup = script do
   bob     <- allocateParty "Bob"
   charlie <- allocateParty "Charlie"
   submit alice $
-    createCmd Ping with
+    createCmd MyPing with
         sender = alice
         receiver = bob
         count = 2

@@ -12,7 +12,7 @@ main = script do
   bob <- allocateParty "Bob"
   ping1
     <- alice `submit` do
-        createCmd Ping with
+        createCmd MyPing with
           sender = alice
           receiver = bob
           count = 2
@@ -29,7 +29,7 @@ init = script do
     alice <- allocate "Alice"
     bob   <- allocate "Bob"
 
-    ping1 <- submit alice $ createCmd Ping with sender = alice; receiver = bob; count = 2
+    ping1 <- submit alice $ createCmd MyPing with sender = alice; receiver = bob; count = 2
     pong1 <- submit bob   $ exerciseCmd ping1 RespondPong
     ping2 <- submit alice $ exerciseCmd pong1 RespondPing
     pure ()
