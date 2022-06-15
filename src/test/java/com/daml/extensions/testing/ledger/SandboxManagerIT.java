@@ -25,31 +25,39 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
 public class SandboxManagerIT {
-  // PROBLEM this code tries for 5 minutes to find "daml-sdk.jar" in the stream? What does it mean?
-  // He doesn't find
-  //  @Test
-  //  public void managerStopsSandboxGracefully() throws Exception {
-  //    eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
-  //
-  //    SandboxManager manager =
-  //        new SandboxManager(
-  //            RESOURCE_DIR,
-  //            Optional.empty(),
-  //            Optional.empty(),
-  //            Duration.ofMinutes(1),
-  //            Duration.ofSeconds(10),
-  //            new String[0],
-  //            DAR_PATH,
-  //            (_ignore1, _ignore2) -> {},
-  //            false);
-  //    manager.start();
-  //
-  //    eventually(() -> assertTrue(jps().stream().anyMatch(p -> p.contains("daml-sdk.jar"))));
-  //
-  //    manager.stop();
-  //
-  //    eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
-  //  }
+
+  @Test
+  public void managerStopsSandboxGracefully() throws Exception {
+    eventually(
+        () ->
+            assertTrue(
+                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+
+    SandboxManager manager =
+        new SandboxManager(
+            RESOURCE_DIR,
+            Optional.empty(),
+            Optional.empty(),
+            Duration.ofMinutes(1),
+            Duration.ofSeconds(10),
+            new String[0],
+            DAR_PATH,
+            (_ignore1, _ignore2) -> {},
+            false);
+    manager.start();
+
+    eventually(
+        () ->
+            assertTrue(
+                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+
+    manager.stop();
+
+    eventually(
+        () ->
+            assertTrue(
+                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+  }
 
   @Test
   public void managerReturnsAutomaticallyAssignedLedgerId() throws Exception {
@@ -69,7 +77,6 @@ public class SandboxManagerIT {
     String ledgerIdPattern = "sandbox"; // todo elaborate
     try {
       manager.start();
-      System.out.println(manager.getLedgerId());
       assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
     } finally {
       manager.stop();

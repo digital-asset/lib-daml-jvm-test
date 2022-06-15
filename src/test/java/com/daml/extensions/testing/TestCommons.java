@@ -6,8 +6,8 @@
 
 package com.daml.extensions.testing;
 
-import com.daml.ledger.javaapi.data.Party;
 import com.daml.daml_lf_dev.DamlLf1;
+import com.daml.ledger.javaapi.data.Party;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
