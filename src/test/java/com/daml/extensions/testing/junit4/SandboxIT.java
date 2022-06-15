@@ -34,9 +34,7 @@ public class SandboxIT {
     assertsIsBetween(sandboxPort, 6860, 6890);
   }
 
-  @Ignore
   @Test
-  // UNIMPLEMENTED: Method not found: com.daml.ledger.api.v1.LedgerIdentityService/GetLedgerIdentity
   public void ledgerIdSpecified() {
     assertThat(sandbox.getLedgerId(), is("sample-ledger"));
   }

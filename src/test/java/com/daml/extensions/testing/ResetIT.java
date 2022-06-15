@@ -12,7 +12,6 @@ import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.hamcrest.CoreMatchers;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,6 +41,14 @@ public class ResetIT {
 
   @Rule public ExpectedException expectedException = ExpectedException.none();
 
+  private Party charliePartyId() {
+    return sandbox.getPartyId(CHARLIE);
+  }
+
+  private Party bobPartyId() {
+    return sandbox.getPartyId(BOB);
+  }
+
   @Test
   public void testEmptyLedger() throws InvalidProtocolBufferException {
     expectedException.expect(TimeoutException.class);
@@ -49,18 +56,21 @@ public class ResetIT {
         CoreMatchers.containsString(
             "Timed out while waiting for the correct message to be observed."));
 
-    sandbox.getLedgerAdapter().getMatchedContract(CHARLIE, pingTemplateId(), ContractId::new);
-  }
-
-  @Ignore
-  @Test
-  public void testCreate() throws InvalidProtocolBufferException {
-    Party test = sandbox.getPartyId(CHARLIE);
     sandbox
         .getLedgerAdapter()
-        .createContract(sandbox.getPartyId(CHARLIE), pingTemplateId(), record(sandbox.getPartyId(CHARLIE), sandbox.getPartyId(CHARLIE), int64(777)));
+        .getMatchedContract(charliePartyId(), pingTemplateId(), ContractId::new);
+  }
+
+  @Test
+  public void testCreate() throws InvalidProtocolBufferException {
+    sandbox
+        .getLedgerAdapter()
+        .createContract(
+            charliePartyId(), pingTemplateId(), record(charliePartyId(), bobPartyId(), int64(777)));
     ContractWithId<ContractId> pingContract =
-        sandbox.getLedgerAdapter().getMatchedContract(CHARLIE, pingTemplateId(), ContractId::new);
+        sandbox
+            .getLedgerAdapter()
+            .getMatchedContract(charliePartyId(), pingTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
     Optional<DamlRecord> parameters = pingContract.record.asRecord();
     assertThat(
@@ -69,6 +79,6 @@ public class ResetIT {
   }
 
   private Identifier pingTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "Ping");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing");
   }
 }

@@ -7,7 +7,6 @@
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
-import com.daml.extensions.testing.junit4.LogLevel;
 import com.daml.extensions.testing.junit4.Sandbox;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.utils.ContractWithId;
@@ -15,7 +14,6 @@ import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
@@ -38,7 +36,6 @@ public class PingPongIT {
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
-          .logLevel(LogLevel.DEBUG)
           .moduleAndScript("Test", "testSetup")
           .build();
 
@@ -49,13 +46,26 @@ public class PingPongIT {
     return sandbox.getLedgerAdapter();
   }
 
-  @Ignore
+  private Party charliePartyId() {
+    return sandbox.getPartyId(CHARLIE);
+  }
+
+  private Party bobPartyId() {
+    return sandbox.getPartyId(BOB);
+  }
+
+  private Party alicePartyId() {
+    return sandbox.getPartyId(ALICE);
+  }
+
   @Test
   public void testCreate() throws InvalidProtocolBufferException {
-    ledger().createContract(sandbox.getPartyId(CHARLIE), pingTemplateId(), record(sandbox.getPartyId(CHARLIE), sandbox.getPartyId(BOB), int64(777)));
+    ledger()
+        .createContract(
+            charliePartyId(), pingTemplateId(), record(charliePartyId(), bobPartyId(), int64(777)));
 
     ContractWithId<ContractId> pingContract =
-        ledger().getMatchedContract(sandbox.getPartyId(CHARLIE), pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(charliePartyId(), pingTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
     Optional<DamlRecord> parameters = pingContract.record.asRecord();
     assertThat(
@@ -63,63 +73,57 @@ public class PingPongIT {
         is(optionalWithValue(equalTo(777L))));
   }
 
-  @Ignore
   @Test
   public void testObservationWithMatcher() throws InvalidProtocolBufferException {
-    Party aliceId = sandbox.getPartyId(ALICE);
-    Party bobId = sandbox.getPartyId(BOB);
     DamlRecord recordMatcher =
-        record(field("sender", aliceId), field("receiver", bobId), field("count", int64(2)));
+        record(
+            field("sender", alicePartyId()),
+            field("receiver", bobPartyId()),
+            field("count", int64(2)));
 
-    ledger().getCreatedContractId(bobId, pingTemplateId(), recordMatcher, ContractId::new);
+    ledger().getCreatedContractId(bobPartyId(), pingTemplateId(), recordMatcher, ContractId::new);
   }
 
-  @Ignore
   @Test
   public void testObservationWithoutMatcher() throws InvalidProtocolBufferException {
-    Party bobId = sandbox.getPartyId(BOB);
-    ledger().getCreatedContractId(bobId, pingTemplateId(), ContractId::new);
+    ledger().getCreatedContractId(bobPartyId(), pingTemplateId(), ContractId::new);
   }
 
-  @Ignore
   @Test
   public void testSimpleObservation() throws InvalidProtocolBufferException {
     String key = "mykey";
     TreeEvent evt =
         ledger()
             .observeEvent(
-                BOB.getValue(),
+                bobPartyId().getValue(),
                 ContractCreated.expectContract(pingTemplateId(), "{CAPTURE:" + key + "}"));
     Value capturedValue = ledger().valueStore.get(key);
     assertNotNull(capturedValue);
   }
 
-  @Ignore
   @Test
   public void testObservation() throws InvalidProtocolBufferException {
     ContractWithId<ContractId> contract =
-        ledger().getMatchedContract(sandbox.getPartyId(BOB), pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     assertNotNull(contract);
   }
 
-  @Ignore
   @Test
   public void testExercise() throws InvalidProtocolBufferException {
     ContractWithId<ContractId> contract =
-        ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger()
         .exerciseChoice(
-            BOB, pingTemplateId(), contract.contractId, "RespondPong", emptyDamlRecord());
+            bobPartyId(), pingTemplateId(), contract.contractId, "RespondPong", emptyDamlRecord());
   }
 
-  @Ignore
   @Test
   public void testExerciseCommand() throws InvalidProtocolBufferException {
     ContractWithId<ContractId> contract =
-        ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger()
         .exerciseChoice(
-            BOB,
+            bobPartyId(),
             new ExerciseCommand(
                 pingTemplateId(),
                 contract.contractId.getValue(),
@@ -127,30 +131,36 @@ public class PingPongIT {
                 emptyDamlRecord()));
   }
 
-  @Ignore
   @Test(expected = TimeoutException.class)
   public void testDoubleObservationNotPossible() throws InvalidProtocolBufferException {
-    ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
-    ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
+    ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
+    ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
   }
 
-  @Ignore
   @Test
   public void testPingPongFullWorkflow() throws InvalidProtocolBufferException {
     // PingPong workflow
     // Bob's turn
     DamlRecord recordMatcher =
-        record(field("sender", ALICE), field("receiver", BOB), field("count", int64(2)));
+        record(
+            field("sender", alicePartyId()),
+            field("receiver", bobPartyId()),
+            field("count", int64(2)));
 
     ContractId pingCid =
-        ledger().getCreatedContractId(BOB, pingTemplateId(), recordMatcher, ContractId::new);
-    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
+        ledger()
+            .getCreatedContractId(bobPartyId(), pingTemplateId(), recordMatcher, ContractId::new);
+    ledger()
+        .exerciseChoice(bobPartyId(), pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
 
     // Alice's turn
-    ContractId pongCid = ledger().getCreatedContractId(ALICE, pongTemplateId(), ContractId::new);
-    ledger().exerciseChoice(ALICE, pongTemplateId(), pongCid, "RespondPing", emptyDamlRecord());
+    ContractId pongCid =
+        ledger().getCreatedContractId(alicePartyId(), pongTemplateId(), ContractId::new);
+    ledger()
+        .exerciseChoice(
+            alicePartyId(), pongTemplateId(), pongCid, "RespondPing", emptyDamlRecord());
     ContractWithId<ContractId> pingContract =
-        ledger().getMatchedContract(BOB, pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
 
     assertThat(
         pingContract
@@ -164,7 +174,7 @@ public class PingPongIT {
     // Note that Alice hasn't observer any Ping before
     // So it will start with the first.
     ContractWithId<ContractId> pingContract2 =
-        ledger().getMatchedContract(ALICE, pingTemplateId(), ContractId::new);
+        ledger().getMatchedContract(alicePartyId(), pingTemplateId(), ContractId::new);
 
     assertThat(
         pingContract2
@@ -175,33 +185,38 @@ public class PingPongIT {
         is(optionalWithValue(equalTo(2L))));
   }
 
-  @Ignore
   @Test
   public void testPingPongFullWorkflowWAlternativeApiCalls() throws InvalidProtocolBufferException {
-    ContractId pingCid = ledger().getCreatedContractId(BOB, pingTemplateId(), ContractId::new);
-    ledger().exerciseChoice(BOB, pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
+    ContractId pingCid =
+        ledger().getCreatedContractId(bobPartyId(), pingTemplateId(), ContractId::new);
+    ledger()
+        .exerciseChoice(bobPartyId(), pingTemplateId(), pingCid, "RespondPong", emptyDamlRecord());
 
     // Alice's turn sending an exercise command, directly
-    ContractId pongCid = ledger().getCreatedContractId(ALICE, pongTemplateId(), ContractId::new);
+    ContractId pongCid =
+        ledger().getCreatedContractId(alicePartyId(), pongTemplateId(), ContractId::new);
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(pongTemplateId(), pongCid.getValue(), "RespondPing", emptyDamlRecord());
-    sandbox.getLedgerAdapter().exerciseChoice(ALICE, exerciseCmd);
+    sandbox.getLedgerAdapter().exerciseChoice(alicePartyId(), exerciseCmd);
     DamlRecord recordMatcher =
-        record(field("sender", ALICE), field("receiver", BOB), field("count", int64(4)));
+        record(
+            field("sender", alicePartyId()),
+            field("receiver", bobPartyId()),
+            field("count", int64(4)));
 
     ContractId pingCid2 =
-        ledger().getCreatedContractId(BOB, pingTemplateId(), recordMatcher, ContractId::new);
+        ledger()
+            .getCreatedContractId(bobPartyId(), pingTemplateId(), recordMatcher, ContractId::new);
   }
 
   private Identifier pingTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "Ping");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing");
   }
 
   private Identifier pongTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "Pong");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPong");
   }
 
-  @Ignore
   @Test(expected = StatusRuntimeException.class)
   public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
@@ -210,19 +225,23 @@ public class PingPongIT {
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
         .getLedgerAdapter()
-        .createContract(CHARLIE, timedPingTid, record(timestamp, CHARLIE, BOB, int64(777)));
+        .createContract(
+            charliePartyId(),
+            timedPingTid,
+            record(timestamp, charliePartyId(), bobPartyId(), int64(777)));
 
     ContractId timedPingCid =
-        sandbox.getLedgerAdapter().getCreatedContractId(CHARLIE, timedPingTid, ContractId::new);
+        sandbox
+            .getLedgerAdapter()
+            .getCreatedContractId(charliePartyId(), timedPingTid, ContractId::new);
 
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(
             timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
 
-    sandbox.getLedgerAdapter().exerciseChoice(CHARLIE, exerciseCmd);
+    sandbox.getLedgerAdapter().exerciseChoice(charliePartyId(), exerciseCmd);
   }
 
-  @Ignore
   @Test
   public void testTimedOperationIfTimeIsOk()
       throws InvalidProtocolBufferException, InterruptedException {
@@ -232,31 +251,37 @@ public class PingPongIT {
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
         .getLedgerAdapter()
-        .createContract(CHARLIE, timedPingTid, record(timestamp, CHARLIE, BOB, int64(777)));
+        .createContract(
+            charliePartyId(),
+            timedPingTid,
+            record(timestamp, charliePartyId(), bobPartyId(), int64(777)));
 
     ContractId timedPingCid =
-        sandbox.getLedgerAdapter().getCreatedContractId(CHARLIE, timedPingTid, ContractId::new);
+        sandbox
+            .getLedgerAdapter()
+            .getCreatedContractId(charliePartyId(), timedPingTid, ContractId::new);
 
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(
             timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
 
     sandbox.getLedgerAdapter().setCurrentTime(futureTime.plusSeconds(1000));
-    sandbox.getLedgerAdapter().exerciseChoice(BOB, exerciseCmd);
+    sandbox.getLedgerAdapter().exerciseChoice(bobPartyId(), exerciseCmd);
   }
 
   private Identifier numericTemplateId() throws InvalidProtocolBufferException {
     return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "NumericTester");
   }
 
-  @Ignore
   @Test
   public void testNumeric() throws InvalidProtocolBufferException {
     ledger()
         .createContract(
-            CHARLIE, numericTemplateId(), record(CHARLIE, numeric("3.14"), numeric("1.234")));
+            charliePartyId(),
+            numericTemplateId(),
+            record(charliePartyId(), numeric("3.14"), numeric("1.234")));
     ContractWithId<ContractId> numericTesterContract =
-        ledger().getMatchedContract(CHARLIE, numericTemplateId(), ContractId::new);
+        ledger().getMatchedContract(charliePartyId(), numericTemplateId(), ContractId::new);
     // Checking that the ping-pong counter is right
     Optional<DamlRecord> parameters = numericTesterContract.record.asRecord();
     assertThat(

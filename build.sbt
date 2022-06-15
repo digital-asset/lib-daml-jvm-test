@@ -6,7 +6,7 @@ addCommandAlias("verify",
 addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
 // do not try to run tests in parallel (each test has one sandbox)
-Test / parallelExecution := false
+ThisBuild / parallelExecution := false
 
 credentials += Credentials(
   "Sonatype Nexus Repository Manager",
