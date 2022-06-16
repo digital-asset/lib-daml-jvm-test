@@ -9,6 +9,8 @@ package com.daml.extensions.testing.utils;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,11 +19,10 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
 
 public class SandboxUtils {
   private static final Path DAML_YAML = Paths.get("daml.yaml");
-  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
+  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6864);
   private static final AtomicInteger SANDBOX_PORT_COUNTER =
       new AtomicInteger(SANDBOX_PORT_RANGE.lowerEndpoint());
 
