@@ -28,8 +28,8 @@ import static com.daml.extensions.testing.utils.Preconditions.require;
 import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
 public class Sandbox {
-  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
-  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
+  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(40);
+  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(25);
   private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 

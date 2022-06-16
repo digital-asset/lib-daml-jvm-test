@@ -9,6 +9,7 @@
 
 package com.daml.extensions.testing.cucumber.utils;
 
+import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.daml_lf_dev.DamlLf1;
 
@@ -19,7 +20,10 @@ import static com.daml.extensions.testing.utils.PackageUtils.getTypePrim;
 
 public class TableUtils {
   public static DamlRecord fieldsToArgs(
-      List<String> args, List<DamlLf1.FieldWithType> fields, DamlLf1.Package lfPackage) {
+      List<String> args,
+      List<DamlLf1.FieldWithType> fields,
+      DamlLf1.Package lfPackage,
+      SandboxManager sandboxManager) {
     if (args.size() != fields.size()) {
       throw new IllegalArgumentException(
           "Wrong number of actual arguments: " + args.size() + " (formal: " + fields.size() + ")");
@@ -47,7 +51,7 @@ public class TableUtils {
             fieldList.addLast(field(integer(arg)));
             break;
           case PARTY:
-            fieldList.addLast(field(party(arg)));
+            fieldList.addLast(field(sandboxManager.getPartyId(party(arg))));
             break;
           case DECIMAL:
             fieldList.addLast(field(decimal(arg)));

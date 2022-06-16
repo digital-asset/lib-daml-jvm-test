@@ -106,10 +106,13 @@ public class LedgerInteractions implements En {
                         sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
                 checkTableIsTwoOrManyRows(dataTable);
                 for (int i = 1; i < dataTable.width(); i++) {
-                  DamlRecord args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields, pkg);
+                  DamlRecord args =
+                      fieldsToArgs(
+                          dataTable.column(i), idWithArgs.createFields, pkg, sandboxManager);
                   sandboxManager
                       .getLedgerAdapter()
-                      .createContract(new Party(party), idWithArgs.identifier, args);
+                      .createContract(
+                          sandboxManager.getPartyId(new Party(party)), idWithArgs.identifier, args);
                 }
               }
             });
@@ -134,7 +137,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party),
+                        sandboxManager.getPartyId(party(party)),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -160,7 +163,8 @@ public class LedgerInteractions implements En {
                     fieldsToArgs(
                         checkTableIsOneOrTwoRowsAndGet(dataTable),
                         idWithArgs.choices.get(choiceName),
-                        pkg);
+                        pkg,
+                        sandboxManager);
                 ContractId contractId =
                     sandboxManager
                         .getLedgerAdapter()
@@ -171,7 +175,11 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party), idWithArgs.identifier, contractId, choiceName, args);
+                        sandboxManager.getPartyId(party(party)),
+                        idWithArgs.identifier,
+                        contractId,
+                        choiceName,
+                        args);
               }
             });
     Then(
@@ -181,7 +189,8 @@ public class LedgerInteractions implements En {
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           sandboxManager
               .getLedgerAdapter()
-              .getCreatedContractId(party(party), idWithArgs.identifier, ContractId::new);
+              .getCreatedContractId(
+                  sandboxManager.getPartyId(party(party)), idWithArgs.identifier, ContractId::new);
         });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\" with(?: contract id \"([^\"]+)\" and)? values$",
@@ -191,11 +200,16 @@ public class LedgerInteractions implements En {
           DamlLf1.Package pkg =
               findPackageObject(sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
           DamlRecord args =
-              fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields, pkg);
+              fieldsToArgs(
+                  checkTableIsOneOrTwoRowsAndGet(dataTable),
+                  idWithArgs.createFields,
+                  pkg,
+                  sandboxManager);
+          String partyId = sandboxManager.getPartyId(party(party)).getValue();
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
-                  party,
+                  partyId,
                   ContractCreated.expectContractWithArguments(
                       idWithArgs.identifier, "{CAPTURE:" + contractId + "}", args));
         });
@@ -209,7 +223,7 @@ public class LedgerInteractions implements En {
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
-                  party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
+                 sandboxManager.getPartyId(party(party)).getValue(), ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
         });
     Then(
         "^.*they should receive a technical failure (with|containing) message \\s*\"([^\"]*)\".*$",

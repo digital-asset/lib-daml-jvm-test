@@ -6,17 +6,19 @@
 
 package com.daml.extensions.testing.utils;
 
+import com.daml.daml_lf_dev.DamlLf;
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
-import com.daml.daml_lf_dev.DamlLf;
-import com.daml.daml_lf_dev.DamlLf1;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import static java.lang.Thread.sleep;
 
 public class PackageUtils {
   private static final ConcurrentHashMap<DamlLf1.DottedName, String> packageNames =
@@ -164,6 +166,11 @@ public class PackageUtils {
       return strName;
     } else {
       PackageClient pkgClient = ledgerClient.getPackageClient();
+      try {
+        sleep(7000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
       for (String pkgId : pkgs) {
         GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
@@ -253,6 +260,11 @@ public class PackageUtils {
     if (dt != null) {
       return dt;
     } else {
+      try {
+        sleep(3000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       // Init or reinit the cache...
       initCache(ledgerClient);
       // Try again and throw.
