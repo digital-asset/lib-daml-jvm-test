@@ -9,3 +9,5 @@ project/project
 .daml
 *.gz
 log
+.iml
+.bsp

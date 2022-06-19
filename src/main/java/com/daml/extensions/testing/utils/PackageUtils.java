@@ -166,11 +166,6 @@ public class PackageUtils {
       return strName;
     } else {
       PackageClient pkgClient = ledgerClient.getPackageClient();
-      try {
-        sleep(7000);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
       Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
       for (String pkgId : pkgs) {
         GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
@@ -195,6 +190,11 @@ public class PackageUtils {
       throws InvalidProtocolBufferException {
     PackageClient pkgClient = ledgerClient.getPackageClient();
     String pkgId = findPackage(ledgerClient, moduleName);
+    try {
+      sleep(2500);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
     DamlLf.ArchivePayload archivePl = DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
     return archivePl.getDamlLf1();
@@ -261,7 +261,7 @@ public class PackageUtils {
       return dt;
     } else {
       try {
-        sleep(3000);
+        sleep(2000);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
