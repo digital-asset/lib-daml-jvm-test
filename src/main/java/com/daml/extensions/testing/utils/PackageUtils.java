@@ -191,7 +191,7 @@ public class PackageUtils {
     PackageClient pkgClient = ledgerClient.getPackageClient();
     String pkgId = findPackage(ledgerClient, moduleName);
     try {
-      sleep(2500);
+      sleep(3000);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
