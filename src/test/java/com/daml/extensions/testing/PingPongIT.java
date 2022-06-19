@@ -47,15 +47,15 @@ public class PingPongIT {
   }
 
   private Party charliePartyId() {
-    return sandbox.getPartyId(CHARLIE);
+    return sandbox.getPartyIdForce(CHARLIE);
   }
 
   private Party bobPartyId() {
-    return sandbox.getPartyId(BOB);
+    return sandbox.getPartyIdForce(BOB);
   }
 
   private Party alicePartyId() {
-    return sandbox.getPartyId(ALICE);
+    return sandbox.getPartyIdForce(ALICE);
   }
 
   @Test
@@ -135,6 +135,14 @@ public class PingPongIT {
   public void testDoubleObservationNotPossible() throws InvalidProtocolBufferException {
     ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNotAllocatedPartyHasNoId()
+      throws NullPointerException, InvalidProtocolBufferException {
+    ledger()
+        .getMatchedContract(
+            sandbox.getPartyId(party("NonAllocatedPartyName")), pingTemplateId(), ContractId::new);
   }
 
   @Test
