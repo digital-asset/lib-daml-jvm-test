@@ -112,7 +112,9 @@ public class LedgerInteractions implements En {
                   sandboxManager
                       .getLedgerAdapter()
                       .createContract(
-                          sandboxManager.getPartyId(new Party(party)), idWithArgs.identifier, args);
+                          sandboxManager.getPartyIdForce(new Party(party)),
+                          idWithArgs.identifier,
+                          args);
                 }
               }
             });
@@ -137,7 +139,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        sandboxManager.getPartyId(party(party)),
+                        sandboxManager.getPartyIdForce(party(party)),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -175,7 +177,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        sandboxManager.getPartyId(party(party)),
+                        sandboxManager.getPartyIdForce(party(party)),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -190,7 +192,9 @@ public class LedgerInteractions implements En {
           sandboxManager
               .getLedgerAdapter()
               .getCreatedContractId(
-                  sandboxManager.getPartyId(party(party)), idWithArgs.identifier, ContractId::new);
+                  sandboxManager.getPartyIdForce(party(party)),
+                  idWithArgs.identifier,
+                  ContractId::new);
         });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\" with(?: contract id \"([^\"]+)\" and)? values$",
@@ -205,7 +209,7 @@ public class LedgerInteractions implements En {
                   idWithArgs.createFields,
                   pkg,
                   sandboxManager);
-          String partyId = sandboxManager.getPartyId(party(party)).getValue();
+          String partyId = sandboxManager.getPartyIdForce(party(party)).getValue();
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
@@ -223,7 +227,8 @@ public class LedgerInteractions implements En {
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
-                 sandboxManager.getPartyId(party(party)).getValue(), ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
+                  sandboxManager.getPartyIdForce(party(party)).getValue(),
+                  ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
         });
     Then(
         "^.*they should receive a technical failure (with|containing) message \\s*\"([^\"]*)\".*$",

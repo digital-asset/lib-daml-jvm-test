@@ -138,12 +138,19 @@ public class SandboxManager {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }
 
-  public Party getPartyId(Party partyName) {
-    // todo elaborate how to handle party is not yet allocated case?
-    // allocate it as follows?
+  public Party getPartyIdForce(Party partyName) {
+    // <DisplayName:LPartyId>
     if (!partyIdHashTable.containsKey(partyName)) {
       allocateParty(partyName.getValue());
       mapParties();
+    }
+    return partyIdHashTable.get(partyName);
+  }
+
+  public Party getPartyId(Party partyName) {
+    if (!partyIdHashTable.containsKey(partyName)) {
+      throw new NullPointerException(
+          String.format("Party %s is not allocated", partyName.getValue()));
     }
     return partyIdHashTable.get(partyName);
   }
