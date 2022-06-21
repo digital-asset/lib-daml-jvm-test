@@ -32,7 +32,6 @@ import java.util.function.Supplier;
 import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
 import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
-
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private final Path damlRoot;
@@ -56,15 +55,15 @@ public class SandboxManager {
   private ManagedChannel channel;
 
   public SandboxManager(
-          Path damlRoot,
-          Optional<String> testModule,
-          Optional<String> testStartScript,
-          Duration sandboxWaitTimeout,
-          Duration observationTimeout,
-          String[] parties,
-          Path darPath,
-          BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
-          boolean useWallclockTime) {
+      Path damlRoot,
+      Optional<String> testModule,
+      Optional<String> testStartScript,
+      Duration sandboxWaitTimeout,
+      Duration observationTimeout,
+      String[] parties,
+      Path darPath,
+      BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
+      boolean useWallclockTime) {
     this(
         damlRoot,
         testModule,

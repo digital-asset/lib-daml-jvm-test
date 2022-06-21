@@ -28,10 +28,7 @@ public class SandboxManagerIT {
 
   @Test
   public void managerStopsSandboxGracefully() throws Exception {
-    eventually(
-        () ->
-            assertTrue(
-                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+    eventually(() -> assertTrue(jps().stream().noneMatch(p -> (p.contains("canton.jar")))));
 
     SandboxManager manager =
         new SandboxManager(
@@ -46,17 +43,11 @@ public class SandboxManagerIT {
             false);
     manager.start();
 
-    eventually(
-        () ->
-            assertTrue(
-                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+    eventually(() -> assertTrue(jps().stream().anyMatch(p -> (p.contains("canton.jar")))));
 
     manager.stop();
 
-    eventually(
-        () ->
-            assertTrue(
-                jps().stream().noneMatch(p -> (p.contains("daml-sdk.jar") && p.length() == 17))));
+    eventually(() -> assertTrue(jps().stream().noneMatch(p -> (p.contains("canton.jar")))));
   }
 
   @Test
@@ -74,7 +65,9 @@ public class SandboxManagerIT {
             false,
             Optional.empty(),
             Optional.empty());
-    String ledgerIdPattern = "sandbox"; // todo elaborate
+
+    String ledgerIdPattern = "sandbox";
+
     try {
       manager.start();
       assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
