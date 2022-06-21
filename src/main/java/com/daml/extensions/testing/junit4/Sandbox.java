@@ -74,7 +74,6 @@ public class Sandbox {
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
-    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();

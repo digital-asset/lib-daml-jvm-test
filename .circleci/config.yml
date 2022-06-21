@@ -53,10 +53,6 @@ jobs:
           paths:
             - ~/.daml
           key: daml-{{ checksum "build.sbt" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
-      - run:
-          name: Run Blackduck Detect
-          command: |
-            bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) ci-build digitalasset_refapps_func_test main --logging.level.com.synopsys.integration=DEBUG
   sbt_publish:
     parameters:
       daml_sdk_version:
@@ -81,7 +77,6 @@ workflows:
     jobs:
       - sbt_verify:
           daml_sdk_version: "2.2.0"
-          context: blackduck
   build_and_release:
     jobs:
       - sbt_publish:
