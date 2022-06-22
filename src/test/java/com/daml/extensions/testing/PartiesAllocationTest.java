@@ -1,3 +1,9 @@
+/*
+ * Copyright 2020 Digital Asset (Switzerland) GmbH and/or its affiliates
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.junit4.Sandbox;
