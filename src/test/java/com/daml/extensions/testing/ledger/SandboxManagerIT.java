@@ -6,12 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.TestCommons.DAR_PATH;
-import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,14 +18,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.junit.Test;
+
+import static com.daml.extensions.testing.TestCommons.DAR_PATH;
+import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 public class SandboxManagerIT {
 
   @Test
   public void managerStopsSandboxGracefully() throws Exception {
-    eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
-
+    Integer jpsStreamLengthBefore = jpsStreamLengthNow();
     SandboxManager manager =
         new SandboxManager(
             RESOURCE_DIR,
@@ -44,11 +42,15 @@ public class SandboxManagerIT {
             false);
     manager.start();
 
-    eventually(() -> assertTrue(jps().stream().anyMatch(p -> p.contains("daml-sdk.jar"))));
+    eventually(() -> assertTrue(jpsStreamLengthBefore < jpsStreamLengthNow()));
 
     manager.stop();
 
-    eventually(() -> assertTrue(jps().stream().noneMatch(p -> p.contains("daml-sdk.jar"))));
+    eventually(() -> assertTrue(jpsStreamLengthBefore == jpsStreamLengthNow()));
+  }
+
+  private Integer jpsStreamLengthNow() {
+    return jps().stream().toArray().length;
   }
 
   @Test
@@ -66,7 +68,9 @@ public class SandboxManagerIT {
             false,
             Optional.empty(),
             Optional.empty());
-    String ledgerIdPattern = "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}";
+
+    String ledgerIdPattern = "sandbox";
+
     try {
       manager.start();
       assertTrue(manager.getLedgerId().matches(ledgerIdPattern));
@@ -88,11 +92,11 @@ public class SandboxManagerIT {
             DAR_PATH,
             (_ignore1, _ignore2) -> {},
             false,
-            Optional.of("Test Ledger ID"),
+            Optional.of("TestLedgerID"),
             Optional.empty());
     try {
       manager.start();
-      assertThat(manager.getLedgerId(), is("Test Ledger ID"));
+      assertThat(manager.getLedgerId(), is("TestLedgerID"));
     } finally {
       manager.stop();
     }

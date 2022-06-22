@@ -6,12 +6,12 @@
 
 package com.daml.extensions.testing.utils;
 
+import com.daml.daml_lf_dev.DamlLf;
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
-import com.daml.daml_lf_dev.DamlLf;
-import com.daml.daml_lf_dev.DamlLf1;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.*;

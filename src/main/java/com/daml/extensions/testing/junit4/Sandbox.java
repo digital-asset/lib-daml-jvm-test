@@ -6,18 +6,15 @@
 
 package com.daml.extensions.testing.junit4;
 
-import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
-import static com.daml.extensions.testing.utils.Preconditions.require;
-import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
-
 import com.daml.daml_lf_dev.DamlLf1;
+import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
+import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
-import com.daml.extensions.testing.ledger.SandboxManager;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
+import org.junit.rules.ExternalResource;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,11 +22,14 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import org.junit.rules.ExternalResource;
+
+import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
+import static com.daml.extensions.testing.utils.Preconditions.require;
+import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
 public class Sandbox {
-  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
-  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
+  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(40);
+  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(25);
   private static final String[] DEFAULT_PARTIES = new String[] {};
   private final SandboxManager sandboxManager;
 
@@ -47,7 +47,6 @@ public class Sandbox {
       Path darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
-      boolean useReset,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.sandboxManager =
@@ -63,10 +62,7 @@ public class Sandbox {
             useWallclockTime,
             ledgerId,
             logLevel);
-    this.useReset = useReset;
   }
-
-  private final boolean useReset;
 
   public static class SandboxBuilder {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
@@ -78,7 +74,6 @@ public class Sandbox {
     private Path damlRoot = WORKING_DIRECTORY;
     private Path darPath;
     private boolean useWallclockTime = false;
-    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
@@ -128,11 +123,6 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder useReset() {
-      this.useReset = true;
-      return this;
-    }
-
     public SandboxBuilder useWallclockTime() {
       this.useWallclockTime = true;
       return this;
@@ -166,7 +156,6 @@ public class Sandbox {
           darPath,
           setupApplication,
           useWallclockTime,
-          useReset,
           ledgerId,
           logLevel);
     }
@@ -186,6 +175,10 @@ public class Sandbox {
 
   public DefaultLedgerAdapter getLedgerAdapter() {
     return sandboxManager.getLedgerAdapter();
+  }
+
+  public Party getPartyId(String partyName) {
+    return sandboxManager.getPartyId(partyName);
   }
 
   public String getLedgerId() {
@@ -210,11 +203,7 @@ public class Sandbox {
   public ExternalResource getClassRule() {
     return new ExternalResource() {
       @Override
-      protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.start();
-        }
-      }
+      protected void before() throws Throwable {}
 
       @Override
       protected void after() {
@@ -227,11 +216,7 @@ public class Sandbox {
     return new ExternalResource() {
       @Override
       protected void before() throws Throwable {
-        if (useReset) {
-          sandboxManager.reset();
-        } else {
-          sandboxManager.restart();
-        }
+        sandboxManager.restart();
       }
 
       @Override

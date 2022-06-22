@@ -7,14 +7,15 @@
 package com.daml.extensions.testing.ledger;
 
 import com.daml.extensions.testing.junit4.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -45,22 +46,23 @@ public abstract class SandboxRunner {
     List<String> commands = new ArrayList<>();
     commands.add(getDamlCommand());
     commands.add("sandbox");
-    commands.add("--");
     addCustomCommands(commands);
-    commands.add("-p");
+    commands.add("--port");
     commands.add(sandboxPort.toString());
-    commands.add(useWallclockTime ? "-w" : "-s");
+    commands.add(useWallclockTime ? "" : "--static-time");
     ledgerId.ifPresent(
         value -> {
-          commands.add("--ledgerid");
-          commands.add(value);
+          commands.add("-C");
+          commands.add(String.format("ledgerId=%s", value));
         });
     logLevel.ifPresent(
         value -> {
-          commands.add("--log-level");
+          commands.add("--log-level-root");
           commands.add(value.toString());
         });
+    commands.add("--dar");
     commands.add(relativeDarPath.toString());
+
     return commands;
   }
 

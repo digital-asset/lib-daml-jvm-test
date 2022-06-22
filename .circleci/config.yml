@@ -7,7 +7,7 @@ version: 2.1
 executors:
   jdk-executor:
     docker:
-      - image: circleci/openjdk:8-jdk-stretch
+      - image: circleci/openjdk:11-jdk-stretch
 
 commands:
   install_sdk:
@@ -53,10 +53,6 @@ jobs:
           paths:
             - ~/.daml
           key: daml-{{ checksum "build.sbt" }}-{{ checksum "project/Dependencies.scala" }}-{{ checksum "src/test/resources/ping-pong/daml.yaml" }}
-      - run:
-          name: Run Blackduck Detect
-          command: |
-            bash <(curl -s https://raw.githubusercontent.com/DACH-NY/security-blackduck/master/synopsys-detect) ci-build digitalasset_refapps_func_test main --logging.level.com.synopsys.integration=DEBUG
   sbt_publish:
     parameters:
       daml_sdk_version:
@@ -80,12 +76,11 @@ workflows:
   build_and_test:
     jobs:
       - sbt_verify:
-          daml_sdk_version: "1.15.0"
-          context: blackduck
+          daml_sdk_version: "2.2.0"
   build_and_release:
     jobs:
       - sbt_publish:
-          daml_sdk_version: "1.15.0"
+          daml_sdk_version: "2.2.0"
           context: github-refapp-repo-context
           filters:
             branches:

@@ -6,12 +6,6 @@
 
 package com.daml.extensions.testing.ledger;
 
-import com.daml.ledger.api.v1.CommandServiceGrpc;
-import com.daml.ledger.api.v1.CommandServiceOuterClass;
-import com.daml.ledger.api.v1.CommandsOuterClass;
-import com.daml.ledger.api.v1.LedgerOffsetOuterClass;
-import com.daml.ledger.api.v1.TransactionServiceGrpc;
-import com.daml.ledger.api.v1.TransactionServiceOuterClass;
 import com.daml.extensions.testing.comparator.MessageTester;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
@@ -19,20 +13,10 @@ import com.daml.extensions.testing.logging.Dump;
 import com.daml.extensions.testing.store.InMemoryMessageStorage;
 import com.daml.extensions.testing.store.ValueStore;
 import com.daml.extensions.testing.utils.ContractWithId;
-
-import com.daml.ledger.javaapi.data.Command;
-import com.daml.ledger.javaapi.data.ContractId;
-import com.daml.ledger.javaapi.data.CreateCommand;
-import com.daml.ledger.javaapi.data.ExerciseCommand;
-import com.daml.ledger.javaapi.data.FiltersByParty;
-import com.daml.ledger.javaapi.data.GetTransactionsRequest;
-import com.daml.ledger.javaapi.data.Identifier;
-import com.daml.ledger.javaapi.data.LedgerOffset;
-import com.daml.ledger.javaapi.data.NoFilter;
-import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.DamlRecord;
-import com.daml.ledger.javaapi.data.TreeEvent;
-import com.daml.ledger.javaapi.data.Value;
+import com.daml.ledger.api.v1.*;
+import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
+import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
+import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -42,13 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -247,6 +225,32 @@ public class DefaultLedgerAdapter {
     Dump.dump(wireLogger, event);
     CommandServiceGrpc.newBlockingStub(channel).submitAndWait(commands.build());
     Dump.dump(interactionLogger, event);
+  }
+
+  public Hashtable<String, Party> getMapKnownParties() {
+    PartyManagementServiceOuterClass.ListKnownPartiesResponse listOfParties =
+        PartyManagementServiceGrpc.newBlockingStub(channel)
+            .listKnownParties(
+                PartyManagementServiceOuterClass.ListKnownPartiesRequest.newBuilder().build());
+    Hashtable<String, Party> mapPartyId = new Hashtable<>();
+    listOfParties
+        .getPartyDetailsList()
+        .forEach(p -> mapPartyId.put((p.getDisplayName()), new Party(p.getParty())));
+    return mapPartyId;
+  }
+
+  public void allocatePartyOnLedger(String p) {
+    try {
+      Thread.sleep(5000);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    PartyManagementServiceGrpc.newBlockingStub(channel)
+        .allocateParty(
+            PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
+                .setPartyIdHint(p)
+                .setDisplayName(p)
+                .build());
   }
 
   public Instant getCurrentTime() {

@@ -19,43 +19,43 @@ Feature: Cucumber support in the Functional Testing library
 
 
   Scenario: A contract can be created and observed.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
 
-    Then "Alice" should observe the creation of "PingPong:Ping"
+    Then "Alice" should observe the creation of "PingPong:MyPing"
 
   Scenario: Multiple contracts can be created and observed.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   | Bob   |
     | receiver | Alice | Alice |
     | count    | 3     | 4     |
 
-    Then "Alice" should observe the creation of "PingPong:Ping"
-    Then "Alice" should observe the creation of "PingPong:Ping"
+    Then "Alice" should observe the creation of "PingPong:MyPing"
+    Then "Alice" should observe the creation of "PingPong:MyPing"
 
   Scenario: A contract with specific values can be created and observed.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
-    Then "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid1" and values
+    Then "Alice" should observe the creation of "PingPong:MyPing" with contract id "pingPongCid1" and values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
 
   Scenario: Contract choices can be exercised.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
-    When "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid2" and values
+    When "Alice" should observe the creation of "PingPong:MyPing" with contract id "pingPongCid2" and values
     | Bob   |
     | Alice |
     | 3     |
-    When "Alice" exercises choice "RespondPong" on "PingPong:Ping" with contract id "pingPongCid2"
-    Then "Bob" should observe the creation of "PingPong:Pong"
+    When "Alice" exercises choice "RespondPong" on "PingPong:MyPing" with contract id "pingPongCid2"
+    Then "Bob" should observe the creation of "PingPong:MyPong"
 
   Scenario: Contract choices with arguments can be exercised.
     Given "Bob" creates contract "PingPong:ArgumentPing" using values
@@ -68,7 +68,7 @@ Feature: Cucumber support in the Functional Testing library
     | 3     |
     When "Alice" exercises choice "ArgumentPingRespondPong" on "PingPong:ArgumentPing" with contract id "pingPongCid3" using values
     | 2 |
-    Then "Bob" should observe the creation of "PingPong:Pong"
+    Then "Bob" should observe the creation of "PingPong:MyPong"
 
   Scenario: Contract choices with arguments can be exercised using a data table with argument names.
     Given "Bob" creates contract "PingPong:ArgumentPing" using values
@@ -81,28 +81,28 @@ Feature: Cucumber support in the Functional Testing library
     | 3     |
     When "Alice" exercises choice "ArgumentPingRespondPong" on "PingPong:ArgumentPing" with contract id "pingPongCid3" using values
     | intArg | 2 |
-    Then "Bob" should observe the creation of "PingPong:Pong"
+    Then "Bob" should observe the creation of "PingPong:MyPong"
 
   Scenario: A created contract can be archived and the archival can be observed.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
-    When "Alice" should observe the creation of "PingPong:Ping" with contract id "cidToArchive" and values
+    When "Alice" should observe the creation of "PingPong:MyPing" with contract id "cidToArchive" and values
     | Bob   |
     | Alice |
     | 3     |
-    When "Bob" exercises choice "Archive" on "PingPong:Ping" with contract id "cidToArchive"
-    Then "Bob" should observe the archival of "PingPong:Ping" with contract id "cidToArchive"
+    When "Bob" exercises choice "Archive" on "PingPong:MyPing" with contract id "cidToArchive"
+    Then "Bob" should observe the archival of "PingPong:MyPing" with contract id "cidToArchive"
 
   Scenario: An expected failure can be observed.
-    Given "Bob" creates contract "PingPong:Ping" using values
+    Given "Bob" creates contract "PingPong:MyPing" using values
     | sender   | Bob   |
     | receiver | Alice |
     | count    | 3     |
-    When "Alice" should observe the creation of "PingPong:Ping" with contract id "pingPongCid4" and values
+    When "Alice" should observe the creation of "PingPong:MyPing" with contract id "pingPongCid4" and values
     | Bob   |
     | Alice |
     | 3     |
-    When "Bob" exercises choice "RespondPong" on "PingPong:Ping" with contract id "pingPongCid4" and expects failure
+    When "Bob" exercises choice "RespondPong" on "PingPong:MyPing" with contract id "pingPongCid4" and expects failure
     Then they should receive a technical failure containing message "requires authorizers Alice"

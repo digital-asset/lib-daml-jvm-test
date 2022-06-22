@@ -6,32 +6,33 @@
 
 package com.daml.extensions.testing.ledger;
 
-import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
-import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
-
-import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
-import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
-import com.daml.ledger.api.v1.testing.ResetServiceGrpc;
-import com.daml.ledger.api.v1.testing.ResetServiceOuterClass;
-import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
-import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.extensions.testing.junit4.LogLevel;
 import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
 import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
 import com.daml.extensions.testing.store.DefaultValueStore;
+import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
+import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
+import com.daml.ledger.javaapi.data.Party;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Hashtable;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
+import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
@@ -45,6 +46,7 @@ public class SandboxManager {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final String[] parties;
+  private Hashtable<String, Party> partyIdHashTable;
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -101,6 +103,7 @@ public class SandboxManager {
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
+    this.partyIdHashTable = new Hashtable<>();
   }
 
   public int getPort() {
@@ -126,6 +129,41 @@ public class SandboxManager {
   public void start(int port) throws TimeoutException, IOException, InterruptedException {
     startSandbox(port);
     startCommChannels();
+    allocateParties();
+    mapParties();
+  }
+
+  private void allocateParty(String partyName) {
+    ledgerAdapter.allocatePartyOnLedger(partyName);
+  }
+
+  private void allocateParties() {
+    for (String party : this.parties) {
+      getPartyIdOrAllocate(party);
+    }
+  }
+
+  private void mapParties() {
+    this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
+  }
+
+  private Party getPartyIdOrAllocate(String partyName) {
+    // <DisplayName:LPartyId>
+    mapParties();
+    try {
+      getPartyId(partyName);
+    } catch (NullPointerException ignore) {
+      allocateParty(partyName);
+    }
+    return partyIdHashTable.get(partyName);
+  }
+
+  public Party getPartyId(String partyName) {
+    if (!partyIdHashTable.containsKey(partyName)) {
+      throw new NullPointerException(
+          String.format("Party %s is not allocated or hashed", partyName));
+    }
+    return partyIdHashTable.get(partyName);
   }
 
   public void stop() {
@@ -136,16 +174,6 @@ public class SandboxManager {
   public void restart() throws TimeoutException, IOException, InterruptedException {
     stop();
     start();
-  }
-
-  public void reset() throws TimeoutException, IOException, InterruptedException {
-    ResetServiceGrpc.newBlockingStub(channel)
-        .reset(
-            ResetServiceOuterClass.ResetRequest.newBuilder()
-                .setLedgerId(ledgerClient.getLedgerId())
-                .build());
-    stopCommChannels();
-    startCommChannels();
   }
 
   public String getLedgerId() {

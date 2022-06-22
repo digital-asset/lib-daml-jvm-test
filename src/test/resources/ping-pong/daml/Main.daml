@@ -7,29 +7,29 @@ import Daml.Script
 
 import PingPong
 
-main = scenario $ do
-  alice <- getParty "Alice"
-  bob <- getParty "Bob"
+main = script do
+  alice <- allocateParty "Alice"
+  bob <- allocateParty "Bob"
   ping1
     <- alice `submit` do
-        create Ping with
+        createCmd MyPing with
           sender = alice
           receiver = bob
           count = 2
   pong1
     <- bob `submit` do
-        exercise ping1 RespondPong
+        exerciseCmd ping1 RespondPong
   ping2
     <- alice `submit` do
-        exercise pong1 RespondPing
+        exerciseCmd pong1 RespondPing
   return ()
 
 init : Script ()
-init = do
+init = script do
     alice <- allocate "Alice"
     bob   <- allocate "Bob"
 
-    ping1 <- submit alice $ createCmd Ping with sender = alice; receiver = bob; count = 2
+    ping1 <- submit alice $ createCmd MyPing with sender = alice; receiver = bob; count = 2
     pong1 <- submit bob   $ exerciseCmd ping1 RespondPong
     ping2 <- submit alice $ exerciseCmd pong1 RespondPing
     pure ()

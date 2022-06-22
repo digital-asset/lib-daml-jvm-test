@@ -10,15 +10,14 @@
 package com.daml.extensions.testing.cucumber.steps;
 
 import com.daml.daml_lf_dev.DamlLf1;
-import com.daml.ledger.javaapi.data.ContractId;
-import com.daml.ledger.javaapi.data.Party;
-import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.extensions.testing.comparator.ledger.ContractArchived;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.cucumber.utils.Config;
 import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.extensions.testing.utils.PackageUtils;
-
+import com.daml.ledger.javaapi.data.ContractId;
+import com.daml.ledger.javaapi.data.DamlRecord;
+import com.daml.ledger.javaapi.data.Party;
 import com.google.protobuf.InvalidProtocolBufferException;
 import cucumber.api.java8.En;
 import io.cucumber.datatable.DataTable;
@@ -35,10 +34,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
-import static com.daml.extensions.testing.Dsl.party;
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
-import static com.daml.extensions.testing.utils.PackageUtils.findTemplate;
-import static com.daml.extensions.testing.utils.PackageUtils.findPackageObject;
+import static com.daml.extensions.testing.utils.PackageUtils.*;
 import static org.junit.Assert.assertTrue;
 
 // Notes:
@@ -96,9 +93,12 @@ public class LedgerInteractions implements En {
     // ----------------------------
     When(
         "^.*\"([^\"]+)\" creates contract \"([^\"]+)\" using values(?: expecting (failure))?$",
-        (String party, String moduleAndEntityName, String expectedFailure, DataTable dataTable) ->
+        (String partyDisplayName,
+            String moduleAndEntityName,
+            String expectedFailure,
+            DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException {
+              void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -106,22 +106,25 @@ public class LedgerInteractions implements En {
                         sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
                 checkTableIsTwoOrManyRows(dataTable);
                 for (int i = 1; i < dataTable.width(); i++) {
-                  DamlRecord args = fieldsToArgs(dataTable.column(i), idWithArgs.createFields, pkg);
+                  DamlRecord args =
+                      fieldsToArgs(
+                          dataTable.column(i), idWithArgs.createFields, pkg, sandboxManager);
                   sandboxManager
                       .getLedgerAdapter()
-                      .createContract(new Party(party), idWithArgs.identifier, args);
+                      .createContract(
+                          sandboxManager.getPartyId(partyDisplayName), idWithArgs.identifier, args);
                 }
               }
             });
     When(
         "^.*\"([^\"]+)\" exercises choice \"([^\"]+)\" on \"([^\"]*)\" with contract id \"([^\"]+)\"(?: and (expects failure))?$",
-        (String party,
+        (String partyDisplayName,
             String choiceName,
             String moduleAndEntityName,
             String contractIdKey,
             String expectedFailure) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException {
+              void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
@@ -134,7 +137,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party),
+                        sandboxManager.getPartyId(partyDisplayName),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -143,14 +146,14 @@ public class LedgerInteractions implements En {
             });
     When(
         "^.*\"([^\"]+)\" exercises choice \"([^\"]+)\" on \"([^\"]+)\" with contract id \"([^\"]+)\" using values(?: and (expects failure))?$",
-        (String party,
+        (String partyDisplayName,
             String choiceName,
             String moduleAndEntityName,
             String contractIdKey,
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException {
+              void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -160,7 +163,8 @@ public class LedgerInteractions implements En {
                     fieldsToArgs(
                         checkTableIsOneOrTwoRowsAndGet(dataTable),
                         idWithArgs.choices.get(choiceName),
-                        pkg);
+                        pkg,
+                        sandboxManager);
                 ContractId contractId =
                     sandboxManager
                         .getLedgerAdapter()
@@ -171,37 +175,51 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        party(party), idWithArgs.identifier, contractId, choiceName, args);
+                        sandboxManager.getPartyId(partyDisplayName),
+                        idWithArgs.identifier,
+                        contractId,
+                        choiceName,
+                        args);
               }
             });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\"$",
-        (String party, String moduleAndEntityName) -> {
+        (String partyDisplayName, String moduleAndEntityName) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           sandboxManager
               .getLedgerAdapter()
-              .getCreatedContractId(party(party), idWithArgs.identifier, ContractId::new);
+              .getCreatedContractId(
+                  sandboxManager.getPartyId(partyDisplayName),
+                  idWithArgs.identifier,
+                  ContractId::new);
         });
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\" with(?: contract id \"([^\"]+)\" and)? values$",
-        (String party, String moduleAndEntityName, String contractId, DataTable dataTable) -> {
+        (String partyDisplayName,
+            String moduleAndEntityName,
+            String contractId,
+            DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           DamlLf1.Package pkg =
               findPackageObject(sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
           DamlRecord args =
-              fieldsToArgs(checkTableIsOneOrTwoRowsAndGet(dataTable), idWithArgs.createFields, pkg);
+              fieldsToArgs(
+                  checkTableIsOneOrTwoRowsAndGet(dataTable),
+                  idWithArgs.createFields,
+                  pkg,
+                  sandboxManager);
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
-                  party,
+                  getPartyIdOnLedger(partyDisplayName),
                   ContractCreated.expectContractWithArguments(
                       idWithArgs.identifier, "{CAPTURE:" + contractId + "}", args));
         });
     Then(
         "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
-        (String party, String moduleAndEntityName, String contractIdKey) -> {
+        (String partyDisplayName, String moduleAndEntityName, String contractIdKey) -> {
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           ContractId contractId =
@@ -209,7 +227,8 @@ public class LedgerInteractions implements En {
           sandboxManager
               .getLedgerAdapter()
               .observeEvent(
-                  party, ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
+                  getPartyIdOnLedger(partyDisplayName),
+                  ContractArchived.apply(idWithArgs.identifier.toString(), contractId));
         });
     Then(
         "^.*they should receive a technical failure (with|containing) message \\s*\"([^\"]*)\".*$",
@@ -255,8 +274,13 @@ public class LedgerInteractions implements En {
     return sandboxManager.getPort();
   }
 
+  private String getPartyIdOnLedger(String partyDisplayName) {
+    Party partyIdObj = sandboxManager.getPartyId(partyDisplayName);
+    return partyIdObj.getValue();
+  }
+
   abstract class LedgerExecutor {
-    LedgerExecutor(boolean expectingError) throws InvalidProtocolBufferException {
+    LedgerExecutor(boolean expectingError) throws InvalidProtocolBufferException, TimeoutException {
       try {
         run();
       } catch (Throwable t) {
@@ -265,6 +289,6 @@ public class LedgerInteractions implements En {
       }
     }
 
-    abstract void run() throws InvalidProtocolBufferException;
+    abstract void run() throws InvalidProtocolBufferException, TimeoutException;
   }
 }
