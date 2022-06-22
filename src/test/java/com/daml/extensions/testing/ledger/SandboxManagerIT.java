@@ -28,8 +28,7 @@ public class SandboxManagerIT {
 
   @Test
   public void managerStopsSandboxGracefully() throws Exception {
-    eventually(() -> assertTrue(jps().stream().noneMatch(p -> (p.contains("canton.jar")))));
-
+    Integer jpsStreamLengthBefore = jpsStreamLengthNow();
     SandboxManager manager =
         new SandboxManager(
             RESOURCE_DIR,
@@ -43,11 +42,15 @@ public class SandboxManagerIT {
             false);
     manager.start();
 
-    eventually(() -> assertTrue(jps().stream().anyMatch(p -> (p.contains("canton.jar")))));
+    eventually(() -> assertTrue(jpsStreamLengthBefore < jpsStreamLengthNow()));
 
     manager.stop();
 
-    eventually(() -> assertTrue(jps().stream().noneMatch(p -> (p.contains("canton.jar")))));
+    eventually(() -> assertTrue(jpsStreamLengthBefore == jpsStreamLengthNow()));
+  }
+
+  private Integer jpsStreamLengthNow() {
+    return jps().stream().toArray().length;
   }
 
   @Test

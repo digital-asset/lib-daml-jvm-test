@@ -101,6 +101,7 @@ public class SandboxManager {
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
+    this.partyIdHashTable = new Hashtable<>();
   }
 
   public int getPort() {
@@ -126,22 +127,28 @@ public class SandboxManager {
   public void start(int port) throws TimeoutException, IOException, InterruptedException {
     startSandbox(port);
     startCommChannels();
+    allocateParties();
     mapParties();
   }
 
-  public void allocateParty(String partyName) {
+  private void allocateParty(String partyName) {
     ledgerAdapter.allocatePartyOnLedger(partyName);
   }
 
-  public void mapParties() {
+  private void allocateParties() {
+    for (String party : this.parties) {
+      getPartyIdOrAllocate(new Party(party));
+    }
+  }
+
+  private void mapParties() {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }
 
-  public Party getPartyIdForce(Party partyName) {
+  private Party getPartyIdOrAllocate(Party partyName) {
     // <DisplayName:LPartyId>
     if (!partyIdHashTable.containsKey(partyName)) {
       allocateParty(partyName.getValue());
-      mapParties();
     }
     return partyIdHashTable.get(partyName);
   }

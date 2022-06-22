@@ -51,7 +51,7 @@ public class TableUtils {
             fieldList.addLast(field(integer(arg)));
             break;
           case PARTY:
-            fieldList.addLast(field(sandboxManager.getPartyIdForce(party(arg))));
+            fieldList.addLast(field(sandboxManager.getPartyId(party(arg))));
             break;
           case DECIMAL:
             fieldList.addLast(field(decimal(arg)));

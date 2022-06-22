@@ -47,15 +47,15 @@ public class PingPongIT {
   }
 
   private Party charliePartyId() {
-    return sandbox.getPartyIdForce(CHARLIE);
+    return sandbox.getPartyId(CHARLIE);
   }
 
   private Party bobPartyId() {
-    return sandbox.getPartyIdForce(BOB);
+    return sandbox.getPartyId(BOB);
   }
 
   private Party alicePartyId() {
-    return sandbox.getPartyIdForce(ALICE);
+    return sandbox.getPartyId(ALICE);
   }
 
   @Test
