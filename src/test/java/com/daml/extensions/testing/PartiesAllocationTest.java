@@ -7,6 +7,7 @@
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.junit4.Sandbox;
+import com.daml.ledger.javaapi.data.Party;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,9 +27,17 @@ public class PartiesAllocationTest {
   @Rule public ExternalResource sandboxRule = sandbox.getRule();
 
   @Test
-  public void testPartiesAreAllocated() throws NullPointerException {
+  public void testPartiesAreAllocated() {
     sandbox.getPartyId(ALICE);
     sandbox.getPartyId(BOB);
     sandbox.getPartyId(CHARLIE);
   }
+
+  @Test(expected = NullPointerException.class)
+  public void notAllocatedPartyThrows() throws NullPointerException {
+    sandbox.getPartyId(new Party("notAllocatedParty"));
+  }
+
 }
+
+

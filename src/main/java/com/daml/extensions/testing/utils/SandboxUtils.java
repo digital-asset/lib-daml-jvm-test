@@ -32,7 +32,7 @@ public class SandboxUtils {
     return SANDBOX_PORT_COUNTER.updateAndGet(
         p -> {
           while (SANDBOX_PORT_BAD_RANGE.contains(p)) {
-            p = p + 1;
+            ++p;
           }
           if (SANDBOX_PORT_RANGE.contains(p)) {
             return p + 1;

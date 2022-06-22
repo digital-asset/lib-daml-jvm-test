@@ -11,6 +11,8 @@ import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
 import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
 import com.daml.extensions.testing.store.DefaultValueStore;
+import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
+import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
@@ -147,7 +149,10 @@ public class SandboxManager {
 
   private Party getPartyIdOrAllocate(Party partyName) {
     // <DisplayName:LPartyId>
-    if (!partyIdHashTable.containsKey(partyName)) {
+    mapParties();
+    try {
+      getPartyId(partyName);
+    }catch (NullPointerException ignore){
       allocateParty(partyName.getValue());
     }
     return partyIdHashTable.get(partyName);
@@ -156,7 +161,7 @@ public class SandboxManager {
   public Party getPartyId(Party partyName) {
     if (!partyIdHashTable.containsKey(partyName)) {
       throw new NullPointerException(
-          String.format("Party %s is not allocated", partyName.getValue()));
+          String.format("Party %s is not allocated or hashed", partyName.getValue()));
     }
     return partyIdHashTable.get(partyName);
   }
@@ -208,7 +213,11 @@ public class SandboxManager {
 
     runScriptIfConfigured();
 
-    String ledgerId = "sandbox";
+    String ledgerId =
+        LedgerIdentityServiceGrpc.newBlockingStub(channel)
+            .getLedgerIdentity(
+                LedgerIdentityServiceOuterClass.GetLedgerIdentityRequest.newBuilder().build())
+            .getLedgerId();
 
     Supplier<TimeProvider> timeProviderFactory;
     if (useWallclockTime) {
