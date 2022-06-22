@@ -22,13 +22,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SandboxUtils {
   private static final Path DAML_YAML = Paths.get("daml.yaml");
-  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6864);
+  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
+  private static Range<Integer> SANDBOX_PORT_BAD_RANGE = Range.closed(6865, 6867);
+
   private static final AtomicInteger SANDBOX_PORT_COUNTER =
       new AtomicInteger(SANDBOX_PORT_RANGE.lowerEndpoint());
 
   public static int getSandboxPort() {
     return SANDBOX_PORT_COUNTER.updateAndGet(
         p -> {
+          while (SANDBOX_PORT_BAD_RANGE.contains(p)) {
+            p = p + 1;
+          }
           if (SANDBOX_PORT_RANGE.contains(p)) {
             return p + 1;
           } else {
