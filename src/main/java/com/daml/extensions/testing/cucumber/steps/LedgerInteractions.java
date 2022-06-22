@@ -112,9 +112,7 @@ public class LedgerInteractions implements En {
                   sandboxManager
                       .getLedgerAdapter()
                       .createContract(
-                          sandboxManager.getPartyId(new Party(partyDisplayName)),
-                          idWithArgs.identifier,
-                          args);
+                          sandboxManager.getPartyId(partyDisplayName), idWithArgs.identifier, args);
                 }
               }
             });
@@ -139,7 +137,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        sandboxManager.getPartyId(new Party(partyDisplayName)),
+                        sandboxManager.getPartyId(partyDisplayName),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -177,7 +175,7 @@ public class LedgerInteractions implements En {
                 sandboxManager
                     .getLedgerAdapter()
                     .exerciseChoice(
-                        sandboxManager.getPartyId(new Party(partyDisplayName)),
+                        sandboxManager.getPartyId(partyDisplayName),
                         idWithArgs.identifier,
                         contractId,
                         choiceName,
@@ -192,7 +190,7 @@ public class LedgerInteractions implements En {
           sandboxManager
               .getLedgerAdapter()
               .getCreatedContractId(
-                  sandboxManager.getPartyId(new Party(partyDisplayName)),
+                  sandboxManager.getPartyId(partyDisplayName),
                   idWithArgs.identifier,
                   ContractId::new);
         });
@@ -277,8 +275,7 @@ public class LedgerInteractions implements En {
   }
 
   private String getPartyIdOnLedger(String partyDisplayName) {
-    Party partyObjDisplayName = new Party(partyDisplayName);
-    Party partyIdObj = sandboxManager.getPartyId(partyObjDisplayName);
+    Party partyIdObj = sandboxManager.getPartyId(partyDisplayName);
     return partyIdObj.getValue();
   }
 

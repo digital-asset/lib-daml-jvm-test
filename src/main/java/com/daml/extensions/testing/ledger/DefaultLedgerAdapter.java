@@ -227,15 +227,15 @@ public class DefaultLedgerAdapter {
     Dump.dump(interactionLogger, event);
   }
 
-  public Hashtable<Party, Party> getMapKnownParties() {
+  public Hashtable<String, Party> getMapKnownParties() {
     PartyManagementServiceOuterClass.ListKnownPartiesResponse listOfParties =
         PartyManagementServiceGrpc.newBlockingStub(channel)
             .listKnownParties(
                 PartyManagementServiceOuterClass.ListKnownPartiesRequest.newBuilder().build());
-    Hashtable<Party, Party> mapPartyId = new Hashtable<>();
+    Hashtable<String, Party> mapPartyId = new Hashtable<>();
     listOfParties
         .getPartyDetailsList()
-        .forEach(p -> mapPartyId.put(new Party(p.getDisplayName()), new Party(p.getParty())));
+        .forEach(p -> mapPartyId.put((p.getDisplayName()), new Party(p.getParty())));
     return mapPartyId;
   }
 

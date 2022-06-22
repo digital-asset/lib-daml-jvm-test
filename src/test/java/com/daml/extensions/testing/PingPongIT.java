@@ -142,7 +142,7 @@ public class PingPongIT {
       throws NullPointerException, InvalidProtocolBufferException {
     ledger()
         .getMatchedContract(
-            sandbox.getPartyId(party("NonAllocatedPartyName")), pingTemplateId(), ContractId::new);
+            sandbox.getPartyId("NonAllocatedPartyName"), pingTemplateId(), ContractId::new);
   }
 
   @Test

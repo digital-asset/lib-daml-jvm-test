@@ -46,7 +46,7 @@ public class SandboxManager {
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final String[] parties;
-  private Hashtable<Party, Party> partyIdHashTable;
+  private Hashtable<String, Party> partyIdHashTable;
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
@@ -139,7 +139,7 @@ public class SandboxManager {
 
   private void allocateParties() {
     for (String party : this.parties) {
-      getPartyIdOrAllocate(new Party(party));
+      getPartyIdOrAllocate(party);
     }
   }
 
@@ -147,21 +147,21 @@ public class SandboxManager {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }
 
-  private Party getPartyIdOrAllocate(Party partyName) {
+  private Party getPartyIdOrAllocate(String partyName) {
     // <DisplayName:LPartyId>
     mapParties();
     try {
       getPartyId(partyName);
-    }catch (NullPointerException ignore){
-      allocateParty(partyName.getValue());
+    } catch (NullPointerException ignore) {
+      allocateParty(partyName);
     }
     return partyIdHashTable.get(partyName);
   }
 
-  public Party getPartyId(Party partyName) {
+  public Party getPartyId(String partyName) {
     if (!partyIdHashTable.containsKey(partyName)) {
       throw new NullPointerException(
-          String.format("Party %s is not allocated or hashed", partyName.getValue()));
+          String.format("Party %s is not allocated or hashed", partyName));
     }
     return partyIdHashTable.get(partyName);
   }
