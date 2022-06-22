@@ -12,15 +12,10 @@ import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
-import com.google.common.base.Stopwatch;
 import com.google.protobuf.InvalidProtocolBufferException;
-import org.slf4j.Logger;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class PackageUtils {
@@ -202,39 +197,6 @@ public class PackageUtils {
       throws InvalidProtocolBufferException {
     return findPackageObject(
         ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
-  }
-
-  public static TemplateType waitForTemplate(
-      DamlLedgerClient ledgerClient,
-      String moduleAndEntityName,
-      Duration waitTimeout,
-      Logger logger)
-      throws TimeoutException, InvalidProtocolBufferException {
-    boolean found = false;
-    Stopwatch time = Stopwatch.createStarted();
-    PackageUtils.TemplateType idWithArgs = null;
-    while (!found && time.elapsed().compareTo(waitTimeout) <= 0) {
-      try {
-        idWithArgs = findTemplate(ledgerClient, moduleAndEntityName);
-        found = true;
-      } catch (Exception ignored) {
-        if (!ignored.getMessage().contains("PACKAGE")) {
-          throw ignored;
-        }
-        try {
-          logger.info("Waiting for cache");
-          TimeUnit.SECONDS.sleep(1);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-    if (found) {
-      logger.info("Cache found.");
-      return idWithArgs;
-    } else {
-      throw new TimeoutException("Cache not found");
-    }
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)

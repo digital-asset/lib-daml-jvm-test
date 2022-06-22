@@ -100,11 +100,7 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
-                    waitForTemplate(
-                        sandboxManager.getClient(),
-                        moduleAndEntityName,
-                        config.templateWaitTimeout,
-                        logger);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
                     findPackageObject(
                         sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
@@ -132,11 +128,7 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
-                    waitForTemplate(
-                        sandboxManager.getClient(),
-                        moduleAndEntityName,
-                        config.templateWaitTimeout,
-                        logger);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
                     sandboxManager
                         .getLedgerAdapter()
@@ -165,11 +157,7 @@ public class LedgerInteractions implements En {
             new LedgerExecutor(expectedFailure != null) {
               void run() throws InvalidProtocolBufferException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
-                    waitForTemplate(
-                        sandboxManager.getClient(),
-                        moduleAndEntityName,
-                        config.templateWaitTimeout,
-                        logger);
+                    findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
                     findPackageObject(
                         sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
@@ -200,11 +188,7 @@ public class LedgerInteractions implements En {
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\"$",
         (String partyDisplayName, String moduleAndEntityName) -> {
           PackageUtils.TemplateType idWithArgs =
-              waitForTemplate(
-                  sandboxManager.getClient(),
-                  moduleAndEntityName,
-                  config.templateWaitTimeout,
-                  logger);
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           sandboxManager
               .getLedgerAdapter()
               .getCreatedContractId(
@@ -219,11 +203,7 @@ public class LedgerInteractions implements En {
             String contractId,
             DataTable dataTable) -> {
           PackageUtils.TemplateType idWithArgs =
-              waitForTemplate(
-                  sandboxManager.getClient(),
-                  moduleAndEntityName,
-                  config.templateWaitTimeout,
-                  logger);
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           DamlLf1.Package pkg =
               findPackageObject(sandboxManager.getClient(), idWithArgs.identifier.getModuleName());
           DamlRecord args =
@@ -243,11 +223,7 @@ public class LedgerInteractions implements En {
         "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
         (String partyDisplayName, String moduleAndEntityName, String contractIdKey) -> {
           PackageUtils.TemplateType idWithArgs =
-              waitForTemplate(
-                  sandboxManager.getClient(),
-                  moduleAndEntityName,
-                  config.templateWaitTimeout,
-                  logger);
+              findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           ContractId contractId =
               sandboxManager.getLedgerAdapter().valueStore.get(contractIdKey).asContractId().get();
           sandboxManager
