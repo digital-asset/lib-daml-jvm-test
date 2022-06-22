@@ -8,11 +8,16 @@ package com.daml.extensions.testing.cucumber.utils;
 
 import com.daml.extensions.testing.utils.SandboxUtils;
 
+import java.time.Duration;
+
 public class Config {
+  public Duration templateWaitTimeout;
   private int sandboxPort;
 
   public Config() {
+
     this.sandboxPort = SandboxUtils.getSandboxPort();
+    this.templateWaitTimeout = Duration.ofSeconds(20);
   }
 
   public int getSandboxPort() {
