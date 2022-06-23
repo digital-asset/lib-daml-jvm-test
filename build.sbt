@@ -10,7 +10,7 @@ ThisBuild / parallelExecution := false
 
 credentials += Credentials(
   "Sonatype Nexus Repository Manager",
-  "oss.sonatype.org",
+  "s01.oss.sonatype.org",
   sys.env.getOrElse("MAVEN_LOGIN", "NO_MAVEN_LOGIN_SPECIFIED"),
   sys.env.getOrElse("MAVEN_PASSWORD", "NO_MAVEN_PASSWORD_SPECIFIED")
 )
