@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ public class SandboxManagerIT {
     SandboxManager manager =
         new SandboxManager(
             RESOURCE_DIR,
+            Optional.empty(),
             Optional.empty(),
             Optional.empty(),
             Duration.ofMinutes(1),
@@ -60,6 +62,7 @@ public class SandboxManagerIT {
             RESOURCE_DIR,
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
@@ -86,6 +89,7 @@ public class SandboxManagerIT {
             RESOURCE_DIR,
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
@@ -97,6 +101,32 @@ public class SandboxManagerIT {
     try {
       manager.start();
       assertThat(manager.getLedgerId(), is("TestLedgerID"));
+    } finally {
+      manager.stop();
+    }
+  }
+
+  @Test
+  public void managerReturnsSpecifiedPort()
+      throws IOException, InterruptedException, TimeoutException {
+    int specifiedPort = 5555;
+    SandboxManager manager =
+        new SandboxManager(
+            RESOURCE_DIR,
+            Optional.empty(),
+            Optional.empty(),
+            Optional.of(specifiedPort),
+            Duration.ofMinutes(1),
+            Duration.ofSeconds(10),
+            new String[0],
+            DAR_PATH,
+            (_ignore1, _ignore2) -> {},
+            false,
+            Optional.of("TestLedgerID"),
+            Optional.empty());
+    try {
+      manager.start();
+      assertThat(manager.getPort(), is(specifiedPort));
     } finally {
       manager.stop();
     }

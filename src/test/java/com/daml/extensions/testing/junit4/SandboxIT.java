@@ -6,6 +6,7 @@
 
 package com.daml.extensions.testing.junit4;
 
+import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.rules.ExternalResource;
 
@@ -16,10 +17,12 @@ import static org.junit.Assert.assertThat;
 
 public class SandboxIT {
 
+  private final int customPort = 6863;
   private static Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
+          .port(6863)
           .ledgerId("sample-ledger")
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
@@ -29,9 +32,8 @@ public class SandboxIT {
   @Rule public ExternalResource rule = sandbox.getRule();
 
   @Test
-  public void portIsAssignedWhenSandboxIsStarted() {
-    int sandboxPort = sandbox.getSandboxPort();
-    assertsIsBetween(sandboxPort, 6860, 6890);
+  public void specifiedPortIsAssignedWhenSandboxIsStarted() {
+    assertThat(sandbox.getSandboxPort(), Matchers.is(customPort));
   }
 
   @Test

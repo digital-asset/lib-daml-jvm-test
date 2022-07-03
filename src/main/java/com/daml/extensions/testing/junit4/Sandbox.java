@@ -41,6 +41,7 @@ public class Sandbox {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
+      Optional<Integer> port,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
@@ -54,6 +55,7 @@ public class Sandbox {
             damlRoot,
             testModule,
             testStartScript,
+            port,
             sandboxWaitTimeout,
             observationTimeout,
             parties,
@@ -68,6 +70,7 @@ public class Sandbox {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
+    private Optional<Integer> port = Optional.empty();
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
@@ -86,6 +89,11 @@ public class Sandbox {
     public SandboxBuilder moduleAndScript(String testModule, String testStartScript) {
       this.testModule = Optional.of(testModule);
       this.testStartScript = Optional.of(testStartScript);
+      return this;
+    }
+
+    public SandboxBuilder port(int port) {
+      this.port = Optional.of(port);
       return this;
     }
 
@@ -150,6 +158,7 @@ public class Sandbox {
           damlRoot,
           testModule,
           testStartScript,
+          port,
           sandboxWaitTimeout,
           observationTimeout,
           parties,

@@ -55,6 +55,7 @@ public class LedgerInteractions implements En {
             damlRoot,
             Optional.empty(),
             Optional.empty(),
+            Optional.empty(),
             Duration.ofSeconds(30),
             Duration.ofSeconds(10),
             parties,
