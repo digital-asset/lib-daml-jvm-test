@@ -7,16 +7,17 @@
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.junit4.Sandbox;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
+import com.daml.extensions.testing.junit4.SandboxTestExtension;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.daml.extensions.testing.TestCommons.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(SandboxTestExtension.class)
 public class SetupAppCallbackWithRestartIT {
   private static AtomicBoolean boolFlag = new AtomicBoolean(false);
 
@@ -28,11 +29,12 @@ public class SetupAppCallbackWithRestartIT {
           .setupAppCallback(client -> boolFlag.set(true))
           .build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
-  @Rule public ExternalResource sandboxRule = sandbox.getRule();
+  public Sandbox getSandbox() {
+    return sandbox;
+  }
 
   @Test
   public void testSetupAppCallbackWithRestart() {
-    assertTrue("Setup should set the boolFlag.", boolFlag.get());
+    assertTrue(boolFlag.get(), "Setup should set the boolFlag.");
   }
 }

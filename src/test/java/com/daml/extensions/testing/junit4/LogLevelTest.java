@@ -6,10 +6,10 @@
 
 package com.daml.extensions.testing.junit4;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LogLevelTest {
 

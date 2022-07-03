@@ -6,15 +6,16 @@
 
 package com.daml.extensions.testing.junit4;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
 import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Optional;
-import org.junit.Test;
 
 public class SandboxTest {
 
@@ -30,13 +31,15 @@ public class SandboxTest {
     assertThat(sandbox.getLogLevel(), is(Optional.of(LogLevel.TRACE)));
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void darPathIsRequiredForSandbox() {
-    Sandbox.builder().build();
+    Assertions.assertThrows(IllegalStateException.class, () -> Sandbox.builder().build());
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void damlRootIsRequiredForSandbox() {
-    Sandbox.builder().dar(DAR_PATH).damlRoot(RESOURCE_DIR).build();
+    Assertions.assertThrows(
+        IllegalStateException.class,
+        () -> Sandbox.builder().dar(DAR_PATH).damlRoot(RESOURCE_DIR).build());
   }
 }

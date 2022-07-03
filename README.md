@@ -44,18 +44,19 @@ Additional daml dependencies are required by the library, but these dependencies
 
 One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
 ```
+@ExtendWith(SandboxTestExtension.class)
+public class TestClass {
   private static Sandbox sandbox =
       Sandbox.builder()
           .dar(DAR_PATH)
           .moduleAndScript("Test", "testSetup")
+          .port(6861)
           .parties(ALICE, BOB, CHARLIE)
           .build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
-  @Rule public ExternalResource sandboxRule = sandbox.getRule();
+    ...
 ```
-The ClassRule and the Rule are mandatory parts of each integration test. They take care of starting/stopping the Sandbox. Note that `Sandbox sandbox` needs a DAR file path. DAR compilation should be done via build scripts.
-Sandbox has two modes, restart mode, in which it is restarted after each test case, and reset mode (use the `useReset()` function in the builder) that is faster but *cannot be supplied with a market setup scenario*.
+The @ExtendWith(SandboxTestExtension.class) is mandatory of each integration test class. It takes care of starting/stopping the Sandbox. Note that `Sandbox sandbox` needs a DAR file path. DAR compilation should be done via build scripts.
 Sandbox object `sandbox` offers the following tools:
 - a ledger adapter via `getLedgerAdapter` (which has the type *DefaultLedgerAdapter*)
 - a DAML ledger client via `getClient`

@@ -7,19 +7,22 @@
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.junit4.Sandbox;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
+import com.daml.extensions.testing.junit4.SandboxTestExtension;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.daml.extensions.testing.TestCommons.*;
 
+@ExtendWith(SandboxTestExtension.class)
 public class PartiesAllocationTest {
   private static final Sandbox sandbox =
       Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).parties(ALICE, BOB, CHARLIE).build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
-  @Rule public ExternalResource sandboxRule = sandbox.getRule();
+  public Sandbox getSandbox() {
+    return sandbox;
+  }
 
   @Test
   public void testPartiesAreAllocated() {
@@ -28,8 +31,12 @@ public class PartiesAllocationTest {
     sandbox.getPartyId(CHARLIE);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void notAllocatedPartyThrows() throws NullPointerException {
-    sandbox.getPartyId("notAllocatedParty");
+    Assertions.assertThrows(
+        NullPointerException.class,
+        () -> {
+          sandbox.getPartyId("notAllocatedParty");
+        });
   }
 }

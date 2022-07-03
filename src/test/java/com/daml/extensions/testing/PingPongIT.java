@@ -8,15 +8,16 @@ package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.junit4.Sandbox;
+import com.daml.extensions.testing.junit4.SandboxTestExtension;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExternalResource;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,11 +27,12 @@ import java.util.concurrent.TimeoutException;
 import static com.daml.extensions.testing.Dsl.*;
 import static com.daml.extensions.testing.TestCommons.*;
 import static com.spotify.hamcrest.optional.OptionalMatchers.optionalWithValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@ExtendWith(SandboxTestExtension.class)
 public class PingPongIT {
   private static final Sandbox sandbox =
       Sandbox.builder()
@@ -39,8 +41,9 @@ public class PingPongIT {
           .moduleAndScript("Test", "testSetup")
           .build();
 
-  @ClassRule public static ExternalResource sandboxClassRule = sandbox.getClassRule();
-  @Rule public ExternalResource sandboxRule = sandbox.getRule();
+  public Sandbox getSandbox() {
+    return sandbox;
+  }
 
   private DefaultLedgerAdapter ledger() {
     return sandbox.getLedgerAdapter();
@@ -131,18 +134,26 @@ public class PingPongIT {
                 emptyDamlRecord()));
   }
 
-  @Test(expected = TimeoutException.class)
+  @Test
   public void testDoubleObservationNotPossible() throws InvalidProtocolBufferException {
-    ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
-    ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
+    Assertions.assertThrows(
+        TimeoutException.class,
+        () -> {
+          ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
+          ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
+        });
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void testNotAllocatedPartyHasNoId()
       throws NullPointerException, InvalidProtocolBufferException {
-    ledger()
-        .getMatchedContract(
-            sandbox.getPartyId("NonAllocatedPartyName"), pingTemplateId(), ContractId::new);
+    Assertions.assertThrows(
+        NullPointerException.class,
+        () -> {
+          ledger()
+              .getMatchedContract(
+                  sandbox.getPartyId("NonAllocatedPartyName"), pingTemplateId(), ContractId::new);
+        });
   }
 
   @Test
@@ -225,7 +236,7 @@ public class PingPongIT {
     return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPong");
   }
 
-  @Test(expected = StatusRuntimeException.class)
+  @Test
   public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
@@ -246,8 +257,11 @@ public class PingPongIT {
     ExerciseCommand exerciseCmd =
         new ExerciseCommand(
             timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
-
-    sandbox.getLedgerAdapter().exerciseChoice(charliePartyId(), exerciseCmd);
+    Assertions.assertThrows(
+        StatusRuntimeException.class,
+        () -> {
+          sandbox.getLedgerAdapter().exerciseChoice(charliePartyId(), exerciseCmd);
+        });
   }
 
   @Test

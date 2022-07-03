@@ -14,12 +14,13 @@ import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
-import org.junit.rules.ExternalResource;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -209,27 +210,11 @@ public class Sandbox {
     return new Identifier(pkg, moduleName, entityName);
   }
 
-  public ExternalResource getClassRule() {
-    return new ExternalResource() {
-      @Override
-      protected void before() throws Throwable {}
-
-      @Override
-      protected void after() {
-        sandboxManager.stop();
-      }
-    };
+  public void stop() {
+    sandboxManager.stop();
   }
 
-  public ExternalResource getRule() {
-    return new ExternalResource() {
-      @Override
-      protected void before() throws Throwable {
-        sandboxManager.restart();
-      }
-
-      @Override
-      protected void after() {}
-    };
+  public void restart() throws IOException, InterruptedException, TimeoutException {
+    sandboxManager.restart();
   }
 }
