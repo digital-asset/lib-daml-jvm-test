@@ -9,6 +9,7 @@ package com.daml.extensions.testing.junit5;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
@@ -18,6 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Optional;
 
+@ExtendWith(SandboxTestExtension.class)
 public class SandboxTest {
 
   private final int customPort = 6863;
