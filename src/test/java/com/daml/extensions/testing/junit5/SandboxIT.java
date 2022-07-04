@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package com.daml.extensions.testing.junit4;
+package com.daml.extensions.testing.junit5;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SandboxIT {
 
   private final int customPort = 6863;
-  private static final Sandbox sandbox =
+
+  @TestSandbox
+  public static final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
@@ -27,10 +29,6 @@ public class SandboxIT {
           .ledgerId("sample-ledger")
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
-
-  public Sandbox getSandbox() {
-    return sandbox;
-  }
 
   @Test
   public void specifiedPortIsAssignedWhenSandboxIsStarted() {
@@ -41,5 +39,4 @@ public class SandboxIT {
   public void ledgerIdSpecified() {
     assertThat(sandbox.getLedgerId(), is("sample-ledger"));
   }
-
 }

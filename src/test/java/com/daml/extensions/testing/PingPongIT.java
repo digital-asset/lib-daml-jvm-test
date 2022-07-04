@@ -7,8 +7,9 @@
 package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
-import com.daml.extensions.testing.junit4.Sandbox;
-import com.daml.extensions.testing.junit4.SandboxTestExtension;
+import com.daml.extensions.testing.junit5.Sandbox;
+import com.daml.extensions.testing.junit5.SandboxTestExtension;
+import com.daml.extensions.testing.junit5.TestSandbox;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.*;
@@ -34,16 +35,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SandboxTestExtension.class)
 public class PingPongIT {
-  private static final Sandbox sandbox =
+  @TestSandbox
+  public static final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .moduleAndScript("Test", "testSetup")
           .build();
-
-  public Sandbox getSandbox() {
-    return sandbox;
-  }
 
   private DefaultLedgerAdapter ledger() {
     return sandbox.getLedgerAdapter();

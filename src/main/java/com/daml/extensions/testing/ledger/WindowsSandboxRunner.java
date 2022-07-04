@@ -6,7 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
-import com.daml.extensions.testing.junit4.LogLevel;
+import com.daml.extensions.testing.junit5.LogLevel;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

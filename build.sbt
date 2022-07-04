@@ -15,7 +15,7 @@ credentials += Credentials(
   sys.env.getOrElse("MAVEN_PASSWORD", "NO_MAVEN_PASSWORD_SPECIFIED")
 )
 
-name := "junit4-support"
+name := "junit5-support"
 sonatypeProfileName := "com.daml"
 organization := "com.daml.extensions"
 organizationName := "Digital Asset"
@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
   guava,
   scalaz,
   junit5,
-  "net.aichler" % "jupiter-interface" % JupiterKeys.jupiterVersion.value % Test,
+  junitInterface,
   hamcrestOptional,
   cucumberJ8,
   cucumberJunit,

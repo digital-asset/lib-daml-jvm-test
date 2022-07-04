@@ -6,9 +6,10 @@
 
 package com.daml.extensions.testing;
 
-import com.daml.extensions.testing.junit4.Sandbox;
-import com.daml.extensions.testing.junit4.SandboxTestExtension;
+import com.daml.extensions.testing.junit5.Sandbox;
+import com.daml.extensions.testing.junit5.SandboxTestExtension;
 
+import com.daml.extensions.testing.junit5.TestSandbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -22,16 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SetupAppCallbackIT {
   private static AtomicBoolean boolFlag = new AtomicBoolean(false);
 
-  private static final Sandbox sandbox =
+  @TestSandbox
+  public static final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
           .setupAppCallback(client -> boolFlag.set(true))
           .build();
-
-  public Sandbox getSandbox() {
-    return sandbox;
-  }
 
   @Test
   public void testSetupAppCallback() {

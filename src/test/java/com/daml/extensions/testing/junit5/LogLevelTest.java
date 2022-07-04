@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package com.daml.extensions.testing.junit4;
+package com.daml.extensions.testing.junit5;
 
 import org.junit.jupiter.api.Test;
 
