@@ -41,6 +41,7 @@ public class SandboxManager {
 
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
+  private final Optional<Integer> customPort;
   private final Duration sandboxWaitTimeout;
   private final Duration observationTimeout;
   private final boolean useWallclockTime;
@@ -60,6 +61,7 @@ public class SandboxManager {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
+      Optional<Integer> customPort,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
@@ -70,6 +72,7 @@ public class SandboxManager {
         damlRoot,
         testModule,
         testStartScript,
+        customPort,
         sandboxWaitTimeout,
         observationTimeout,
         parties,
@@ -84,6 +87,7 @@ public class SandboxManager {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
+      Optional<Integer> customPort,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
@@ -95,6 +99,7 @@ public class SandboxManager {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
+    this.customPort = customPort;
     this.sandboxWaitTimeout = sandboxWaitTimeout;
     this.observationTimeout = observationTimeout;
     this.parties = parties;
@@ -123,7 +128,11 @@ public class SandboxManager {
   }
 
   public void start() throws TimeoutException, IOException, InterruptedException {
-    start(getSandboxPort());
+    if (this.customPort.isPresent()) {
+      start(this.customPort.get());
+    } else {
+      start(getSandboxPort());
+    }
   }
 
   public void start(int port) throws TimeoutException, IOException, InterruptedException {
