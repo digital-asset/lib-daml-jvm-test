@@ -56,7 +56,7 @@ public class TestClass {
 
     ...
 ```
-The @ExtendWith(SandboxTestExtension.class) is mandatory of each integration test class. It takes care of starting/stopping the Sandbox. Note that `Sandbox sandbox` needs a DAR file path. DAR compilation should be done via build scripts.
+The @ExtendWith(SandboxTestExtension.class) is mandatory for each integration test class. It takes care of starting/stopping the Sandbox. Note that `Sandbox sandbox` needs a DAR file path. DAR compilation should be done via build scripts.
 Sandbox object `sandbox` offers the following tools:
 - a ledger adapter via `getLedgerAdapter` (which has the type *DefaultLedgerAdapter*)
 - a DAML ledger client via `getClient`
