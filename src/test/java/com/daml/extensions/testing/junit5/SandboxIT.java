@@ -14,29 +14,33 @@ import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SandboxTestExtension.class)
 public class SandboxIT {
-
-  private final int customPort = 6863;
 
   @TestSandbox
   public static final Sandbox sandbox =
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
-          .port(6863)
           .ledgerId("sample-ledger")
           .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
           .build();
 
   @Test
-  public void specifiedPortIsAssignedWhenSandboxIsStarted() {
-    assertThat(sandbox.getSandboxPort(), Matchers.is(customPort));
+  public void portIsAssignedWhenSandboxIsStarted() {
+    int sandboxPort = sandbox.getSandboxPort();
+    assertsIsBetween(sandboxPort, 6860, 6890);
   }
 
   @Test
   public void ledgerIdSpecified() {
     assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+  }
+
+  private void assertsIsBetween(int x, int low, int high) {
+    String message = String.format("Expected '%d' to be between '%d' and '%d'", x, low, high);
+    assertTrue(low <= x && x <= high, message);
   }
 }
