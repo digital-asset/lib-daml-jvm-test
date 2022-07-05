@@ -11,39 +11,32 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 public class SandboxTestExtension implements AfterEachCallback, BeforeEachCallback {
 
   @Override
-  public void beforeEach(ExtensionContext context) {
-    context
-        .getTestInstance()
-        .ifPresent(
-            testInstance -> {
-              Sandbox sandbox = getSandboxFromTestInstance(testInstance);
-              try {
-                sandbox.restart();
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            });
+  public void beforeEach(ExtensionContext context) throws IOException, InterruptedException, TimeoutException {
+    Sandbox sandbox = getSandboxFromTestContext(context);
+    sandbox.restart();
   }
 
   @Override
   public void afterEach(ExtensionContext context) {
-    context
-        .getTestInstance()
-        .ifPresent(
-            testInstance -> {
-              Sandbox sandbox = getSandboxFromTestInstance(testInstance);
-              try {
-                sandbox.stop();
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-            });
+    Sandbox sandbox = getSandboxFromTestContext(context);
+    sandbox.stop();
+  }
+
+  private Sandbox getSandboxFromTestContext(ExtensionContext context){
+    Object testInstance = getTestInstanceFromContext(context);
+    return getSandboxFromTestInstance(testInstance);
+  }
+
+  private Object getTestInstanceFromContext(ExtensionContext context){
+      return context.getRequiredTestInstance();
   }
 
   private Sandbox getSandboxFromTestInstance(Object testInstance) {
