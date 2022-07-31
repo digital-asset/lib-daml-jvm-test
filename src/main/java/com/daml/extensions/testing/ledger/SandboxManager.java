@@ -105,6 +105,7 @@ public class SandboxManager {
         damlRoot,
         testModule,
         testStartScript,
+        Optional.empty(),
         sandboxWaitTimeout,
         observationTimeout,
         parties,
@@ -135,6 +136,7 @@ public class SandboxManager {
         damlRoot,
         testModule,
         testStartScript,
+        customPort,
         sandboxWaitTimeout,
         observationTimeout,
         parties,
@@ -152,6 +154,7 @@ public class SandboxManager {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
+      Optional<Integer> customPort,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
@@ -199,7 +202,7 @@ public class SandboxManager {
 
   public void start() throws TimeoutException, IOException, InterruptedException {
     if (this.customPort.isPresent()) {
-      start(this.customPort.get());
+      start(this.customPort.get(), this.customPort.get() + 1);
     } else {
       int p = getSandboxPort();
       start(p, p + 1);

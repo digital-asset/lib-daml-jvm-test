@@ -127,31 +127,33 @@ public class SandboxRunner {
     else runLocalIfConfigured(testModule, testStartScript, false);
   }
 
-  public void runInContainerIfConfigured(String testModule, String testStartScript, boolean isTrigger) throws IOException, InterruptedException {
-        List<String> script = new ArrayList<>();
-        String st = isTrigger ? "trigger" : "script";
+  public void runInContainerIfConfigured(
+      String testModule, String testStartScript, boolean isTrigger)
+      throws IOException, InterruptedException {
+    List<String> script = new ArrayList<>();
+    String st = isTrigger ? "trigger" : "script";
 
-        script.add("sh");
-        script.add("-c");
-        script.add(
-            "daml "
-                + st
-                + " --dar "
-                + CONTAINER_DAR_PATH
-                + "/"
-                + relativeDarPath
-                + "  --"
-                + st
-                + "-name "
-                + testModule
-                + ":"
-                + testStartScript
-                + (useWallclockTime ? " --wall-clock-time" : " --static-time")
-                + " --ledger-host localhost --ledger-port 6865");
-        Container.ExecResult res = container.execInContainer(script.toArray(new String[script.size()]));
-        logger.info("Output: " + res.getStdout());
-        logger.info(container.getLogs());
-        logger.info("Error: " + res.getStderr());
+    script.add("sh");
+    script.add("-c");
+    script.add(
+        "daml "
+            + st
+            + " --dar "
+            + CONTAINER_DAR_PATH
+            + "/"
+            + relativeDarPath
+            + "  --"
+            + st
+            + "-name "
+            + testModule
+            + ":"
+            + testStartScript
+            + (useWallclockTime ? " --wall-clock-time" : " --static-time")
+            + " --ledger-host localhost --ledger-port 6865");
+    Container.ExecResult res = container.execInContainer(script.toArray(new String[script.size()]));
+    logger.info("Output: " + res.getStdout());
+    logger.info(container.getLogs());
+    logger.info("Error: " + res.getStderr());
   }
 
   public void runLocalIfConfigured(String testModule, String testStartScript, boolean isTrigger)
