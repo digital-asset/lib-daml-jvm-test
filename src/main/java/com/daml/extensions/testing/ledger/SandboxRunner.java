@@ -20,7 +20,7 @@ import java.util.Optional;
 /** */
 public class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final String DEFAULT_IMAGE = "digitalasset/daml-sdk:2.2.0";
+  private final String DEFAULT_IMAGE = "digitalasset/daml-sdk:2.3.2";
   private boolean useContainers = false;
   private Optional<String> damlImage;
   private final Path relativeDarPath;
@@ -107,14 +107,16 @@ public class SandboxRunner {
 
   private void startSandboxContainer() throws IOException {
     container = new DamlContainer(damlImage.orElse(DEFAULT_IMAGE));
-    String command = "daml sandbox --dar " + CONTAINER_DAR_PATH + "/" + relativeDarPath + " ";
+// daml sandbox --port 6863 --static-time -C ledgerId=sample-ledger --log-level-root debug --dar /Users/testuser/Documents/GitHub/lib-daml-jvm-test/src/test/resources/ping-pong.dar
+
+    String command = "daml sandbox " + "--port " + sandboxPort + " --dar " + CONTAINER_DAR_PATH + "/" + relativeDarPath + " ";
     if (configFiles != null)
       for (String config : configFiles) command += " -c " + CONTAINER_DAR_PATH + "/" + config;
     logger.info("Command " + command);
     container
         .withFileSystemBind(damlRoot.toString(), CONTAINER_DAR_PATH, BindMode.READ_ONLY)
-        .fixedPorts(sandboxPort, 6865)
-        .fixedPorts(adminApiPort, 6866)
+        .withExposedPorts(sandboxPort)
+//        .withExposedPorts(adminApiPort)
         .withCommand("/bin/sh", "-c", command)
         .start();
     logger.info(container.getLogs());

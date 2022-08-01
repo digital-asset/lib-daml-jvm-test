@@ -291,12 +291,18 @@ public class SandboxManager {
   }
 
   private void startCommChannels() throws TimeoutException, IOException, InterruptedException {
+    String ledgerHost = "localhost";
+    int ledgerPort = sandboxPort;
+    if (useContainers){
+      ledgerPort = sandboxRunner.getContainer().getMappedPort(sandboxPort);
+      ledgerHost = sandboxRunner.getContainer().getHost();
+    }
     channel =
-        ManagedChannelBuilder.forAddress("localhost", sandboxPort)
+        ManagedChannelBuilder.forAddress(ledgerHost, ledgerPort)
             .usePlaintext()
             .maxInboundMessageSize(Integer.MAX_VALUE)
             .build();
-    DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder("localhost", sandboxPort);
+    DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder(ledgerHost, ledgerPort);
     ledgerClient = builder.build();
     try {
       waitForSandbox(ledgerClient, sandboxWaitTimeout, logger);

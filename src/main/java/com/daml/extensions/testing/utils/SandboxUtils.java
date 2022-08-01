@@ -51,7 +51,7 @@ public class SandboxUtils {
         client.connect();
         connected = true;
       } catch (Exception ignored) {
-        if (!ignored.getMessage().contains("UNAVAILABLE")) {
+        if (!ignored.getMessage().contains("UNAVAILABLE: io exception")) {
           // Sandbox hasn't started yet
           throw ignored;
         }
