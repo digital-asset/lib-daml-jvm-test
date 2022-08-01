@@ -121,6 +121,9 @@ public class SandboxRunner {
     logger.info("Daml is running: " + container.isRunning());
   }
 
+  public DamlContainer getContainer(){
+    return container;
+  }
   public void runScriptIfConfigured(String testModule, String testStartScript)
       throws IOException, InterruptedException {
     if (useContainers) runInContainerIfConfigured(testModule, testStartScript, false);

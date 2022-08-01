@@ -34,8 +34,18 @@ public class SandboxIT {
   }
 
   @Test
-  public void ledgerIdSpecified() {
-    assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+  public void ledgerIdSpecified() throws IOException, InterruptedException, TimeoutException {
+    Sandbox sandbox =
+            Sandbox.builder()
+                    .damlRoot(PINGPONG_PATH)
+                    .dar(DAR_PATH)
+                    .port(CUSTOM_PORT)
+                    .ledgerId("sample-ledger")
+                    .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+                    .build();
+    sandbox.getSandboxManager().start();
+    Assert.assertTrue(sandbox.getLedgerId() == "sample-ledger");
+    sandbox.getSandboxManager().stop();
   }
 
   @Test
@@ -53,7 +63,7 @@ public class SandboxIT {
       int sandboxPort = sandbox.getSandboxPort();
       Assert.assertTrue("Sandbox should be started", sandbox.isRunnning());
       assertsIsBetween(sandboxPort, 6860, 6890);
-      assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+      Assert.assertTrue(sandbox.getLedgerId() == "sample-ledger");
     } catch (Exception e) {
       Assert.assertTrue("Sandbox Exception " + e.getLocalizedMessage(),false);
     }
