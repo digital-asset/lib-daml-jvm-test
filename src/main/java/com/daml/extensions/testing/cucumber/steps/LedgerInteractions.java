@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
 import static com.daml.extensions.testing.utils.PackageUtils.*;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Notes:
 // - for optional parts, one needs to use the form (:? expecting (failure))? because otherwise
@@ -242,10 +242,10 @@ public class LedgerInteractions implements En {
             errorMessageRegex = ".*" + errorMessageRegex + ".*";
           }
           assertTrue(
-              "Expected error text [" + errorMessageRegex + "], but found [" + lastResult + "]",
               Pattern.compile(errorMessageRegex, Pattern.DOTALL)
                   .matcher(lastResult.toString())
-                  .matches());
+                  .matches(),
+              "Expected error text [" + errorMessageRegex + "], but found [" + lastResult + "]");
         });
   }
 

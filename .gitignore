@@ -1,8 +1,11 @@
 .idea
+.DS_Store
 *.log
 target/
+out/
 project/target
 project/project
+project/META-INF/
 *.hi
 *.hie
 *.dar

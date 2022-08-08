@@ -20,8 +20,8 @@ object Dependencies {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.24"
   lazy val guava = "com.google.guava" % "guava" % "28.0-jre"
 
-  lazy val junit4 = "junit" % "junit" % "4.12"
-  lazy val junitInterface = "com.novocode" % "junit-interface" % "0.11" % Test exclude ("junit", "junit-dep")
+  lazy val junit5 = "org.junit.jupiter" % "junit-jupiter-api" % "5.8.2"
+  lazy val junitInterface = "net.aichler" % "jupiter-interface" % "0.10.0" % Test
 
   lazy val cucumberJ8 = "io.cucumber" % "cucumber-java8" % cucumberVersion
   lazy val cucumberJunit = "io.cucumber" % "cucumber-junit" % cucumberVersion

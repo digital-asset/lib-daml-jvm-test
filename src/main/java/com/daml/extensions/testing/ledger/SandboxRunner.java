@@ -6,7 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
-import com.daml.extensions.testing.junit4.LogLevel;
+import com.daml.extensions.testing.junit5.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
