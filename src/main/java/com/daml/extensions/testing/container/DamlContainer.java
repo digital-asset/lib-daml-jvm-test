@@ -23,10 +23,4 @@ public class DamlContainer extends GenericContainer<DamlContainer> {
   public DamlContainer(String image) {
     super(image);
   }
-
-  // make public this otherwise protected method
-  public DamlContainer fixedPorts(int extPort, int dockPort) {
-    addFixedExposedPort(extPort, dockPort);
-    return self();
-  }
 }

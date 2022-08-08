@@ -6,10 +6,11 @@
 
 package com.daml.extensions.testing.ledger;
 
+import com.daml.extensions.testing.container.DamlContainer;
 import com.daml.extensions.testing.junit5.LogLevel;
+import com.daml.extensions.testing.utils.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.Container;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,8 @@ import java.util.Optional;
 public class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
   private final String DEFAULT_IMAGE = "digitalasset/canton-open-source";
-  private boolean useContainers = false;
+  private final int CANTON_PARTICIPANT1_LEDGER_API_PORT = 5011;
+  private boolean useContainers;
   private Optional<String> damlImage;
   private final Path relativeDarPath;
   private final Integer sandboxPort;
@@ -108,17 +110,9 @@ public class SandboxRunner {
 
   private void startSandboxContainer() {
     container = new DamlContainer(damlImage.orElse(DEFAULT_IMAGE));
-//    docker run -d --rm --name canton-postgres --shm-size=256mb --publish 5432:5432 -e POSTGRES_USER=test-user
-//    -e POSTGRES_PASSWORD=test-password postgres:11 postgres -c max_connections=500
-//    Note that you also need to create the databases yourself, which for Postgres you can do using psql
-//
-//    PGPASSWORD=test-password psql -h localhost -U test-user << EOF
-//    CREATE DATABASE participant1;
-//    GRANT ALL ON DATABASE participant1 TO CURRENT_USER;
-//    EOF
-//    The tables will be managed automatically by Canton. The psql solution works also if you run multiple nodes on one Postgres database which all require separate databases. If you run just one node against one database, you can avoid using psql by adding --POSTGRES_DB=participant1 to above docker command.
 
-    String command = "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
+    String command =
+        "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
 
     if (configFiles != null) {
       for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" + config;
@@ -127,8 +121,7 @@ public class SandboxRunner {
     logger.info("Command " + command);
 
     container
-//        .withFileSystemBind(damlRoot.toString(), CONTAINER_DAR_PATH, BindMode.READ_ONLY)
-        .withExposedPorts(5011)
+        .withExposedPorts(CANTON_PARTICIPANT1_LEDGER_API_PORT)
         .withCommand(command)
         .start();
 
@@ -142,37 +135,8 @@ public class SandboxRunner {
 
   public void runScriptIfConfigured(String testModule, String testStartScript)
       throws IOException, InterruptedException {
-    if (useContainers) runInContainerIfConfigured(testModule, testStartScript, false);
+    if (useContainers) logger.info("useContainers mode doesn't support daml scripts");
     else runLocalIfConfigured(testModule, testStartScript, false);
-  }
-
-  public void runInContainerIfConfigured(
-      String testModule, String testStartScript, boolean isTrigger)
-      throws IOException, InterruptedException {
-    List<String> script = new ArrayList<>();
-    String st = isTrigger ? "trigger" : "script";
-
-    script.add("sh");
-    script.add("-c");
-    script.add(
-        "daml "
-            + st
-            + " --dar "
-            + CONTAINER_DAR_PATH
-            + "/"
-            + relativeDarPath
-            + "  --"
-            + st
-            + "-name "
-            + testModule
-            + ":"
-            + testStartScript
-            + (useWallclockTime ? " --wall-clock-time" : " --static-time")
-            + " --ledger-host localhost --ledger-port 6865");
-    Container.ExecResult res = container.execInContainer(script.toArray(new String[script.size()]));
-    logger.info("Output: " + res.getStdout());
-    logger.info(container.getLogs());
-    logger.info("Error: " + res.getStderr());
   }
 
   public void runLocalIfConfigured(String testModule, String testStartScript, boolean isTrigger)

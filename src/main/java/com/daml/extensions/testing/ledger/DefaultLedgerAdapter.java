@@ -218,8 +218,8 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-//    Instant let = timeProvider.getCurrentTime();
-//    Instant mrt = let.plus(TTL);
+    //    Instant let = timeProvider.getCurrentTime();
+    //    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -266,17 +266,22 @@ public class DefaultLedgerAdapter {
 
   public void uploadDarFile(Path darPath) throws IOException {
     ByteString b = copyFrom(Files.readAllBytes(darPath));
-    PackageManagementServiceGrpc.newBlockingStub(channel).uploadDarFile(
-            PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder().setDarFile(b).setSubmissionId("clientDarFile").build()
-    );
+    PackageManagementServiceGrpc.newBlockingStub(channel)
+        .uploadDarFile(
+            PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder()
+                .setDarFile(b)
+                .setSubmissionId("clientDarFile")
+                .build());
   }
 
-  public List<PackageManagementServiceOuterClass.PackageDetails> getPackages(){
-   PackageManagementServiceOuterClass.ListKnownPackagesResponse listKnownPackagesResponse = PackageManagementServiceGrpc.newBlockingStub(channel).listKnownPackages(
-            PackageManagementServiceOuterClass.ListKnownPackagesRequest.newBuilder().build()
-    );
+  public List<PackageManagementServiceOuterClass.PackageDetails> getPackages() {
+    PackageManagementServiceOuterClass.ListKnownPackagesResponse listKnownPackagesResponse =
+        PackageManagementServiceGrpc.newBlockingStub(channel)
+            .listKnownPackages(
+                PackageManagementServiceOuterClass.ListKnownPackagesRequest.newBuilder().build());
     return listKnownPackagesResponse.getPackageDetailsList();
   }
+
   public Instant getCurrentTime() {
     return timeProvider.getCurrentTime();
   }
