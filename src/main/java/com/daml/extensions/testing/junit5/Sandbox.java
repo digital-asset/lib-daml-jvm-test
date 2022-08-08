@@ -50,7 +50,6 @@ public class Sandbox {
       boolean useWallclockTime,
       boolean useContainers,
       Optional<String> damlImage,
-      boolean useReset,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel,
       String... configFiles) {
@@ -90,7 +89,6 @@ public class Sandbox {
     private boolean useWallclockTime = false;
     private boolean useContainers = false;
     private Optional<String> damlImage = Optional.empty();
-    private boolean useReset = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
@@ -197,7 +195,6 @@ public class Sandbox {
           useWallclockTime,
           useContainers,
           damlImage,
-          useReset,
           ledgerId,
           logLevel,
           configFiles);
@@ -206,10 +203,6 @@ public class Sandbox {
     private void validate() {
       require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
-      // todo mb if useContainer then must contain
-      //      require(
-      //          isDamlRoot(damlRoot),
-      //          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));
     }
   }
 

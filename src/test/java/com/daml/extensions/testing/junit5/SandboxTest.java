@@ -26,13 +26,13 @@ public class SandboxTest {
 
   @TestSandbox
   public static final Sandbox sandbox =
-          Sandbox.builder()
-                  .damlRoot(PINGPONG_PATH)
-                  .dar(DAR_PATH)
-                  .port(6863)
-                  .ledgerId("sample-ledger")
-                  .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
-                  .build();
+      Sandbox.builder()
+          .damlRoot(PINGPONG_PATH)
+          .dar(DAR_PATH)
+          .port(6863)
+          .ledgerId("sample-ledger")
+          .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
+          .build();
 
   @Test
   public void logLevelIsSet() {

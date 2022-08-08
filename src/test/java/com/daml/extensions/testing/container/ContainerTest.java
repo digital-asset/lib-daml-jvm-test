@@ -17,7 +17,7 @@ import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
 public class ContainerTest {
   public static final String IMAGE = "digitalasset/daml-sdk:2.1.1";
   public static final int PORT_DEFAULT = 6865;
-  public static final String darFile = "ping-pong/ping-pong.dar";
+  public static final String darFile = "ping-pong.dar";
   public static final String CONTAINER_DAR_PATH = "/release";
 
   @Test

@@ -23,7 +23,6 @@ public class PinPongContainerIT {
     @TestSandbox
     public static final Sandbox sandbox =
             Sandbox.builder()
-                    .damlRoot(PINGPONG_PATH)
                     .dar(DAR_PATH)
                     .useContainers()
                     .parties(CHARLIE, BOB, ALICE)

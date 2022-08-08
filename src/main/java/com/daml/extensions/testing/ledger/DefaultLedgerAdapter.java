@@ -270,7 +270,6 @@ public class DefaultLedgerAdapter {
         .uploadDarFile(
             PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder()
                 .setDarFile(b)
-                .setSubmissionId("clientDarFile")
                 .build());
   }
 

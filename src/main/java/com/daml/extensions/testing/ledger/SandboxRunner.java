@@ -28,7 +28,6 @@ public class SandboxRunner {
   private Optional<String> damlImage;
   private final Path relativeDarPath;
   private final Integer sandboxPort;
-  private final Integer adminApiPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
@@ -40,7 +39,6 @@ public class SandboxRunner {
       Path damlRoot,
       Path relativeDarPath,
       Integer sandboxPort,
-      Integer adminApiPort,
       boolean useWallclockTime,
       boolean useContainers,
       Optional<String> damlImage,
@@ -50,7 +48,6 @@ public class SandboxRunner {
     this.damlRoot = damlRoot;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
-    this.adminApiPort = adminApiPort;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
@@ -106,7 +103,6 @@ public class SandboxRunner {
   }
 
   private DamlContainer container;
-  private static final String CONTAINER_DAR_PATH = "/release";
 
   private void startSandboxContainer() {
     container = new DamlContainer(damlImage.orElse(DEFAULT_IMAGE));
@@ -115,15 +111,13 @@ public class SandboxRunner {
         "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
 
     if (configFiles != null) {
-      for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" + config;
+      logger.info("cus");
+//      for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" + config;
     }
 
     logger.info("Command " + command);
 
-    container
-        .withExposedPorts(CANTON_PARTICIPANT1_LEDGER_API_PORT)
-        .withCommand(command)
-        .start();
+    container.withExposedPorts(CANTON_PARTICIPANT1_LEDGER_API_PORT).withCommand(command).start();
 
     logger.info(container.getLogs());
     logger.info("Daml is running: " + container.isRunning());

@@ -107,8 +107,3 @@ Feature: Cucumber support in the Functional Testing library
     When "Bob" exercises choice "RespondPong" on "PingPong:MyPing" with contract id "pingPongCid4" and expects failure
     Then they should receive a technical failure containing message "requires authorizers Alice"
 
-  Scenario: Sandbox running in the container
-    Given Sandbox Container "digitalasset/daml-sdk:2.3.2" is started with DAR "src/test/resources/ping-pong.dar" and the following parties
-      | Bob     |
-      | Alice   |
-      | Charlie |

@@ -38,7 +38,6 @@ public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private final Path damlRoot;
   private int sandboxPort;
-  private int adminApiPort;
   private String[] configFiles;
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
@@ -52,7 +51,7 @@ public class SandboxManager {
   private final Path darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
-  private boolean useContainers = false;
+  private boolean useContainers;
   private Optional<String> damlImage;
   private SandboxRunner sandboxRunner;
   private DamlLedgerClient ledgerClient;
@@ -202,16 +201,16 @@ public class SandboxManager {
 
   public void start() throws TimeoutException, IOException, InterruptedException {
     if (this.customPort.isPresent()) {
-      start(this.customPort.get(), this.customPort.get() + 1);
+      start(this.customPort.get());
     } else {
       int p = getSandboxPort();
-      start(p, p + 1);
+      start(p);
     }
   }
 
-  public void start(int ledgerport, int apiport)
+  public void start(int ledgerport)
       throws TimeoutException, IOException, InterruptedException {
-    startSandbox(ledgerport, apiport);
+    startSandbox(ledgerport);
     startCommChannels();
     allocateParties();
     mapParties();
@@ -273,15 +272,13 @@ public class SandboxManager {
     return sandboxRunner.isRunning();
   }
 
-  private void startSandbox(int ledgerPort, int adminPort) throws IOException {
+  private void startSandbox(int ledgerPort) throws IOException {
     sandboxPort = ledgerPort;
-    adminApiPort = adminPort;
     sandboxRunner =
         new SandboxRunner(
             damlRoot,
             darPath,
             sandboxPort,
-            adminApiPort,
             useWallclockTime,
             useContainers,
             damlImage,
