@@ -14,11 +14,12 @@ import com.daml.extensions.testing.store.InMemoryMessageStorage;
 import com.daml.extensions.testing.store.ValueStore;
 import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.api.v1.*;
+import com.daml.ledger.api.v1.admin.PackageManagementServiceGrpc;
+import com.daml.ledger.api.v1.admin.PackageManagementServiceOuterClass;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
 import com.daml.ledger.javaapi.data.*;
-import com.daml.ledger.api.v1.*;
-import com.daml.ledger.javaapi.data.*;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -26,6 +27,9 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -34,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import static com.google.protobuf.ByteString.copyFrom;
 
 public class DefaultLedgerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(DefaultLedgerAdapter.class);
@@ -78,14 +84,17 @@ public class DefaultLedgerAdapter {
         .build();
   }
 
-  public void start(String... parties) {
-    start(parties, LedgerOffset.LedgerBegin.getInstance());
+  public void start(boolean useContainers, String... parties) {
+    start(parties, LedgerOffset.LedgerBegin.getInstance(), useContainers);
   }
 
-  public synchronized void start(String[] explicitParties, LedgerOffset suggestStartOffset) {
+  public synchronized void start(
+      String[] explicitParties, LedgerOffset suggestStartOffset, boolean useContainers) {
     logger.info("Starting Ledger Adapter");
     this.startOffset = initStartOffset(suggestStartOffset);
-    this.timeProvider = timeProviderFactory.get();
+    if (!useContainers) {
+      this.timeProvider = timeProviderFactory.get();
+    }
     storageByParty = new ConcurrentHashMap<>();
     for (String explicitParty : explicitParties) {
       getStorage(explicitParty);
@@ -209,8 +218,8 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-    Instant let = timeProvider.getCurrentTime();
-    Instant mrt = let.plus(TTL);
+//    Instant let = timeProvider.getCurrentTime();
+//    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -255,6 +264,19 @@ public class DefaultLedgerAdapter {
                 .build());
   }
 
+  public void uploadDarFile(Path darPath) throws IOException {
+    ByteString b = copyFrom(Files.readAllBytes(darPath));
+    PackageManagementServiceGrpc.newBlockingStub(channel).uploadDarFile(
+            PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder().setDarFile(b).setSubmissionId("clientDarFile").build()
+    );
+  }
+
+  public List<PackageManagementServiceOuterClass.PackageDetails> getPackages(){
+   PackageManagementServiceOuterClass.ListKnownPackagesResponse listKnownPackagesResponse = PackageManagementServiceGrpc.newBlockingStub(channel).listKnownPackages(
+            PackageManagementServiceOuterClass.ListKnownPackagesRequest.newBuilder().build()
+    );
+    return listKnownPackagesResponse.getPackageDetailsList();
+  }
   public Instant getCurrentTime() {
     return timeProvider.getCurrentTime();
   }

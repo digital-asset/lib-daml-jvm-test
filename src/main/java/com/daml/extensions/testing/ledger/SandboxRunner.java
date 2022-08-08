@@ -9,6 +9,7 @@ package com.daml.extensions.testing.ledger;
 import com.daml.extensions.testing.junit5.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.util.Optional;
 /** */
 public class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final String DEFAULT_IMAGE = "digitalasset/daml-sdk:2.3.2";
+  private final String DEFAULT_IMAGE = "digitalasset/canton-open-source";
   private boolean useContainers = false;
   private Optional<String> damlImage;
   private final Path relativeDarPath;
@@ -105,27 +106,40 @@ public class SandboxRunner {
   private DamlContainer container;
   private static final String CONTAINER_DAR_PATH = "/release";
 
-  private void startSandboxContainer() throws IOException {
+  private void startSandboxContainer() {
     container = new DamlContainer(damlImage.orElse(DEFAULT_IMAGE));
-// daml sandbox --port 6863 --static-time -C ledgerId=sample-ledger --log-level-root debug --dar /Users/testuser/Documents/GitHub/lib-daml-jvm-test/src/test/resources/ping-pong.dar
+//    docker run -d --rm --name canton-postgres --shm-size=256mb --publish 5432:5432 -e POSTGRES_USER=test-user
+//    -e POSTGRES_PASSWORD=test-password postgres:11 postgres -c max_connections=500
+//    Note that you also need to create the databases yourself, which for Postgres you can do using psql
+//
+//    PGPASSWORD=test-password psql -h localhost -U test-user << EOF
+//    CREATE DATABASE participant1;
+//    GRANT ALL ON DATABASE participant1 TO CURRENT_USER;
+//    EOF
+//    The tables will be managed automatically by Canton. The psql solution works also if you run multiple nodes on one Postgres database which all require separate databases. If you run just one node against one database, you can avoid using psql by adding --POSTGRES_DB=participant1 to above docker command.
 
-    String command = "daml sandbox " + "--port " + sandboxPort + " --dar " + CONTAINER_DAR_PATH + "/" + relativeDarPath + " ";
-    if (configFiles != null)
-      for (String config : configFiles) command += " -c " + CONTAINER_DAR_PATH + "/" + config;
+    String command = "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
+
+    if (configFiles != null) {
+      for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" + config;
+    }
+
     logger.info("Command " + command);
+
     container
-        .withFileSystemBind(damlRoot.toString(), CONTAINER_DAR_PATH, BindMode.READ_ONLY)
-        .withExposedPorts(sandboxPort)
-//        .withExposedPorts(adminApiPort)
-        .withCommand("/bin/sh", "-c", command)
+//        .withFileSystemBind(damlRoot.toString(), CONTAINER_DAR_PATH, BindMode.READ_ONLY)
+        .withExposedPorts(5011)
+        .withCommand(command)
         .start();
+
     logger.info(container.getLogs());
     logger.info("Daml is running: " + container.isRunning());
   }
 
-  public DamlContainer getContainer(){
+  public DamlContainer getContainer() {
     return container;
   }
+
   public void runScriptIfConfigured(String testModule, String testStartScript)
       throws IOException, InterruptedException {
     if (useContainers) runInContainerIfConfigured(testModule, testStartScript, false);

@@ -9,9 +9,8 @@
 
 package com.daml.extensions.testing.cucumber.utils;
 
-import com.daml.extensions.testing.ledger.SandboxManager;
-import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.daml_lf_dev.DamlLf1;
+import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.DamlRecord;
 
 import java.util.HashMap;

@@ -206,6 +206,7 @@ public class Sandbox {
     private void validate() {
       require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
+      // todo mb if useContainer then must contain
       //      require(
       //          isDamlRoot(damlRoot),
       //          String.format("DAML root '%s' must contain a daml.yaml.", damlRoot));

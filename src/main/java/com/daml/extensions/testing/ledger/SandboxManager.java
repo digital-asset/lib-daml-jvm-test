@@ -215,6 +215,7 @@ public class SandboxManager {
     startCommChannels();
     allocateParties();
     mapParties();
+    if (useContainers) ledgerAdapter.uploadDarFile(darPath.toAbsolutePath());
   }
 
   private void allocateParty(String partyName) {
@@ -293,8 +294,8 @@ public class SandboxManager {
   private void startCommChannels() throws TimeoutException, IOException, InterruptedException {
     String ledgerHost = "localhost";
     int ledgerPort = sandboxPort;
-    if (useContainers){
-      ledgerPort = sandboxRunner.getContainer().getMappedPort(sandboxPort);
+    if (useContainers) {
+      ledgerPort = sandboxRunner.getContainer().getMappedPort(5011);
       ledgerHost = sandboxRunner.getContainer().getHost();
     }
     channel =
@@ -332,7 +333,7 @@ public class SandboxManager {
     ledgerAdapter =
         new DefaultLedgerAdapter(
             new DefaultValueStore(), ledgerId, channel, observationTimeout, timeProviderFactory);
-    ledgerAdapter.start(parties);
+    ledgerAdapter.start(useContainers, parties);
     setupApplication.accept(ledgerClient, channel);
   }
 
