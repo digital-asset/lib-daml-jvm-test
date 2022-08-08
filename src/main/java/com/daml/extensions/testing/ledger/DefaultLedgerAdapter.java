@@ -6,6 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.extensions.testing.comparator.MessageTester;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
@@ -19,6 +20,7 @@ import com.daml.ledger.api.v1.admin.PackageManagementServiceOuterClass;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
 import com.daml.ledger.javaapi.data.*;
+import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
@@ -39,7 +41,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
 import static com.google.protobuf.ByteString.copyFrom;
+import static java.lang.Thread.sleep;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DefaultLedgerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(DefaultLedgerAdapter.class);
@@ -218,8 +224,6 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-    //    Instant let = timeProvider.getCurrentTime();
-    //    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -252,7 +256,7 @@ public class DefaultLedgerAdapter {
 
   public void allocatePartyOnLedger(String p) {
     try {
-      Thread.sleep(5000);
+      sleep(5000);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -264,13 +268,53 @@ public class DefaultLedgerAdapter {
                 .build());
   }
 
-  public void uploadDarFile(Path darPath) throws IOException {
+  public void uploadDarFile(Path darPath, DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) throws IOException, InterruptedException {
     ByteString b = copyFrom(Files.readAllBytes(darPath));
-    PackageManagementServiceGrpc.newBlockingStub(channel)
-        .uploadDarFile(
-            PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder()
-                .setDarFile(b)
-                .build());
+    PackageManagementServiceOuterClass.UploadDarFileResponse uploadDarFileResponse =
+        PackageManagementServiceGrpc.newBlockingStub(channel)
+            .uploadDarFile(
+                PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder()
+                    .setDarFile(b)
+                    .build());
+    logger.info("DAR file upload response. Empty if success: ", uploadDarFileResponse);
+    eventually(() -> assertTrue(isPackageReadyToUse(damlLedgerClient, moduleDottedName)));
+  }
+
+  private void eventually(Runnable code) throws InterruptedException {
+    Instant started = Instant.now();
+    Function<Duration, Boolean> hasPassed =
+            x -> Duration.between(started, Instant.now()).compareTo(x) > 0;
+    boolean isSuccessful = false;
+    while (!isSuccessful) {
+      try {
+        code.run();
+        isSuccessful = true;
+      } catch (Throwable ignore) {
+        if (hasPassed.apply(Duration.ofMinutes(5))) {
+          fail("Code did not succeed in time.");
+        } else {
+          sleep(200);
+          isSuccessful = false;
+        }
+      }
+    }
+  }
+
+  private boolean isPackageReadyToUse(DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) {
+    String packageId;
+    try {
+      packageId = findPackage(damlLedgerClient, moduleDottedName);
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
+    PackageServiceOuterClass.GetPackageStatusResponse getPackageStatusResponse =
+            PackageServiceGrpc.newBlockingStub(channel).getPackageStatus(
+                    PackageServiceOuterClass.GetPackageStatusRequest.newBuilder()
+                            .setLedgerId(ledgerId)
+                            .setPackageId(packageId)
+                            .build()
+            );
+    return getPackageStatusResponse.getPackageStatus().getNumber() == 1;
   }
 
   public List<PackageManagementServiceOuterClass.PackageDetails> getPackages() {
@@ -279,10 +323,6 @@ public class DefaultLedgerAdapter {
             .listKnownPackages(
                 PackageManagementServiceOuterClass.ListKnownPackagesRequest.newBuilder().build());
     return listKnownPackagesResponse.getPackageDetailsList();
-  }
-
-  public Instant getCurrentTime() {
-    return timeProvider.getCurrentTime();
   }
 
   public void setCurrentTime(Instant time) {

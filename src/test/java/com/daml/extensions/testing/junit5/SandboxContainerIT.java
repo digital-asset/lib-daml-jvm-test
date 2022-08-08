@@ -23,7 +23,7 @@ public class SandboxContainerIT {
             .damlRoot(RESOURCE_DIR.toAbsolutePath())
             .dar(DAR_PATH)
             .parties("alice", "bob", "charlie")
-            .useContainers()
+            .useContainers(PING_PONG_MODULE)
             .ledgerId("sample-ledger")
             .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
             .build();

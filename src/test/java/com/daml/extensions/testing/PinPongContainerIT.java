@@ -24,7 +24,7 @@ public class PinPongContainerIT {
     public static final Sandbox sandbox =
             Sandbox.builder()
                     .dar(DAR_PATH)
-                    .useContainers()
+                    .useContainers(PING_PONG_MODULE)
                     .parties(CHARLIE, BOB, ALICE)
                     .build();
 

@@ -40,6 +40,7 @@ public class Sandbox {
   private Sandbox(
       Path damlRoot,
       Optional<String> testModule,
+      Optional<DamlLf1.DottedName> moduleDottedName,
       Optional<String> testStartScript,
       Optional<Integer> port,
       Duration sandboxWaitTimeout,
@@ -57,6 +58,7 @@ public class Sandbox {
         new SandboxManager(
             damlRoot,
             testModule,
+            moduleDottedName,
             testStartScript,
             port,
             sandboxWaitTimeout,
@@ -79,6 +81,7 @@ public class Sandbox {
   public static class SandboxBuilder {
     private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
+    private Optional<DamlLf1.DottedName> moduleDottedName = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
     private Optional<Integer> port = Optional.empty();
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
@@ -149,8 +152,9 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder useContainers() {
+    public SandboxBuilder useContainers(DamlLf1.DottedName moduleDottedName) {
       this.useContainers = true;
+      this.moduleDottedName = Optional.of(moduleDottedName);
       return this;
     }
 
@@ -185,6 +189,7 @@ public class Sandbox {
       return new Sandbox(
           damlRoot,
           testModule,
+          moduleDottedName,
           testStartScript,
           port,
           sandboxWaitTimeout,

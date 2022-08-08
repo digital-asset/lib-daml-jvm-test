@@ -6,6 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.extensions.testing.junit5.LogLevel;
 import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
 import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
@@ -40,6 +41,7 @@ public class SandboxManager {
   private int sandboxPort;
   private String[] configFiles;
   private final Optional<String> testModule;
+  private final Optional<DamlLf1.DottedName> moduleDottedName;
   private final Optional<String> testStartScript;
   private final Optional<Integer> customPort;
   private final Duration sandboxWaitTimeout;
@@ -72,6 +74,7 @@ public class SandboxManager {
     this(
         damlRoot,
         testModule,
+        Optional.empty(),
         testStartScript,
         customPort,
         sandboxWaitTimeout,
@@ -90,6 +93,7 @@ public class SandboxManager {
   public SandboxManager(
       Path damlRoot,
       Optional<String> testModule,
+      Optional<DamlLf1.DottedName> moduleDottedName,
       Optional<String> testStartScript,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
@@ -103,6 +107,7 @@ public class SandboxManager {
     this(
         damlRoot,
         testModule,
+            moduleDottedName,
         testStartScript,
         Optional.empty(),
         sandboxWaitTimeout,
@@ -134,6 +139,7 @@ public class SandboxManager {
     this(
         damlRoot,
         testModule,
+        Optional.empty(),
         testStartScript,
         customPort,
         sandboxWaitTimeout,
@@ -152,6 +158,7 @@ public class SandboxManager {
   public SandboxManager(
       Path damlRoot,
       Optional<String> testModule,
+      Optional<DamlLf1.DottedName> moduleDottedName,
       Optional<String> testStartScript,
       Optional<Integer> customPort,
       Duration sandboxWaitTimeout,
@@ -167,6 +174,7 @@ public class SandboxManager {
       Optional<LogLevel> logLevel) {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
+    this.moduleDottedName = moduleDottedName;
     this.testStartScript = testStartScript;
     this.customPort = customPort;
     this.sandboxWaitTimeout = sandboxWaitTimeout;
@@ -208,13 +216,12 @@ public class SandboxManager {
     }
   }
 
-  public void start(int ledgerport)
-      throws TimeoutException, IOException, InterruptedException {
+  public void start(int ledgerport) throws TimeoutException, IOException, InterruptedException {
     startSandbox(ledgerport);
     startCommChannels();
     allocateParties();
     mapParties();
-    if (useContainers) ledgerAdapter.uploadDarFile(darPath.toAbsolutePath());
+    if (useContainers) ledgerAdapter.uploadDarFile(darPath.toAbsolutePath(), ledgerClient, moduleDottedName.get());
   }
 
   private void allocateParty(String partyName) {
