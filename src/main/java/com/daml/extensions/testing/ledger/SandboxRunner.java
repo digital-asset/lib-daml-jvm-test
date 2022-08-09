@@ -111,7 +111,7 @@ public class SandboxRunner {
         "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
 
     if (configFiles != null) {
-      logger.info("cus");
+      logger.info("Custom config file are not supported in this version");
       //      for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" +
       // config;
     }
