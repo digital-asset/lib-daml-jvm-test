@@ -8,12 +8,12 @@ Feature: Cucumber support in the Functional Testing library
       | Charlie |
 
   Scenario: NumericTester can be created.
-    Given "Bob" creates contract "PingPong:NumericTester" using values
+    Given "Bob" creates contract "MyPingPong:NumericTester" using values
       | s | Bob      |
       | x | 3.124321 |
       | y | 4.000    |
 
-    Then "Bob" should observe the creation of "PingPong:NumericTester" with contract id "pingPongCid1" and values
+    Then "Bob" should observe the creation of "MyPingPong:NumericTester" with contract id "pingPongCid1" and values
       | s    | Bob          |
       | x    | 3.1243210000 |
       | y    | 4.0000       |

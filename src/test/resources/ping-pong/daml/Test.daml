@@ -3,7 +3,7 @@
 
 module Test where
 
-import PingPong
+import MyPingPong
 import Main(allocate)
 
 import Daml.Script

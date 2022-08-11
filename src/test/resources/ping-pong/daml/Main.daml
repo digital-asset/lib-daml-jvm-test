@@ -5,7 +5,7 @@ module Main where
 
 import Daml.Script
 
-import PingPong
+import MyPingPong
 
 main = script do
   alice <- allocateParty "Alice"

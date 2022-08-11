@@ -40,7 +40,6 @@ public class Sandbox {
   private Sandbox(
       Path damlRoot,
       Optional<String> testModule,
-      Optional<DamlLf1.DottedName> moduleDottedName,
       Optional<String> testStartScript,
       Optional<Integer> port,
       Duration sandboxWaitTimeout,
@@ -58,7 +57,6 @@ public class Sandbox {
         new SandboxManager(
             damlRoot,
             testModule,
-            moduleDottedName,
             testStartScript,
             port,
             sandboxWaitTimeout,
@@ -87,7 +85,7 @@ public class Sandbox {
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
-    private Path damlRoot = WORKING_DIRECTORY;
+    private Path damlRoot;
     private Path darPath;
     private boolean useWallclockTime = false;
     private boolean useContainers = false;
@@ -159,6 +157,7 @@ public class Sandbox {
     }
 
     public SandboxBuilder damlImage(String image) {
+      // todo test it
       this.damlImage = Optional.ofNullable(image);
       return this;
     }
@@ -189,7 +188,6 @@ public class Sandbox {
       return new Sandbox(
           damlRoot,
           testModule,
-          moduleDottedName,
           testStartScript,
           port,
           sandboxWaitTimeout,
@@ -208,6 +206,9 @@ public class Sandbox {
     private void validate() {
       require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
+      if (!useContainers) {
+        require(damlRoot != null, "Daml root cannot be null if run sandbox on host");
+      }
     }
   }
 
@@ -242,6 +243,7 @@ public class Sandbox {
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
       throws InvalidProtocolBufferException {
+
     String pkg = findPackage(sandboxManager.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);
   }

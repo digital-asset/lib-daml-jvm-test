@@ -15,7 +15,6 @@ import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -227,17 +226,18 @@ public class PingPongIT {
   }
 
   private Identifier pingTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "MyPing");
   }
 
   private Identifier pongTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPong");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "MyPong");
   }
 
   @Test
   public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
-    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+    Identifier timedPingTid =
+        sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "TimedPing");
 
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
@@ -266,7 +266,8 @@ public class PingPongIT {
   public void testTimedOperationIfTimeIsOk()
       throws InvalidProtocolBufferException, InterruptedException {
     Instant futureTime = Instant.ofEpochSecond(5000);
-    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+    Identifier timedPingTid =
+        sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "TimedPing");
 
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
@@ -290,7 +291,7 @@ public class PingPongIT {
   }
 
   private Identifier numericTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "NumericTester");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "NumericTester");
   }
 
   @Test

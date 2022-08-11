@@ -44,7 +44,6 @@ import java.util.function.Supplier;
 import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
 import static com.google.protobuf.ByteString.copyFrom;
 import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class DefaultLedgerAdapter {
@@ -254,21 +253,19 @@ public class DefaultLedgerAdapter {
     return mapPartyId;
   }
 
-  public void allocatePartyOnLedger(String p) {
-    try {
-      sleep(5000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-    PartyManagementServiceGrpc.newBlockingStub(channel)
-        .allocateParty(
-            PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
-                .setPartyIdHint(p)
-                .setDisplayName(p)
-                .build());
+  public void allocatePartyOnLedger(String p) throws InterruptedException {
+    eventually(
+        () ->
+            PartyManagementServiceGrpc.newBlockingStub(channel)
+                .allocateParty(
+                    PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
+                        .setPartyIdHint(p)
+                        .setDisplayName(p)
+                        .build()));
   }
 
-  public void uploadDarFile(Path darPath, DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) throws IOException, InterruptedException {
+  public void uploadDarFile(Path darPath, DamlLedgerClient damlLedgerClient)
+      throws IOException, InterruptedException {
     ByteString b = copyFrom(Files.readAllBytes(darPath));
     PackageManagementServiceOuterClass.UploadDarFileResponse uploadDarFileResponse =
         PackageManagementServiceGrpc.newBlockingStub(channel)
@@ -277,20 +274,19 @@ public class DefaultLedgerAdapter {
                     .setDarFile(b)
                     .build());
     logger.info("DAR file upload response. Empty if success: ", uploadDarFileResponse);
-    eventually(() -> assertTrue(isPackageReadyToUse(damlLedgerClient, moduleDottedName)));
   }
 
   private void eventually(Runnable code) throws InterruptedException {
     Instant started = Instant.now();
     Function<Duration, Boolean> hasPassed =
-            x -> Duration.between(started, Instant.now()).compareTo(x) > 0;
+        x -> Duration.between(started, Instant.now()).compareTo(x) > 0;
     boolean isSuccessful = false;
     while (!isSuccessful) {
       try {
         code.run();
         isSuccessful = true;
       } catch (Throwable ignore) {
-        if (hasPassed.apply(Duration.ofMinutes(5))) {
+        if (hasPassed.apply(Duration.ofMinutes(1))) {
           fail("Code did not succeed in time.");
         } else {
           sleep(200);
@@ -300,7 +296,8 @@ public class DefaultLedgerAdapter {
     }
   }
 
-  private boolean isPackageReadyToUse(DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) {
+  private boolean isPackageReadyToUse(
+      DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) {
     String packageId;
     try {
       packageId = findPackage(damlLedgerClient, moduleDottedName);
@@ -308,12 +305,12 @@ public class DefaultLedgerAdapter {
       throw new RuntimeException(e);
     }
     PackageServiceOuterClass.GetPackageStatusResponse getPackageStatusResponse =
-            PackageServiceGrpc.newBlockingStub(channel).getPackageStatus(
-                    PackageServiceOuterClass.GetPackageStatusRequest.newBuilder()
-                            .setLedgerId(ledgerId)
-                            .setPackageId(packageId)
-                            .build()
-            );
+        PackageServiceGrpc.newBlockingStub(channel)
+            .getPackageStatus(
+                PackageServiceOuterClass.GetPackageStatusRequest.newBuilder()
+                    .setLedgerId(ledgerId)
+                    .setPackageId(packageId)
+                    .build());
     return getPackageStatusResponse.getPackageStatus().getNumber() == 1;
   }
 

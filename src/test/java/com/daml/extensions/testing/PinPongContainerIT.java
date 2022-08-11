@@ -20,34 +20,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SandboxTestExtension.class)
 public class PinPongContainerIT {
-    @TestSandbox
-    public static final Sandbox sandbox =
-            Sandbox.builder()
-                    .dar(DAR_PATH)
-                    .useContainers(PING_PONG_MODULE)
-                    .parties(CHARLIE, BOB, ALICE)
-                    .build();
+  @TestSandbox
+  public static final Sandbox sandbox =
+      Sandbox.builder()
+          .dar(DAR_PATH)
+          .useContainers(PING_PONG_MODULE)
+          .parties(CHARLIE, BOB, ALICE)
+          .build();
 
-    @Test
-    public void testCreate() throws InvalidProtocolBufferException {
-        sandbox.getLedgerAdapter()
-                .createContract(
-                        sandbox.getPartyId(CHARLIE),
-                        sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing"),
-                        record(
-                                sandbox.getPartyId(CHARLIE),
-                                sandbox.getPartyId(BOB),
-                                int64(777))
-                );
-        ContractWithId<ContractId> pingContract =
-                sandbox.getLedgerAdapter().getMatchedContract(
-                        sandbox.getPartyId(CHARLIE),
-                        sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing"),
-                        ContractId::new);
-        // Checking that the ping-pong counter is right
-        Optional<DamlRecord> parameters = pingContract.record.asRecord();
-        assertEquals(
-                parameters.flatMap(p -> p.getFieldsMap().get("count").asInt64().map(Int64::getValue)),
-                Optional.of(777L));
-    }
+  @Test
+  public void testCreate() throws InvalidProtocolBufferException {
+    sandbox
+        .getLedgerAdapter()
+        .createContract(
+            sandbox.getPartyId(CHARLIE),
+            sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "MyPing"),
+            record(sandbox.getPartyId(CHARLIE), sandbox.getPartyId(BOB), int64(777)));
+    ContractWithId<ContractId> pingContract =
+        sandbox
+            .getLedgerAdapter()
+            .getMatchedContract(
+                sandbox.getPartyId(CHARLIE),
+                sandbox.templateIdentifier(PING_PONG_MODULE, "MyPingPong", "MyPing"),
+                ContractId::new);
+    // Checking that the ping-pong counter is right
+    Optional<DamlRecord> parameters = pingContract.record.asRecord();
+    assertEquals(
+        parameters.flatMap(p -> p.getFieldsMap().get("count").asInt64().map(Int64::getValue)),
+        Optional.of(777L));
+  }
 }
