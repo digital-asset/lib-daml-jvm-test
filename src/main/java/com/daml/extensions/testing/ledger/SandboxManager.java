@@ -197,7 +197,7 @@ public class SandboxManager {
     startCommChannels();
 
     if (useContainers) {
-      ledgerAdapter.uploadDarFile(darPath.toAbsolutePath(), ledgerClient);
+      ledgerAdapter.uploadDarFile(darPath.toAbsolutePath());
     }
 
     runScriptIfConfigured();

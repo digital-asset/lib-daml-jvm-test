@@ -266,8 +266,7 @@ public class DefaultLedgerAdapter {
                         .build()));
   }
 
-  public void uploadDarFile(Path darPath)
-      throws IOException, InterruptedException {
+  public void uploadDarFile(Path darPath) throws IOException, InterruptedException {
     ByteString b = copyFrom(Files.readAllBytes(darPath));
     PackageManagementServiceOuterClass.UploadDarFileResponse uploadDarFileResponse =
         PackageManagementServiceGrpc.newBlockingStub(channel)
