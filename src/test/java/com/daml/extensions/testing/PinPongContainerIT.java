@@ -25,7 +25,7 @@ public class PinPongContainerIT {
       Sandbox.builder()
           .dar(DAR_PATH)
           .useContainers()
-          .parties(CHARLIE, BOB, ALICE)
+          .parties(EXAMPLE_PARTIES)
           .build();
 
   @Test

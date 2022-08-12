@@ -1,8 +1,5 @@
 package com.daml.extensions.testing.junit5;
 
-import com.daml.daml_lf_dev.DamlLf1;
-import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,27 +13,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SandboxContainerIT {
 
   @Test
-  public void sandboxContainerIsStartedAndPartiesAreAllocated()
+  public void sandboxContainerIsStartedAndSetUp()
       throws IOException, InterruptedException, TimeoutException {
     Sandbox sandbox =
         Sandbox.builder()
             .damlRoot(RESOURCE_DIR.toAbsolutePath())
             .dar(DAR_PATH)
-            .parties("alice", "bob", "charlie")
+            .parties(EXAMPLE_PARTIES)
             .useContainers()
-            .ledgerId("sample-ledger")
             .build();
     sandbox.getSandboxManager().start();
     assertTrue(sandbox.isRunnning(), "Sandbox should be started");
-    assertNotNull(sandbox.getPartyId("alice"), "alice should be allocated");
-    assertNotNull(sandbox.getPartyId("bob"), "bob should be allocated");
-    assertNotNull(sandbox.getPartyId("charlie"), "charlie should be allocated");
-    assertNotNull(customDarIsLoaded(sandbox.getClient(), PING_PONG_MODULE), "DAR is loaded");
-  }
-
-  private String customDarIsLoaded(
-      DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleDottedName)
-      throws InvalidProtocolBufferException {
-    return findPackage(ledgerClient, moduleDottedName);
+    assertNotNull(findPackage(sandbox.getClient(), PING_PONG_MODULE), "DAR is loaded");
+    checkIfExamplePartiesAllocated(sandbox.getSandboxManager());
   }
 }
