@@ -11,6 +11,7 @@ import com.daml.extensions.testing.ledger.clock.SandboxTimeProvider;
 import com.daml.extensions.testing.ledger.clock.SystemTimeProvider;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
 import com.daml.extensions.testing.store.DefaultValueStore;
+import com.daml.extensions.testing.utils.SandboxUtils;
 import com.daml.ledger.api.v1.LedgerIdentityServiceGrpc;
 import com.daml.ledger.api.v1.LedgerIdentityServiceOuterClass;
 import com.daml.ledger.api.v1.testing.TimeServiceGrpc;
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import static com.daml.extensions.testing.utils.SandboxUtils.getSandboxPort;
 import static com.daml.extensions.testing.utils.SandboxUtils.waitForSandbox;
 
 public class SandboxManager {
@@ -41,7 +41,6 @@ public class SandboxManager {
   private String[] configFiles;
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
-  private final Optional<Integer> customPort;
   private final Duration sandboxWaitTimeout;
   private final Duration observationTimeout;
   private final boolean useWallclockTime;
@@ -168,7 +167,11 @@ public class SandboxManager {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
-    this.customPort = customPort;
+    if(customPort.isPresent()) {
+      this.sandboxPort = customPort.get();
+    } else {
+      this.sandboxPort = SandboxUtils.getSandboxPort();
+    }
     this.sandboxWaitTimeout = sandboxWaitTimeout;
     this.observationTimeout = observationTimeout;
     this.parties = parties;
@@ -195,22 +198,8 @@ public class SandboxManager {
     return ledgerAdapter;
   }
 
-  public ManagedChannel getChannel() {
-    return channel;
-  }
-
   public void start() throws TimeoutException, IOException, InterruptedException {
-    if (this.customPort.isPresent()) {
-      if(useContainers) logger.info("Custom port doesn't take place if containers are used");
-      start(this.customPort.get());
-    } else {
-      int p = getSandboxPort();
-      start(p);
-    }
-  }
-
-  public void start(int ledgerport) throws TimeoutException, IOException, InterruptedException {
-    startSandbox(ledgerport);
+    startSandbox();
     startCommChannels();
     allocateParties();
     mapParties();
@@ -274,8 +263,7 @@ public class SandboxManager {
     return sandboxRunner.isRunning();
   }
 
-  private void startSandbox(int ledgerPort) throws IOException {
-    sandboxPort = ledgerPort;
+  private void startSandbox() throws IOException {
     sandboxRunner =
         new SandboxRunner(
             damlRoot,

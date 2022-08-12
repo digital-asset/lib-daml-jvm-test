@@ -9,11 +9,14 @@ package com.daml.extensions.testing.junit5;
 import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.ledger.SandboxManager;
+import com.daml.extensions.testing.utils.SandboxUtils;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,6 +30,7 @@ import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
 import static com.daml.extensions.testing.utils.Preconditions.require;
 
 public class Sandbox {
+  private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
   private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
   private static final String[] DEFAULT_PARTIES = new String[] {};
@@ -40,7 +44,7 @@ public class Sandbox {
       Path damlRoot,
       Optional<String> testModule,
       Optional<String> testStartScript,
-      Optional<Integer> port,
+      int port,
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
@@ -57,7 +61,7 @@ public class Sandbox {
             damlRoot,
             testModule,
             testStartScript,
-            port,
+            Optional.of(port),
             sandboxWaitTimeout,
             observationTimeout,
             parties,
@@ -79,7 +83,7 @@ public class Sandbox {
     private Optional<String> testModule = Optional.empty();
     private Optional<DamlLf1.DottedName> moduleDottedName = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
-    private Optional<Integer> port = Optional.empty();
+    private int port = 0;
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
@@ -105,7 +109,7 @@ public class Sandbox {
     }
 
     public SandboxBuilder port(int port) {
-      this.port = Optional.of(port);
+      this.port = port;
       return this;
     }
 
@@ -173,6 +177,15 @@ public class Sandbox {
     }
 
     public Sandbox build() {
+
+      if (port != 0 && useContainers) {
+        logger.info("Custom port setup ignored if containers are used");
+      }
+
+      if (port == 0){
+        port = SandboxUtils.getSandboxPort();
+      }
+
       validate();
 
       return new Sandbox(
@@ -196,6 +209,7 @@ public class Sandbox {
     private void validate() {
       require(darPath != null, "DAR path cannot be null.");
       require(setupApplication != null, "Application setup function cannot be null.");
+      require(port != 0, "Port should be defined before start");
       if (!useContainers) {
         require(damlRoot != null, "Daml root cannot be null if run sandbox on host");
       }
