@@ -6,15 +6,14 @@
 
 package com.daml.extensions.testing.store
 
-import java.time.Duration
-import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.{CountDownLatch, TimeUnit, TimeoutException}
-
 import com.daml.extensions.testing.comparator.MessageTester
 import com.daml.extensions.testing.comparator.MessageTester.{Diff, Error, Same}
 import grizzled.slf4j.Logging
-import javax.annotation.concurrent.GuardedBy
 
+import java.time.Duration
+import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.{CountDownLatch, TimeUnit, TimeoutException}
+import javax.annotation.concurrent.GuardedBy
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.FiniteDuration

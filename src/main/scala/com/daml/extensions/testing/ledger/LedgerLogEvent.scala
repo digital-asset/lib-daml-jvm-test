@@ -6,17 +6,17 @@
 
 package com.daml.extensions.testing.ledger
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatterBuilder
-import java.time.temporal.ChronoField
-
-import com.daml.ledger.javaapi.data._
 import com.daml.extensions.testing.Patterns.IdentifierOps
 import com.daml.extensions.testing.ast.toAst
 import com.daml.extensions.testing.ledger.Utils._
 import com.daml.extensions.testing.logging.LogEvent
 import com.daml.extensions.testing.utils.AstHelper
+import com.daml.ledger.javaapi.data._
 import com.google.protobuf.TextFormat
+
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 
 sealed trait LedgerLogEvent extends LogEvent
 

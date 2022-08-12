@@ -6,6 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.extensions.testing.comparator.MessageTester;
 import com.daml.extensions.testing.comparator.ledger.ContractCreated;
 import com.daml.extensions.testing.ledger.clock.TimeProvider;
@@ -14,9 +15,13 @@ import com.daml.extensions.testing.store.InMemoryMessageStorage;
 import com.daml.extensions.testing.store.ValueStore;
 import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.api.v1.*;
+import com.daml.ledger.api.v1.admin.PackageManagementServiceGrpc;
+import com.daml.ledger.api.v1.admin.PackageManagementServiceOuterClass;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
 import com.daml.ledger.javaapi.data.*;
+import com.daml.ledger.rxjava.DamlLedgerClient;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
@@ -24,6 +29,9 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -32,6 +40,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
+import static com.google.protobuf.ByteString.copyFrom;
+import static java.lang.Thread.sleep;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DefaultLedgerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(DefaultLedgerAdapter.class);
@@ -56,6 +69,7 @@ public class DefaultLedgerAdapter {
   private LedgerOffset startOffset;
   private Map<String, InMemoryMessageStorage<TreeEvent>> storageByParty;
 
+  // todo which one did we use in rln?
   public DefaultLedgerAdapter(
       ValueStore valueStore,
       String ledgerId,
@@ -76,16 +90,21 @@ public class DefaultLedgerAdapter {
         .build();
   }
 
-  public void start(String... parties) {
-    start(parties, LedgerOffset.LedgerBegin.getInstance());
+  public void start(boolean useContainers, String... parties) {
+    start(parties, LedgerOffset.LedgerBegin.getInstance(), useContainers);
   }
 
-  public synchronized void start(String[] explicitParties, LedgerOffset suggestStartOffset) {
+  public synchronized void start(
+      String[] explicitParties, LedgerOffset suggestStartOffset, boolean useContainers) {
     logger.info("Starting Ledger Adapter");
     this.startOffset = initStartOffset(suggestStartOffset);
-    this.timeProvider = timeProviderFactory.get();
+    if (!useContainers) {
+      // todo why so?
+      this.timeProvider = timeProviderFactory.get();
+    }
     storageByParty = new ConcurrentHashMap<>();
     for (String explicitParty : explicitParties) {
+      // todo what is that?
       getStorage(explicitParty);
     }
     logger.info("Ledger Adapter Started");
@@ -112,8 +131,7 @@ public class DefaultLedgerAdapter {
     exerciseChoice(party, new ExerciseCommand(templateId, contractId.getValue(), choice, payload));
   }
 
-  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand)
-      throws InvalidProtocolBufferException {
+  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand) {
     logger.debug(
         "Attempting to create exercise {} on {} in contract {}",
         exerciseCommand.getChoice(),
@@ -207,8 +225,6 @@ public class DefaultLedgerAdapter {
   }
 
   private void submit(Party party, Command command) {
-    Instant let = timeProvider.getCurrentTime();
-    Instant mrt = let.plus(TTL);
     String cmdId = UUID.randomUUID().toString();
 
     CommandServiceOuterClass.SubmitAndWaitRequest.Builder commands =
@@ -239,22 +255,72 @@ public class DefaultLedgerAdapter {
     return mapPartyId;
   }
 
-  public void allocatePartyOnLedger(String p) {
-    try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-    PartyManagementServiceGrpc.newBlockingStub(channel)
-        .allocateParty(
-            PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
-                .setPartyIdHint(p)
-                .setDisplayName(p)
-                .build());
+  public void allocatePartyOnLedger(String p) throws InterruptedException {
+    eventually(
+        () ->
+            PartyManagementServiceGrpc.newBlockingStub(channel)
+                .allocateParty(
+                    PartyManagementServiceOuterClass.AllocatePartyRequest.newBuilder()
+                        .setPartyIdHint(p)
+                        .setDisplayName(p)
+                        .build()));
   }
 
-  public Instant getCurrentTime() {
-    return timeProvider.getCurrentTime();
+  public void uploadDarFile(Path darPath) throws IOException, InterruptedException {
+    ByteString b = copyFrom(Files.readAllBytes(darPath));
+    PackageManagementServiceOuterClass.UploadDarFileResponse uploadDarFileResponse =
+        PackageManagementServiceGrpc.newBlockingStub(channel)
+            .uploadDarFile(
+                PackageManagementServiceOuterClass.UploadDarFileRequest.newBuilder()
+                    .setDarFile(b)
+                    .build());
+    logger.info("DAR file upload response. Empty if success: ", uploadDarFileResponse);
+  }
+
+  private void eventually(Runnable code) throws InterruptedException {
+    Instant started = Instant.now();
+    Function<Duration, Boolean> hasPassed =
+        x -> Duration.between(started, Instant.now()).compareTo(x) > 0;
+    boolean isSuccessful = false;
+    while (!isSuccessful) {
+      try {
+        code.run();
+        isSuccessful = true;
+      } catch (Throwable ignore) {
+        if (hasPassed.apply(Duration.ofMinutes(1))) {
+          fail("Code did not succeed in time.");
+        } else {
+          sleep(200);
+          isSuccessful = false;
+        }
+      }
+    }
+  }
+
+  private boolean isPackageReadyToUse(
+      DamlLedgerClient damlLedgerClient, DamlLf1.DottedName moduleDottedName) {
+    String packageId;
+    try {
+      packageId = findPackage(damlLedgerClient, moduleDottedName);
+    } catch (InvalidProtocolBufferException e) {
+      throw new RuntimeException(e);
+    }
+    PackageServiceOuterClass.GetPackageStatusResponse getPackageStatusResponse =
+        PackageServiceGrpc.newBlockingStub(channel)
+            .getPackageStatus(
+                PackageServiceOuterClass.GetPackageStatusRequest.newBuilder()
+                    .setLedgerId(ledgerId)
+                    .setPackageId(packageId)
+                    .build());
+    return getPackageStatusResponse.getPackageStatus().getNumber() == 1;
+  }
+
+  public List<PackageManagementServiceOuterClass.PackageDetails> getPackages() {
+    PackageManagementServiceOuterClass.ListKnownPackagesResponse listKnownPackagesResponse =
+        PackageManagementServiceGrpc.newBlockingStub(channel)
+            .listKnownPackages(
+                PackageManagementServiceOuterClass.ListKnownPackagesRequest.newBuilder().build());
+    return listKnownPackagesResponse.getPackageDetailsList();
   }
 
   public void setCurrentTime(Instant time) {

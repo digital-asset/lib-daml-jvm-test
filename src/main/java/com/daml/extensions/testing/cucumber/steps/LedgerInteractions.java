@@ -28,15 +28,20 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
-import static com.daml.extensions.testing.utils.PackageUtils.*;
+import static com.daml.extensions.testing.utils.PackageUtils.findPackageObject;
+import static com.daml.extensions.testing.utils.PackageUtils.findTemplate;
+import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 // Notes:
 // - for optional parts, one needs to use the form (:? expecting (failure))? because otherwise
@@ -48,7 +53,12 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
-  private void startSandbox(Path damlRoot, Path darPath, String[] parties)
+  private void startSandbox(
+      Path damlRoot,
+      Path darPath,
+      String[] parties,
+      boolean useContainers,
+      Optional<String> damlImage)
       throws InterruptedException, IOException, TimeoutException {
     sandboxManager =
         new SandboxManager(
@@ -61,7 +71,11 @@ public class LedgerInteractions implements En {
             parties,
             darPath,
             (client, channel) -> {},
-            false);
+            false,
+            useContainers,
+            damlImage,
+            Optional.empty(),
+            Optional.empty());
     sandboxManager.start();
   }
 
@@ -73,7 +87,9 @@ public class LedgerInteractions implements En {
           startSandbox(
               Paths.get(damlRoot).toAbsolutePath().normalize(),
               Paths.get(darPath).toAbsolutePath().normalize(),
-              parties);
+              parties,
+              false,
+              Optional.empty());
         });
     Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
@@ -81,7 +97,26 @@ public class LedgerInteractions implements En {
           Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
           Path damlRoot = darPath.getParent();
           String[] parties = dataTable.asList().toArray(new String[] {});
-          startSandbox(damlRoot, darPath, parties);
+          startSandbox(damlRoot, darPath, parties, false, Optional.empty());
+        });
+    Given(
+        "^Sandbox Container \"([^\"]+)\" is started in directory \"([^\"]+)\" with DAR \"([^\"]+)\" and the following parties$",
+        (String damlImage, String damlRoot, String darPath, DataTable dataTable) -> {
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          startSandbox(
+              Paths.get(damlRoot).toAbsolutePath().normalize(),
+              Paths.get(darPath).toAbsolutePath().normalize(),
+              parties,
+              true,
+              Optional.ofNullable(damlImage));
+        });
+    Given(
+        "^Sandbox Container \"([^\"]+)\" is started with DAR \"([^\"]+)\" and the following parties$",
+        (String damlImage, String darPathS, DataTable dataTable) -> {
+          Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
+          Path damlRoot = darPath.getParent();
+          String[] parties = dataTable.asList().toArray(new String[] {});
+          startSandbox(damlRoot, darPath, parties, true, Optional.ofNullable(damlImage));
         });
     After(
         () -> {
@@ -99,7 +134,16 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run()
+                  throws InvalidProtocolBufferException, TimeoutException, InterruptedException {
+                eventually(
+                    () -> {
+                      try {
+                        findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                      } catch (InvalidProtocolBufferException e) {
+                        throw new RuntimeException(e);
+                      }
+                    });
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -125,7 +169,17 @@ public class LedgerInteractions implements En {
             String contractIdKey,
             String expectedFailure) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run()
+                  throws InvalidProtocolBufferException, TimeoutException, InterruptedException {
+
+                eventually(
+                    () -> {
+                      try {
+                        findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                      } catch (InvalidProtocolBufferException e) {
+                        throw new RuntimeException(e);
+                      }
+                    });
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
@@ -154,7 +208,16 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run()
+                  throws InvalidProtocolBufferException, TimeoutException, InterruptedException {
+                eventually(
+                    () -> {
+                      try {
+                        findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                      } catch (InvalidProtocolBufferException e) {
+                        throw new RuntimeException(e);
+                      }
+                    });
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -186,6 +249,15 @@ public class LedgerInteractions implements En {
     Then(
         "^.*\"([^\"]+)\" should observe the creation of \"([^\"]+)\"$",
         (String partyDisplayName, String moduleAndEntityName) -> {
+          eventually(
+              () -> {
+                try {
+                  findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                } catch (InvalidProtocolBufferException e) {
+                  throw new RuntimeException(e);
+                }
+              });
+
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           sandboxManager
@@ -201,6 +273,14 @@ public class LedgerInteractions implements En {
             String moduleAndEntityName,
             String contractId,
             DataTable dataTable) -> {
+          eventually(
+              () -> {
+                try {
+                  findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                } catch (InvalidProtocolBufferException e) {
+                  throw new RuntimeException(e);
+                }
+              });
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           DamlLf1.Package pkg =
@@ -221,6 +301,14 @@ public class LedgerInteractions implements En {
     Then(
         "^.*\"([^\"]+)\" should observe the archival of \"([^\"]+)\" with contract id \"([^\"]+)\".*$",
         (String partyDisplayName, String moduleAndEntityName, String contractIdKey) -> {
+          eventually(
+              () -> {
+                try {
+                  findTemplate(sandboxManager.getClient(), moduleAndEntityName);
+                } catch (InvalidProtocolBufferException e) {
+                  throw new RuntimeException(e);
+                }
+              });
           PackageUtils.TemplateType idWithArgs =
               findTemplate(sandboxManager.getClient(), moduleAndEntityName);
           ContractId contractId =
@@ -281,7 +369,8 @@ public class LedgerInteractions implements En {
   }
 
   abstract class LedgerExecutor {
-    LedgerExecutor(boolean expectingError) throws InvalidProtocolBufferException, TimeoutException {
+    LedgerExecutor(boolean expectingError)
+        throws InvalidProtocolBufferException, TimeoutException, InterruptedException {
       try {
         run();
       } catch (Throwable t) {
@@ -290,6 +379,27 @@ public class LedgerInteractions implements En {
       }
     }
 
-    abstract void run() throws InvalidProtocolBufferException, TimeoutException;
+    abstract void run()
+        throws InvalidProtocolBufferException, TimeoutException, InterruptedException;
+  }
+
+  private void eventually(Runnable code) throws InterruptedException {
+    Instant started = Instant.now();
+    Function<Duration, Boolean> hasPassed =
+        x -> Duration.between(started, Instant.now()).compareTo(x) > 0;
+    boolean isSuccessful = false;
+    while (!isSuccessful) {
+      try {
+        code.run();
+        isSuccessful = true;
+      } catch (Throwable ignore) {
+        if (hasPassed.apply(Duration.ofMinutes(1))) {
+          fail("Code did not succeed in time.");
+        } else {
+          sleep(200);
+          isSuccessful = false;
+        }
+      }
+    }
   }
 }

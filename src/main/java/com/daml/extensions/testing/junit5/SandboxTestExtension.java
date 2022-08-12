@@ -17,9 +17,10 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class SandboxTestExtension implements AfterEachCallback, BeforeEachCallback {
-
+  // todo add annotated flag option to prevent restarting on each test
   @Override
-  public void beforeEach(ExtensionContext context) throws IOException, InterruptedException, TimeoutException {
+  public void beforeEach(ExtensionContext context)
+      throws IOException, InterruptedException, TimeoutException {
     Sandbox sandbox = getSandboxFromTestContext(context);
     sandbox.restart();
   }
@@ -30,13 +31,13 @@ public class SandboxTestExtension implements AfterEachCallback, BeforeEachCallba
     sandbox.stop();
   }
 
-  private Sandbox getSandboxFromTestContext(ExtensionContext context){
+  private Sandbox getSandboxFromTestContext(ExtensionContext context) {
     Object testInstance = getTestInstanceFromContext(context);
     return getSandboxFromTestInstance(testInstance);
   }
 
-  private Object getTestInstanceFromContext(ExtensionContext context){
-      return context.getRequiredTestInstance();
+  private Object getTestInstanceFromContext(ExtensionContext context) {
+    return context.getRequiredTestInstance();
   }
 
   private Sandbox getSandboxFromTestInstance(Object testInstance) {

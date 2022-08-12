@@ -6,10 +6,10 @@
 
 package com.daml.extensions.testing.store
 
-import java.util.concurrent.ConcurrentHashMap
-
-import com.daml.ledger.javaapi.data.Value
 import com.daml.extensions.testing.Patterns.varName
+import com.daml.ledger.javaapi.data.Value
+
+import java.util.concurrent.ConcurrentHashMap
 
 class DefaultValueStore extends ValueStore {
   private val store = new ConcurrentHashMap[String, Value]()

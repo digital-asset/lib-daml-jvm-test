@@ -8,7 +8,6 @@ package com.daml.extensions.testing;
 
 import com.daml.extensions.testing.junit5.Sandbox;
 import com.daml.extensions.testing.junit5.SandboxTestExtension;
-
 import com.daml.extensions.testing.junit5.TestSandbox;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,13 +19,11 @@ import static com.daml.extensions.testing.TestCommons.*;
 public class PartiesAllocationTest {
   @TestSandbox
   public static final Sandbox sandbox =
-      Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).parties(ALICE, BOB, CHARLIE).build();
+      Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).parties(EXAMPLE_PARTIES).build();
 
   @Test
   public void testPartiesAreAllocated() {
-    sandbox.getPartyId(ALICE);
-    sandbox.getPartyId(BOB);
-    sandbox.getPartyId(CHARLIE);
+    checkIfExamplePartiesAllocated(sandbox.getSandboxManager());
   }
 
   @Test

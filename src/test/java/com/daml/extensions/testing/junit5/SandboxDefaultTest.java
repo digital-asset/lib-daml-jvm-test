@@ -8,35 +8,29 @@ package com.daml.extensions.testing.junit5;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.hamcrest.Matchers;
 
+import static com.daml.extensions.testing.JvmTestLibCommon.SANDBOX_PORT_RANGE;
 import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SandboxTestExtension.class)
-public class SandboxIT {
+public class SandboxDefaultTest {
 
   @TestSandbox
   public static final Sandbox sandbox =
-      Sandbox.builder()
-          .damlRoot(PINGPONG_PATH)
-          .dar(DAR_PATH)
-          .ledgerId("sample-ledger")
-          .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
-          .build();
+      Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).build();
 
   @Test
-  public void portIsAssignedWhenSandboxIsStarted() {
+  public void defaultPortIsAssignedWhenSandboxIsStarted() {
     int sandboxPort = sandbox.getSandboxPort();
-    assertsIsBetween(sandboxPort, 6860, 6890);
+    assertsIsBetween(
+        sandboxPort, SANDBOX_PORT_RANGE.lowerEndpoint(), SANDBOX_PORT_RANGE.upperEndpoint());
   }
 
   @Test
-  public void ledgerIdSpecified() {
-    assertThat(sandbox.getLedgerId(), is("sample-ledger"));
+  public void defaultLedgerIdSpecified() {
+    assertTrue(sandbox.getLedgerId() != null);
   }
 
   private void assertsIsBetween(int x, int low, int high) {

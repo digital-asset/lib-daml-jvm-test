@@ -5,11 +5,10 @@
  */
 
 package com.daml.extensions.testing.store
-import java.io.File
-
 import com.daml.extensions.testing.store.DefaultDictionary.RootPath
 import grizzled.slf4j.Logging
 
+import java.io.File
 import scala.io.Source
 
 class DefaultDictionary extends ReferenceDictionary with Logging {

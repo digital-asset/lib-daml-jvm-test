@@ -20,9 +20,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.daml.extensions.testing.JvmTestLibCommon.SANDBOX_PORT_RANGE;
+
 public class SandboxUtils {
   private static final Path DAML_YAML = Paths.get("daml.yaml");
-  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
   private static Range<Integer> SANDBOX_PORT_BAD_RANGE = Range.closed(6865, 6867);
 
   private static final AtomicInteger SANDBOX_PORT_COUNTER =
@@ -51,7 +52,7 @@ public class SandboxUtils {
         client.connect();
         connected = true;
       } catch (Exception ignored) {
-        if (!ignored.getMessage().contains("UNAVAILABLE")) {
+        if (!ignored.getMessage().contains("UNAVAILABLE: io exception")) {
           // Sandbox hasn't started yet
           throw ignored;
         }

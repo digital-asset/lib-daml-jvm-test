@@ -5,6 +5,7 @@ object Dependencies {
   val scalapbVersion = "0.9.2"
   val yamlVersion = "1.23"
   val cucumberVersion = "4.3.1"
+  val testContainersVersion = "1.16.3"
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.0.5"
   lazy val damlJavaBinding = "com.daml" % "bindings-java" % DAML_SDK_VERSION
@@ -20,6 +21,7 @@ object Dependencies {
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.24"
   lazy val guava = "com.google.guava" % "guava" % "28.0-jre"
 
+  lazy val testContainers = "org.testcontainers" % "testcontainers" % testContainersVersion
   lazy val junit5 = "org.junit.jupiter" % "junit-jupiter-api" % "5.8.2"
   lazy val junitInterface = "net.aichler" % "jupiter-interface" % "0.10.0" % Test
 

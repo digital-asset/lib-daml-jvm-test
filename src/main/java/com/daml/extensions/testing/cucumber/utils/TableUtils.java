@@ -9,11 +9,13 @@
 
 package com.daml.extensions.testing.cucumber.utils;
 
+import com.daml.daml_lf_dev.DamlLf1;
 import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.DamlRecord;
-import com.daml.daml_lf_dev.DamlLf1;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import static com.daml.extensions.testing.Dsl.*;
 import static com.daml.extensions.testing.utils.PackageUtils.getTypePrim;
