@@ -26,11 +26,7 @@ public class SandboxCustomTest {
   @Test
   public void customLogLevelIsSet() {
     Sandbox sandbox =
-        Sandbox.builder()
-            .damlRoot(PINGPONG_PATH)
-            .dar(DAR_PATH)
-            .logLevel(LogLevel.TRACE)
-            .build();
+        Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).logLevel(LogLevel.TRACE).build();
     Assertions.assertEquals(sandbox.getLogLevel(), Optional.of(LogLevel.TRACE));
   }
 
@@ -38,11 +34,7 @@ public class SandboxCustomTest {
   public void customPortIsAssignedWhenSandboxIsStarted()
       throws IOException, InterruptedException, TimeoutException {
     Sandbox sandbox =
-        Sandbox.builder()
-            .damlRoot(PINGPONG_PATH)
-            .dar(DAR_PATH)
-            .port(CUSTOM_PORT)
-            .build();
+        Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).port(CUSTOM_PORT).build();
     sandbox.restart();
     assertEquals(sandbox.getSandboxPort(), CUSTOM_PORT);
     sandbox.stop();
@@ -51,12 +43,12 @@ public class SandboxCustomTest {
   @Test
   public void customLedgerIdSpecified() throws IOException, InterruptedException, TimeoutException {
     Sandbox sandbox =
-            Sandbox.builder()
-                    .damlRoot(PINGPONG_PATH)
-                    .dar(DAR_PATH)
-                    .ledgerId(CUSTOM_LEDGER_ID)
-                    .logLevel(LogLevel.TRACE)
-                    .build();
+        Sandbox.builder()
+            .damlRoot(PINGPONG_PATH)
+            .dar(DAR_PATH)
+            .ledgerId(CUSTOM_LEDGER_ID)
+            .logLevel(LogLevel.TRACE)
+            .build();
     sandbox.restart();
     assertTrue(sandbox.getLedgerId() == CUSTOM_LEDGER_ID);
     sandbox.stop();

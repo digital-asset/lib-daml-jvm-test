@@ -19,15 +19,13 @@ public class SandboxDefaultTest {
 
   @TestSandbox
   public static final Sandbox sandbox =
-      Sandbox.builder()
-          .damlRoot(PINGPONG_PATH)
-          .dar(DAR_PATH)
-          .build();
+      Sandbox.builder().damlRoot(PINGPONG_PATH).dar(DAR_PATH).build();
 
   @Test
   public void defaultPortIsAssignedWhenSandboxIsStarted() {
     int sandboxPort = sandbox.getSandboxPort();
-    assertsIsBetween(sandboxPort, SANDBOX_PORT_RANGE.lowerEndpoint(), SANDBOX_PORT_RANGE.upperEndpoint());
+    assertsIsBetween(
+        sandboxPort, SANDBOX_PORT_RANGE.lowerEndpoint(), SANDBOX_PORT_RANGE.upperEndpoint());
   }
 
   @Test

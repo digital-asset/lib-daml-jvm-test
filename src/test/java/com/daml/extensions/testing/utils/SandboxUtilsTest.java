@@ -22,8 +22,7 @@ public class SandboxUtilsTest {
 
   @Test
   public void damlRootIsRequiredForSandbox() {
-    assertThrows(
-            IllegalStateException.class, () -> Sandbox.builder().dar(DAR_PATH).build());
+    assertThrows(IllegalStateException.class, () -> Sandbox.builder().dar(DAR_PATH).build());
   }
 
   @Test

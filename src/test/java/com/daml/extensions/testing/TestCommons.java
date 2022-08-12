@@ -25,11 +25,11 @@ public class TestCommons {
   public static final String ALICE = "Alice";
   public static final String BOB = "Bob";
   public static final String CHARLIE = "Charlie";
-  public static final String[] EXAMPLE_PARTIES = new String[]{ALICE, BOB, CHARLIE};
-  public static void checkIfExamplePartiesAllocated(SandboxManager sandbox){
-    for(String displayName: EXAMPLE_PARTIES){
+  public static final String[] EXAMPLE_PARTIES = new String[] {ALICE, BOB, CHARLIE};
+
+  public static void checkIfExamplePartiesAllocated(SandboxManager sandbox) {
+    for (String displayName : EXAMPLE_PARTIES) {
       assertNotNull(sandbox.getPartyId(displayName), displayName + " is not allocated");
     }
   }
-
 }

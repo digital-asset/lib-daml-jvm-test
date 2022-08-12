@@ -38,7 +38,6 @@ public class SandboxManager {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
   private final Path damlRoot;
   private int sandboxPort;
-  private String[] configFiles;
   private final Optional<String> testModule;
   private final Optional<String> testStartScript;
   private final Duration sandboxWaitTimeout;
@@ -81,7 +80,6 @@ public class SandboxManager {
         useWallclockTime,
         false,
         Optional.empty(),
-        null,
         Optional.empty(),
         Optional.empty());
   }
@@ -97,8 +95,7 @@ public class SandboxManager {
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       boolean useContainers,
-      Optional<String> damlImage,
-      String[] configFiles) {
+      Optional<String> damlImage) {
     this(
         damlRoot,
         testModule,
@@ -112,7 +109,6 @@ public class SandboxManager {
         useWallclockTime,
         useContainers,
         damlImage,
-        configFiles,
         Optional.empty(),
         Optional.empty());
   }
@@ -143,7 +139,6 @@ public class SandboxManager {
         useWallclockTime,
         false,
         Optional.empty(),
-        null,
         ledgerId,
         logLevel);
   }
@@ -161,13 +156,12 @@ public class SandboxManager {
       boolean useWallclockTime,
       boolean useContainers,
       Optional<String> damlImage,
-      String[] configFiles,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.damlRoot = damlRoot;
     this.testModule = testModule;
     this.testStartScript = testStartScript;
-    if(customPort.isPresent()) {
+    if (customPort.isPresent()) {
       this.sandboxPort = customPort.get();
     } else {
       this.sandboxPort = SandboxUtils.getSandboxPort();
@@ -180,7 +174,6 @@ public class SandboxManager {
     this.useWallclockTime = useWallclockTime;
     this.useContainers = useContainers;
     this.damlImage = damlImage;
-    this.configFiles = configFiles;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
     this.partyIdHashTable = new Hashtable<>();
@@ -200,13 +193,17 @@ public class SandboxManager {
 
   public void start() throws TimeoutException, IOException, InterruptedException {
     startSandbox();
+
     startCommChannels();
-    runScriptIfConfigured();
-    allocateProvidedParties();
-    mapParties();
+
     if (useContainers) {
       ledgerAdapter.uploadDarFile(darPath.toAbsolutePath(), ledgerClient);
     }
+
+    runScriptIfConfigured();
+
+    allocateProvidedParties();
+    mapParties();
   }
 
   private void allocateParty(String partyName) throws InterruptedException {
@@ -273,7 +270,6 @@ public class SandboxManager {
             useWallclockTime,
             useContainers,
             damlImage,
-            configFiles,
             ledgerId,
             logLevel);
     sandboxRunner.startSandbox();

@@ -22,11 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PinPongContainerIT {
   @TestSandbox
   public static final Sandbox sandbox =
-      Sandbox.builder()
-          .dar(DAR_PATH)
-          .useContainers()
-          .parties(EXAMPLE_PARTIES)
-          .build();
+      Sandbox.builder().dar(DAR_PATH).useContainers().parties(EXAMPLE_PARTIES).build();
 
   @Test
   public void testCreate() throws InvalidProtocolBufferException {

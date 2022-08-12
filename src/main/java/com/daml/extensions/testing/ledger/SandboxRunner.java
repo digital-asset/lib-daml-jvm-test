@@ -33,7 +33,6 @@ public class SandboxRunner {
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
   private final Path damlRoot;
-  private final String[] configFiles;
   private Process sandbox;
   private DamlContainer container;
 
@@ -44,18 +43,20 @@ public class SandboxRunner {
       boolean useWallclockTime,
       boolean useContainers,
       Optional<String> damlImage,
-      String[] configFiles,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.damlRoot = damlRoot;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
-    this.ledgerId = ledgerId;
+    if (ledgerId != null) {
+      this.ledgerId = ledgerId;
+    } else {
+      this.ledgerId = Optional.empty();
+    }
     this.logLevel = logLevel;
     this.useContainers = useContainers;
     this.damlImage = damlImage;
-    this.configFiles = configFiles;
   }
 
   private List<String> getDamlSandboxStarterCommand() {
@@ -109,12 +110,6 @@ public class SandboxRunner {
 
     String command =
         "daemon -Dcanton.participants.participant1.ledger-api.address=0.0.0.0 --no-tty --config examples/01-simple-topology/simple-topology.conf --bootstrap examples/01-simple-topology/simple-ping.canton";
-
-    if (configFiles != null) {
-      logger.info("Custom config file are not supported in this version");
-      //      for (String config : configFiles) command += " --config " + CONTAINER_DAR_PATH + "/" +
-      // config;
-    }
 
     logger.info("Command " + command);
 

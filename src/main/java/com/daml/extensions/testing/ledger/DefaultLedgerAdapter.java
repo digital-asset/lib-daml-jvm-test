@@ -69,6 +69,7 @@ public class DefaultLedgerAdapter {
   private LedgerOffset startOffset;
   private Map<String, InMemoryMessageStorage<TreeEvent>> storageByParty;
 
+  // todo which one did we use in rln?
   public DefaultLedgerAdapter(
       ValueStore valueStore,
       String ledgerId,
@@ -98,10 +99,12 @@ public class DefaultLedgerAdapter {
     logger.info("Starting Ledger Adapter");
     this.startOffset = initStartOffset(suggestStartOffset);
     if (!useContainers) {
+      // todo why so?
       this.timeProvider = timeProviderFactory.get();
     }
     storageByParty = new ConcurrentHashMap<>();
     for (String explicitParty : explicitParties) {
+      // todo what is that?
       getStorage(explicitParty);
     }
     logger.info("Ledger Adapter Started");
@@ -128,8 +131,7 @@ public class DefaultLedgerAdapter {
     exerciseChoice(party, new ExerciseCommand(templateId, contractId.getValue(), choice, payload));
   }
 
-  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand)
-      throws InvalidProtocolBufferException {
+  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand) {
     logger.debug(
         "Attempting to create exercise {} on {} in contract {}",
         exerciseCommand.getChoice(),
@@ -264,7 +266,7 @@ public class DefaultLedgerAdapter {
                         .build()));
   }
 
-  public void uploadDarFile(Path darPath, DamlLedgerClient damlLedgerClient)
+  public void uploadDarFile(Path darPath)
       throws IOException, InterruptedException {
     ByteString b = copyFrom(Files.readAllBytes(darPath));
     PackageManagementServiceOuterClass.UploadDarFileResponse uploadDarFileResponse =

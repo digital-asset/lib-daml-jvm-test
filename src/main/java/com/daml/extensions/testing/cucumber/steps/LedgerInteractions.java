@@ -74,7 +74,6 @@ public class LedgerInteractions implements En {
             false,
             useContainers,
             damlImage,
-            null,
             Optional.empty(),
             Optional.empty());
     sandboxManager.start();

@@ -26,14 +26,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.daml.extensions.testing.JvmTestLibCommon.*;
 import static com.daml.extensions.testing.utils.PackageUtils.findPackage;
 import static com.daml.extensions.testing.utils.Preconditions.require;
 
 public class Sandbox {
   private static final Logger logger = LoggerFactory.getLogger(SandboxManager.class);
-  private static final Duration DEFAULT_WAIT_TIMEOUT = Duration.ofSeconds(30);
-  private static final Duration DEFAULT_OBSERVATION_TIMEOUT = Duration.ofSeconds(10);
-  private static final String[] DEFAULT_PARTIES = new String[] {};
+
   private final SandboxManager sandboxManager;
 
   public static SandboxBuilder builder() {
@@ -54,8 +53,7 @@ public class Sandbox {
       boolean useContainers,
       Optional<String> damlImage,
       Optional<String> ledgerId,
-      Optional<LogLevel> logLevel,
-      String... configFiles) {
+      Optional<LogLevel> logLevel) {
     this.sandboxManager =
         new SandboxManager(
             damlRoot,
@@ -70,7 +68,6 @@ public class Sandbox {
             useWallclockTime,
             useContainers,
             damlImage,
-            configFiles,
             ledgerId,
             logLevel);
   }
@@ -95,7 +92,6 @@ public class Sandbox {
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
-    private String[] configFiles;
 
     public SandboxBuilder dar(Path darPath) {
       this.darPath = darPath;
@@ -156,11 +152,6 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder configFiles(String... configs) {
-      this.configFiles = configs;
-      return this;
-    }
-
     public SandboxBuilder ledgerId(String ledgerId) {
       this.ledgerId = Optional.of(ledgerId);
       return this;
@@ -182,7 +173,7 @@ public class Sandbox {
         logger.info("Custom port setup ignored if containers are used");
       }
 
-      if (port == 0){
+      if (port == 0) {
         port = SandboxUtils.getSandboxPort();
       }
 
@@ -202,8 +193,7 @@ public class Sandbox {
           useContainers,
           damlImage,
           ledgerId,
-          logLevel,
-          configFiles);
+          logLevel);
     }
 
     private void validate() {
