@@ -201,6 +201,7 @@ public class SandboxManager {
 
   public void start() throws TimeoutException, IOException, InterruptedException {
     if (this.customPort.isPresent()) {
+      if(useContainers) logger.info("Custom port doesn't take place if containers are used");
       start(this.customPort.get());
     } else {
       int p = getSandboxPort();

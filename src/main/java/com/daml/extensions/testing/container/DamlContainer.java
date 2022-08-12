@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 package com.daml.extensions.testing.container;
 
 import org.testcontainers.containers.GenericContainer;

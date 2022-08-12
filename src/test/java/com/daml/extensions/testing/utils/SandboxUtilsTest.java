@@ -6,13 +6,25 @@
 
 package com.daml.extensions.testing.utils;
 
+import com.daml.extensions.testing.junit5.Sandbox;
 import org.junit.jupiter.api.Test;
 
+import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.PINGPONG_PATH;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SandboxUtilsTest {
+
+  @Test
+  public void darPathIsRequiredForSandbox() {
+    assertThrows(IllegalStateException.class, () -> Sandbox.builder().build());
+  }
+
+  @Test
+  public void damlRootIsRequiredForSandbox() {
+    assertThrows(
+            IllegalStateException.class, () -> Sandbox.builder().dar(DAR_PATH).build());
+  }
 
   @Test
   public void pathWithDamlYamlIsDamlRoot() {

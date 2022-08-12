@@ -17,7 +17,6 @@ import io.grpc.ManagedChannel;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
@@ -77,7 +76,6 @@ public class Sandbox {
   }
 
   public static class SandboxBuilder {
-    private static final Path WORKING_DIRECTORY = Paths.get("").toAbsolutePath();
     private Optional<String> testModule = Optional.empty();
     private Optional<DamlLf1.DottedName> moduleDottedName = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
@@ -126,15 +124,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder parties(Party... parties) {
-      this.parties = new String[parties.length];
-      for (int i = 0; i < parties.length; i++) {
-        this.parties[i] = parties[i].getValue();
-      }
-      return this;
-    }
-
     public SandboxBuilder setupAppCallback(Consumer<DamlLedgerClient> setupApplication) {
+      // todo what this feature does?
       this.setupApplication = (client, channel) -> setupApplication.accept(client);
       return this;
     }
@@ -150,9 +141,8 @@ public class Sandbox {
       return this;
     }
 
-    public SandboxBuilder useContainers(DamlLf1.DottedName moduleDottedName) {
+    public SandboxBuilder useContainers() {
       this.useContainers = true;
-      this.moduleDottedName = Optional.of(moduleDottedName);
       return this;
     }
 

@@ -55,7 +55,7 @@ Feature: Cucumber support in the Functional Testing library
     | Alice |
     | 3     |
     When "Alice" exercises choice "RespondPong" on "MyPingPong:MyPing" with contract id "pingPongCid2"
-    Then "Bob" should observe the creation of "PingPong:MyPong"
+    Then "Bob" should observe the creation of "MyPingPong:MyPong"
 
   Scenario: Contract choices with arguments can be exercised.
     Given "Bob" creates contract "MyPingPong:ArgumentPing" using values

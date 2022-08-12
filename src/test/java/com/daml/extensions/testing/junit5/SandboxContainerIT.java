@@ -23,9 +23,8 @@ public class SandboxContainerIT {
             .damlRoot(RESOURCE_DIR.toAbsolutePath())
             .dar(DAR_PATH)
             .parties("alice", "bob", "charlie")
-            .useContainers(PING_PONG_MODULE)
+            .useContainers()
             .ledgerId("sample-ledger")
-            .logLevel(LogLevel.DEBUG) // implicitly test loglevel override
             .build();
     sandbox.getSandboxManager().start();
     assertTrue(sandbox.isRunnning(), "Sandbox should be started");

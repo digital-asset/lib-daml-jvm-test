@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class SandboxTestExtension implements AfterEachCallback, BeforeEachCallback {
-
+  // todo add annotated flag option to prevent restarting on each test
   @Override
   public void beforeEach(ExtensionContext context)
       throws IOException, InterruptedException, TimeoutException {

@@ -19,11 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.daml.extensions.testing.JvmTestLibCommon.CANTON_PARTICIPANT1_LEDGER_API_PORT;
+import static com.daml.extensions.testing.JvmTestLibCommon.DEFAULT_IMAGE;
+
 /** */
 public class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final String DEFAULT_IMAGE = "digitalasset/canton-open-source";
-  private final int CANTON_PARTICIPANT1_LEDGER_API_PORT = 5011;
   private boolean useContainers;
   private Optional<String> damlImage;
   private final Path relativeDarPath;
@@ -34,6 +35,7 @@ public class SandboxRunner {
   private final Path damlRoot;
   private final String[] configFiles;
   private Process sandbox;
+  private DamlContainer container;
 
   SandboxRunner(
       Path damlRoot,
@@ -101,8 +103,6 @@ public class SandboxRunner {
     sandbox = procBuilder.redirectError(redirect).redirectOutput(redirect).start();
     logger.info("Starting sandbox...");
   }
-
-  private DamlContainer container;
 
   private void startSandboxContainer() {
     container = new DamlContainer(damlImage.orElse(DEFAULT_IMAGE));
