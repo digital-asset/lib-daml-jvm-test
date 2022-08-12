@@ -201,7 +201,8 @@ public class SandboxManager {
   public void start() throws TimeoutException, IOException, InterruptedException {
     startSandbox();
     startCommChannels();
-    allocateParties();
+    runScriptIfConfigured();
+    allocateProvidedParties();
     mapParties();
     if (useContainers) {
       ledgerAdapter.uploadDarFile(darPath.toAbsolutePath(), ledgerClient);
@@ -212,7 +213,7 @@ public class SandboxManager {
     ledgerAdapter.allocatePartyOnLedger(partyName);
   }
 
-  private void allocateParties() throws InterruptedException {
+  private void allocateProvidedParties() throws InterruptedException {
     for (String party : this.parties) {
       getPartyIdOrAllocate(party);
     }
@@ -285,6 +286,7 @@ public class SandboxManager {
       ledgerPort = sandboxRunner.getContainer().getMappedPort(5011);
       ledgerHost = sandboxRunner.getContainer().getHost();
     }
+
     channel =
         ManagedChannelBuilder.forAddress(ledgerHost, ledgerPort)
             .usePlaintext()
@@ -292,6 +294,7 @@ public class SandboxManager {
             .build();
     DamlLedgerClient.Builder builder = DamlLedgerClient.newBuilder(ledgerHost, ledgerPort);
     ledgerClient = builder.build();
+
     try {
       waitForSandbox(ledgerClient, sandboxWaitTimeout, logger);
     } catch (TimeoutException e) {
@@ -302,8 +305,6 @@ public class SandboxManager {
       }
       throw e;
     }
-
-    runScriptIfConfigured();
 
     String ledgerId =
         LedgerIdentityServiceGrpc.newBlockingStub(channel)
