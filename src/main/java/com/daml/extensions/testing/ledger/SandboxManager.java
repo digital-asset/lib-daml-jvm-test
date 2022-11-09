@@ -49,6 +49,7 @@ public class SandboxManager {
   private final String[] parties;
   private Hashtable<String, Party> partyIdHashTable;
   private final Path darPath;
+  private final Optional<Path> customConfigPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
@@ -66,6 +67,7 @@ public class SandboxManager {
       Duration observationTimeout,
       String[] parties,
       Path darPath,
+      Optional<Path> customConfigPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
     this(
@@ -77,6 +79,7 @@ public class SandboxManager {
         observationTimeout,
         parties,
         darPath,
+        customConfigPath,
         setupApplication,
         useWallclockTime,
         Optional.empty(),
@@ -92,6 +95,7 @@ public class SandboxManager {
       Duration observationTimeout,
       String[] parties,
       Path darPath,
+      Optional<Path> customConfigPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -104,6 +108,7 @@ public class SandboxManager {
     this.observationTimeout = observationTimeout;
     this.parties = parties;
     this.darPath = darPath;
+    this.customConfigPath = customConfigPath;
     this.setupApplication = setupApplication;
     this.useWallclockTime = useWallclockTime;
     this.ledgerId = ledgerId;
@@ -197,7 +202,7 @@ public class SandboxManager {
     sandboxPort = port;
     sandboxRunner =
         SandboxRunnerFactory.getSandboxRunner(
-            damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
+            damlRoot, darPath, sandboxPort, useWallclockTime, customConfigPath, ledgerId, logLevel);
     sandboxRunner.startSandbox();
   }
 

@@ -15,7 +15,6 @@ import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +39,7 @@ public class PingPongIT {
       Sandbox.builder()
           .damlRoot(PINGPONG_PATH)
           .dar(DAR_PATH)
+//          .customConfig(CONFIG_PATH)
           .moduleAndScript("Test", "testSetup")
           .build();
 
@@ -134,6 +134,8 @@ public class PingPongIT {
 
   @Test
   public void testDoubleObservationNotPossible() throws InvalidProtocolBufferException {
+    // TODO not a very good test
+    // it pass if first line throws
     Assertions.assertThrows(
         TimeoutException.class,
         () -> {

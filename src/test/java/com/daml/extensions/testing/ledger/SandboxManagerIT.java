@@ -42,6 +42,7 @@ public class SandboxManagerIT {
             Duration.ofSeconds(10),
             new String[0],
             DAR_PATH,
+            Optional.empty(),
             (_ignore1, _ignore2) -> {},
             false);
     manager.start();
@@ -69,6 +70,7 @@ public class SandboxManagerIT {
             Duration.ofSeconds(10),
             new String[0],
             DAR_PATH,
+            Optional.empty(),
             (_ignore1, _ignore2) -> {},
             false,
             Optional.empty(),
@@ -96,6 +98,7 @@ public class SandboxManagerIT {
             Duration.ofSeconds(10),
             new String[0],
             DAR_PATH,
+            Optional.empty(),
             (_ignore1, _ignore2) -> {},
             false,
             Optional.of("TestLedgerID"),
@@ -122,6 +125,7 @@ public class SandboxManagerIT {
             Duration.ofSeconds(10),
             new String[0],
             DAR_PATH,
+            Optional.empty(),
             (_ignore1, _ignore2) -> {},
             false,
             Optional.of("TestLedgerID"),

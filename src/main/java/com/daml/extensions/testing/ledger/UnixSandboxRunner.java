@@ -7,6 +7,7 @@
 package com.daml.extensions.testing.ledger;
 
 import com.daml.extensions.testing.junit5.LogLevel;
+
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -17,9 +18,17 @@ public class UnixSandboxRunner extends SandboxRunner {
       Path relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
+      Optional<Path> customConfigPath,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
-    super(damlRoot, relativeDarPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
+    super(
+        damlRoot,
+        relativeDarPath,
+        sandboxPort,
+        useWallclockTime,
+        customConfigPath,
+        ledgerId,
+        logLevel);
   }
 
   @Override
