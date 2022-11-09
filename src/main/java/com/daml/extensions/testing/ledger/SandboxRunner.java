@@ -22,6 +22,7 @@ public abstract class SandboxRunner {
   private final Path relativeDarPath;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
+  private final Optional<Path> customConfigPath;
   private final Optional<String> ledgerId;
   private final Optional<LogLevel> logLevel;
   private final Path damlRoot;
@@ -32,12 +33,14 @@ public abstract class SandboxRunner {
       Path relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
+      Optional<Path> customConfigPath,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     this.damlRoot = damlRoot;
     this.relativeDarPath = relativeDarPath;
     this.sandboxPort = sandboxPort;
     this.useWallclockTime = useWallclockTime;
+    this.customConfigPath = customConfigPath;
     this.ledgerId = ledgerId;
     this.logLevel = logLevel;
   }
@@ -62,7 +65,11 @@ public abstract class SandboxRunner {
         });
     commands.add("--dar");
     commands.add(relativeDarPath.toString());
-
+    customConfigPath.ifPresent(
+        value -> {
+          commands.add("-c");
+          commands.add(value.toString());
+        });
     return commands;
   }
 

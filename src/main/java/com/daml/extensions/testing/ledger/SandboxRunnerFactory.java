@@ -8,6 +8,7 @@ package com.daml.extensions.testing.ledger;
 
 import com.daml.extensions.testing.junit5.LogLevel;
 import com.daml.extensions.testing.utils.OS;
+
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -17,14 +18,15 @@ public class SandboxRunnerFactory {
       Path darPath,
       int sandboxPort,
       boolean useWallclockTime,
+      Optional<Path> customConfigPath,
       Optional<String> ledgerId,
       Optional<LogLevel> logLevel) {
     if (OS.isWindows()) {
       return new WindowsSandboxRunner(
-          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, customConfigPath, ledgerId, logLevel);
     } else {
       return new UnixSandboxRunner(
-          damlRoot, darPath, sandboxPort, useWallclockTime, ledgerId, logLevel);
+          damlRoot, darPath, sandboxPort, useWallclockTime, customConfigPath, ledgerId, logLevel);
     }
   }
 }

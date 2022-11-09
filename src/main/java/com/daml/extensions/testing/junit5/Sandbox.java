@@ -47,6 +47,7 @@ public class Sandbox {
       Duration observationTimeout,
       String[] parties,
       Path darPath,
+      Optional<Path> customConfigPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -61,6 +62,7 @@ public class Sandbox {
             observationTimeout,
             parties,
             darPath,
+            customConfigPath,
             setupApplication,
             useWallclockTime,
             ledgerId,
@@ -72,6 +74,7 @@ public class Sandbox {
     private Optional<String> testModule = Optional.empty();
     private Optional<String> testStartScript = Optional.empty();
     private Optional<Integer> port = Optional.empty();
+    private Optional<Path> customConfigPath = Optional.empty();
     private Duration sandboxWaitTimeout = DEFAULT_WAIT_TIMEOUT;
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
@@ -95,6 +98,11 @@ public class Sandbox {
 
     public SandboxBuilder port(int port) {
       this.port = Optional.of(port);
+      return this;
+    }
+
+    public SandboxBuilder customConfig(Path path) {
+      this.customConfigPath = Optional.of(path);
       return this;
     }
 
@@ -164,6 +172,7 @@ public class Sandbox {
           observationTimeout,
           parties,
           darPath,
+          customConfigPath,
           setupApplication,
           useWallclockTime,
           ledgerId,

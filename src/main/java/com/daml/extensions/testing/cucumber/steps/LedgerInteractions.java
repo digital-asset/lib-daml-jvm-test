@@ -35,7 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
-import static com.daml.extensions.testing.utils.PackageUtils.*;
+import static com.daml.extensions.testing.utils.PackageUtils.findPackageObject;
+import static com.daml.extensions.testing.utils.PackageUtils.findTemplate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Notes:
@@ -60,6 +61,7 @@ public class LedgerInteractions implements En {
             Duration.ofSeconds(10),
             parties,
             darPath,
+            Optional.empty(),
             (client, channel) -> {},
             false);
     sandboxManager.start();
