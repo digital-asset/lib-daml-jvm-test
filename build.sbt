@@ -47,9 +47,10 @@ libraryDependencies ++= Seq(
   cucumberPicoContainer
 )
 
-scalaVersion := "2.12.13"
-javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
-scalacOptions ++= Seq("-target:jvm-1.8")
+scalaVersion := "2.12.17"
+javacOptions ++= Seq("-source", "11", "-target", "11")
+scalacOptions ++= Seq("-release:11")
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xlint:deprecation")
 
 // Publishing to Maven Central
 // POM settings for Sonatype
