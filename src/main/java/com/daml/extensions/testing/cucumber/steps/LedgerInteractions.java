@@ -19,7 +19,7 @@ import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.ledger.javaapi.data.Party;
 import com.google.protobuf.InvalidProtocolBufferException;
-import cucumber.api.java8.En;
+import io.cucumber.java8.En;
 import io.cucumber.datatable.DataTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
