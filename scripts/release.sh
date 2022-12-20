@@ -19,7 +19,7 @@ set -e
 
 # Import a key
 echo "${GPG_SIGNING_KEY}" | base64 -d &> my.key
-gpg --import my.key &> gpg.out
+gpg --allow-secret-key-import --import my.key &> gpg.out
 # We need to get the id and cut the : from it
 GPG_SIGNING_KEY_ID=$(grep 'gpg: key ' gpg.out | sort | head -1 | cut -f3 -d' ' | cut -f1 -d':')
 mkdir -p /home/circleci/.sbt/gpg/

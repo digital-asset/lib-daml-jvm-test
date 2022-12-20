@@ -13,7 +13,7 @@ object Dependencies {
 
   lazy val grizzledLogger = "org.clapper" %% "grizzled-slf4j" % "1.3.4"
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.4.5"
-  lazy val commonsIO = "commons-io" % "commons-io" % "2.6"
+  lazy val commonsIO = "commons-io" % "commons-io" % "2.11.0"
   lazy val snakeYaml = "org.yaml" % "snakeyaml" % yamlVersion
   lazy val hamcrestOptional = "com.spotify" % "hamcrest-optional" % "1.3.1"
 

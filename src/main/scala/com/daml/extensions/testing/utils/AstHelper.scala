@@ -10,13 +10,13 @@ import com.daml.extensions.testing.ast.Ast
 import org.yaml.snakeyaml.DumperOptions.FlowStyle
 import org.yaml.snakeyaml.{DumperOptions, Yaml}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object AstHelper {
   def prettyPrint(ast: => Ast): String = getYaml.dump(toJavaPrimitives(ast))
 
   private def toJavaPrimitives(ast: Ast): AnyRef = ast match {
-    case Ast.Map(map)     => map.mapValues(toJavaPrimitives).asJava
+    case Ast.Map(map)     => map.view.mapValues(toJavaPrimitives).asJava
     case Ast.Seq(seq)     => seq.map(toJavaPrimitives).asJava
     case Ast.Value(value) => value
     case Ast.Null         => null

@@ -2,7 +2,7 @@ import Dependencies._
 
 addCommandAlias("packageAll", ";package")
 addCommandAlias("verify",
-                ";test;cucumber;scalafmtCheck;headerCheck;test:headerCheck")
+                ";test;cucumber;scalafmtCheck;headerCheck;Test/headerCheck")
 addCommandAlias("cucumberTest", ";compileDaml;cucumber")
 
 // do not try to run tests in parallel (each test has one sandbox)
@@ -47,7 +47,7 @@ libraryDependencies ++= Seq(
   cucumberPicoContainer
 )
 
-scalaVersion := "2.12.17"
+scalaVersion := "2.13.10"
 javacOptions ++= Seq("-source", "11", "-target", "11")
 scalacOptions ++= Seq("-release:11")
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xlint:deprecation")
@@ -68,7 +68,7 @@ publishMavenStyle := true
 // Add sonatype repository settings
 publishTo := Some(
   if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
+    Opts.resolver.sonatypeOssSnapshots.head
   else
     Opts.resolver.sonatypeStaging
 )

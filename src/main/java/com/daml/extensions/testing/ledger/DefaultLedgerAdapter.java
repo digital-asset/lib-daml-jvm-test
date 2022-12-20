@@ -193,16 +193,14 @@ public class DefaultLedgerAdapter {
       response
           .getTransactionsList()
           .forEach(
-              tree -> {
-                tree.getEventsByIdMap()
-                    .values()
-                    .forEach(
-                        protoEvent -> {
-                          TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
-                          Dump.dump(wireLogger, new ObserveEvent(party, event));
-                          storage.onMessage(event);
-                        });
-              });
+              tree -> tree.getEventsByIdMap()
+                  .values()
+                  .forEach(
+                      protoEvent -> {
+                        TreeEvent event = TreeEvent.fromProtoTreeEvent(protoEvent);
+                        Dump.dump(wireLogger, new ObserveEvent(party, event));
+                        storage.onMessage(event);
+                      }));
     }
   }
 
