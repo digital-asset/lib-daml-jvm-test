@@ -147,11 +147,9 @@ public class PingPongIT {
       throws NullPointerException, InvalidProtocolBufferException {
     Assertions.assertThrows(
         NullPointerException.class,
-        () -> {
-          ledger()
-              .getMatchedContract(
-                  sandbox.getPartyId("NonAllocatedPartyName"), pingTemplateId(), ContractId::new);
-        });
+        () -> ledger()
+            .getMatchedContract(
+                sandbox.getPartyId("NonAllocatedPartyName"), pingTemplateId(), ContractId::new));
   }
 
   @Test
@@ -257,9 +255,7 @@ public class PingPongIT {
             timedPingTid, timedPingCid.getValue(), "TimedPingRespondPong", emptyDamlRecord());
     Assertions.assertThrows(
         StatusRuntimeException.class,
-        () -> {
-          sandbox.getLedgerAdapter().exerciseChoice(charliePartyId(), exerciseCmd);
-        });
+        () -> sandbox.getLedgerAdapter().exerciseChoice(charliePartyId(), exerciseCmd));
   }
 
   @Test

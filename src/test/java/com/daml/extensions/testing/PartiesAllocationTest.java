@@ -33,8 +33,6 @@ public class PartiesAllocationTest {
   public void notAllocatedPartyThrows() throws NullPointerException {
     Assertions.assertThrows(
         NullPointerException.class,
-        () -> {
-          sandbox.getPartyId("notAllocatedParty");
-        });
+        () -> sandbox.getPartyId("notAllocatedParty"));
   }
 }

@@ -40,8 +40,8 @@ public class Dsl {
   }
 
   public static Bool bool(String bool) {
-    return new Bool(Boolean.valueOf(bool));
-  };
+    return new Bool(Boolean.parseBoolean(bool));
+  }
 
   public static Party party(String name) {
     return new Party(name);
@@ -72,7 +72,7 @@ public class Dsl {
   }
 
   public static Int64 integer(String number) {
-    return new Int64(Long.valueOf(number));
+    return new Int64(Long.parseLong(number));
   }
 
   public static Int64 int64(long l) {

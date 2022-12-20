@@ -9,17 +9,18 @@ package com.daml.extensions.testing
 import com.daml.ledger.javaapi.data._
 import com.daml.extensions.testing.Patterns.SomeCtor
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+
+import java.util.function.Function
 
 package object ast {
   def toAst(v: Value): Ast = v match {
     case null => Ast.Null
-    case r: DamlRecord =>
-      Ast.Seq(r.getFields.asScala.map(f => toAst(f.getValue)))
+    case r: DamlRecord => Ast.Seq(r.getFields.asScala.map(f => toAst(f.getValue)))
     case v: Variant    => Ast.Map(Map(v.getConstructor -> toAst(v.getValue)))
     case b: Bool       => Ast.Value(b.getValue.toString)
     case c: ContractId => Ast.Value(c.getValue)
-    case l: DamlList   => Ast.Seq(l.getValues.asScala.map(toAst))
+    case l: DamlList   => Ast.Seq(l.toList(Function.identity()).asScala.map(toAst))
     case i: Int64      => Ast.Value(i.getValue.toString)
     case d: Decimal    => Ast.Value(d.getValue.toString)
     case n: Numeric    => Ast.Value(n.getValue.toString)
