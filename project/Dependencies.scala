@@ -4,7 +4,7 @@ object Dependencies {
   val DAML_SDK_VERSION = "2.2.1"
   val scalapbVersion = "0.9.2"
   val yamlVersion = "1.33"
-  val cucumberVersion = "5.7.0"
+  val cucumberVersion = "7.10.1"
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val damlJavaBinding = "com.daml" % "bindings-java" % DAML_SDK_VERSION
