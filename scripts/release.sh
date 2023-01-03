@@ -17,6 +17,9 @@ GPG_PASSPHRASE="${4}"
 
 set -e
 
+# Verify we are picking id of secret key correctly 
+gpg --list-secret-keys --keyid-format=long
+
 # Import a key
 echo "${GPG_SIGNING_KEY}" | base64 -d &> my.key
 gpg --allow-secret-key-import --import my.key &> gpg.out
@@ -24,6 +27,9 @@ gpg --allow-secret-key-import --import my.key &> gpg.out
 GPG_SIGNING_KEY_ID=$(grep 'gpg: key ' gpg.out | sort | head -1 | cut -f3 -d' ' | cut -f1 -d':')
 mkdir -p /home/circleci/.sbt/gpg/
 gpg -a --export-secret-keys > /home/circleci/.sbt/gpg/secring.asc
+
+# Verify we are picking id of secret key correctly 
+gpg --list-secret-keys --keyid-format=long
 
 # Export environment variables for SBT release process
 export MAVEN_LOGIN
