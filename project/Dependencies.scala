@@ -2,11 +2,8 @@ import sbt._
 
 object Dependencies {
   val DAML_SDK_VERSION = "2.2.1"
-  val scalapbVersion = "0.9.2"
-  val yamlVersion = "1.33"
-  val cucumberVersion = "5.7.0"
+  val cucumberVersion = "7.10.1"
 
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val damlJavaBinding = "com.daml" % "bindings-java" % DAML_SDK_VERSION
   lazy val damlLedgerClient = "com.daml" % "bindings-rxjava" % DAML_SDK_VERSION
   lazy val damlLFArchive = "com.daml" % "daml-lf-dev-archive-java-proto" % DAML_SDK_VERSION
@@ -14,7 +11,6 @@ object Dependencies {
   lazy val grizzledLogger = "org.clapper" %% "grizzled-slf4j" % "1.3.4"
   lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.4.5"
   lazy val commonsIO = "commons-io" % "commons-io" % "2.11.0"
-  lazy val snakeYaml = "org.yaml" % "snakeyaml" % yamlVersion
   lazy val hamcrestOptional = "com.spotify" % "hamcrest-optional" % "1.3.1"
 
   lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.3.7"

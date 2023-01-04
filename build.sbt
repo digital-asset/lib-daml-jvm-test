@@ -34,7 +34,6 @@ libraryDependencies ++= Seq(
   damlLFArchive % "provided",
   damlLedgerClient % "provided",
   grizzledLogger,
-  snakeYaml,
   logbackClassic,
   commonsIO,
   guava,
