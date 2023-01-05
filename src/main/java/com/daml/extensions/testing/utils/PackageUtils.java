@@ -273,10 +273,10 @@ public class PackageUtils {
     Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
     for (String pkgId : pkgs) {
       GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-      CodedInputStream cos = CodedInputStream.newInstance(pkgResp.getArchivePayload());
-      cos.setRecursionLimit(1000); // default is 100 which is not enough for a package
+      CodedInputStream codeInputStream = CodedInputStream.newInstance(pkgResp.getArchivePayload());
+      codeInputStream.setRecursionLimit(1000); // default is 100 which is not enough for a package
       DamlLf.ArchivePayload archivePl =
-          DamlLf.ArchivePayload.parseFrom(cos);
+          DamlLf.ArchivePayload.parseFrom(codeInputStream);
       DamlLf1.Package dl1 = archivePl.getDamlLf1();
       List<DamlLf1.Module> mods = dl1.getModulesList();
       for (DamlLf1.Module mod : mods) {
