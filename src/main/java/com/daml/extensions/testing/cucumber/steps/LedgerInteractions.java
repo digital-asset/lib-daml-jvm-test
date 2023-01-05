@@ -99,7 +99,7 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run() throws IOException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -125,7 +125,7 @@ public class LedgerInteractions implements En {
             String contractIdKey,
             String expectedFailure) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run() throws IOException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
@@ -154,7 +154,7 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws InvalidProtocolBufferException, TimeoutException {
+              void run() throws IOException, TimeoutException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -281,7 +281,7 @@ public class LedgerInteractions implements En {
   }
 
   abstract class LedgerExecutor {
-    LedgerExecutor(boolean expectingError) throws InvalidProtocolBufferException, TimeoutException {
+    LedgerExecutor(boolean expectingError) throws IOException, TimeoutException {
       try {
         run();
       } catch (Throwable t) {
@@ -290,6 +290,6 @@ public class LedgerInteractions implements En {
       }
     }
 
-    abstract void run() throws InvalidProtocolBufferException, TimeoutException;
+    abstract void run() throws IOException, TimeoutException;
   }
 }

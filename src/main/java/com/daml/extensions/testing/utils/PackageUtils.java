@@ -12,8 +12,10 @@ import com.daml.ledger.javaapi.data.GetPackageResponse;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
+import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -200,7 +202,7 @@ public class PackageUtils {
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     String[] parts = moduleAndEntityName.split(":");
 
     if (parts.length != 2) {
@@ -247,7 +249,7 @@ public class PackageUtils {
   }
 
   private static DataType findDataType(DamlLedgerClient ledgerClient, String moduleAndEntityName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     assert !moduleAndEntityName.isEmpty();
     DataType dt = dataTypes.get(moduleAndEntityName);
     if (dt != null) {
@@ -266,13 +268,15 @@ public class PackageUtils {
   }
 
   private static void initCache(DamlLedgerClient ledgerClient)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     PackageClient pkgClient = ledgerClient.getPackageClient();
     Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
     for (String pkgId : pkgs) {
       GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
+      CodedInputStream codeInputStream = CodedInputStream.newInstance(pkgResp.getArchivePayload());
+      codeInputStream.setRecursionLimit(1000); // default is 100 which is not enough for a package
       DamlLf.ArchivePayload archivePl =
-          DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+          DamlLf.ArchivePayload.parseFrom(codeInputStream);
       DamlLf1.Package dl1 = archivePl.getDamlLf1();
       List<DamlLf1.Module> mods = dl1.getModulesList();
       for (DamlLf1.Module mod : mods) {
