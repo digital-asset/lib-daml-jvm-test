@@ -274,7 +274,7 @@ public class PackageUtils {
     for (String pkgId : pkgs) {
       GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
       CodedInputStream cos = CodedInputStream.newInstance(pkgResp.getArchivePayload());
-      cos.setRecursionLimit(1000);
+      cos.setRecursionLimit(1000); // default is 100 which is not enough for a package
       DamlLf.ArchivePayload archivePl =
           DamlLf.ArchivePayload.parseFrom(cos);
       DamlLf1.Package dl1 = archivePl.getDamlLf1();
