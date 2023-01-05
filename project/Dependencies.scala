@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val DAML_SDK_VERSION = "2.2.1"
+  val DAML_SDK_VERSION = "2.5.0"
   val cucumberVersion = "7.10.1"
 
   lazy val damlJavaBinding = "com.daml" % "bindings-java" % DAML_SDK_VERSION
