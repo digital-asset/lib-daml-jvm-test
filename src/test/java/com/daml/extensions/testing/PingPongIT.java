@@ -133,7 +133,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testDoubleObservationNotPossible() throws InvalidProtocolBufferException {
+  public void testDoubleObservationNotPossible() {
     Assertions.assertThrows(
         TimeoutException.class,
         () -> {
@@ -144,7 +144,7 @@ public class PingPongIT {
 
   @Test
   public void testNotAllocatedPartyHasNoId()
-      throws NullPointerException, InvalidProtocolBufferException {
+      throws NullPointerException {
     Assertions.assertThrows(
         NullPointerException.class,
         () -> ledger()
@@ -260,7 +260,7 @@ public class PingPongIT {
 
   @Test
   public void testTimedOperationIfTimeIsOk()
-      throws InvalidProtocolBufferException, InterruptedException {
+      throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
 

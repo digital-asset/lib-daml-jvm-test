@@ -18,9 +18,8 @@ import com.daml.extensions.testing.utils.PackageUtils;
 import com.daml.ledger.javaapi.data.ContractId;
 import com.daml.ledger.javaapi.data.DamlRecord;
 import com.daml.ledger.javaapi.data.Party;
-import com.google.protobuf.InvalidProtocolBufferException;
-import io.cucumber.java8.En;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java8.En;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static com.daml.extensions.testing.cucumber.utils.TableUtils.fieldsToArgs;
-import static com.daml.extensions.testing.utils.PackageUtils.*;
+import static com.daml.extensions.testing.utils.PackageUtils.findPackageObject;
+import static com.daml.extensions.testing.utils.PackageUtils.findTemplate;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Notes:
@@ -99,7 +99,7 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws IOException, TimeoutException {
+              void run() throws IOException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -125,7 +125,7 @@ public class LedgerInteractions implements En {
             String contractIdKey,
             String expectedFailure) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws IOException, TimeoutException {
+              void run() throws IOException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 ContractId contractId =
@@ -154,7 +154,7 @@ public class LedgerInteractions implements En {
             String expectedFailure,
             DataTable dataTable) ->
             new LedgerExecutor(expectedFailure != null) {
-              void run() throws IOException, TimeoutException {
+              void run() throws IOException {
                 PackageUtils.TemplateType idWithArgs =
                     findTemplate(sandboxManager.getClient(), moduleAndEntityName);
                 DamlLf1.Package pkg =
@@ -281,7 +281,7 @@ public class LedgerInteractions implements En {
   }
 
   abstract class LedgerExecutor {
-    LedgerExecutor(boolean expectingError) throws IOException, TimeoutException {
+    LedgerExecutor(boolean expectingError) throws IOException {
       try {
         run();
       } catch (Throwable t) {
@@ -290,6 +290,6 @@ public class LedgerInteractions implements En {
       }
     }
 
-    abstract void run() throws IOException, TimeoutException;
+    abstract void run() throws IOException;
   }
 }
