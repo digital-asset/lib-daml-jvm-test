@@ -162,7 +162,10 @@ public class DefaultLedgerAdapter {
           }
 
           public void onError(Throwable t) {
-            logger.error("Error occurred in stream handler for party " + party, t);
+            if (t.toString().contains("Channel shutdown invoked"))
+              logger.trace("Channel shutdown invoked " + party);
+            else
+              logger.error("Error occurred in stream handler for party " + party, t);
           }
 
           public void onCompleted() {
