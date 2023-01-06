@@ -40,9 +40,9 @@ public class SandboxTimeProvider implements TimeProvider {
             }
 
             public void onError(Throwable t) {
-              if (t.toString().contains("Channel shutdown invoked"))
+              if (t.toString().contains("Channel shutdown invoked")) {
                 p.stop(null);
-              else {
+              } else {
                 logger.warn("SandboxTimeProvider request received an error", t);
                 p.stop(t);
               }
