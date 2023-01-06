@@ -12,7 +12,7 @@ import java.time.Duration;
 
 public class Config {
   public Duration templateWaitTimeout;
-  private int sandboxPort;
+  private final int sandboxPort;
 
   public Config() {
 

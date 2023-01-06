@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(SandboxTestExtension.class)
 public class SetupAppCallbackIT {
-  private static AtomicBoolean boolFlag = new AtomicBoolean(false);
+  private static final AtomicBoolean boolFlag = new AtomicBoolean(false);
 
   @TestSandbox
   public static final Sandbox sandbox =
