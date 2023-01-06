@@ -24,8 +24,7 @@ import static com.daml.extensions.testing.TestCommons.DAR_PATH;
 import static com.daml.extensions.testing.TestCommons.RESOURCE_DIR;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SandboxManagerIT {
 
@@ -50,7 +49,7 @@ public class SandboxManagerIT {
 
     manager.stop();
 
-    eventually(() -> assertTrue(jpsStreamLengthBefore == jpsStreamLengthNow()));
+    eventually(() -> assertSame(jpsStreamLengthBefore, jpsStreamLengthNow()));
   }
 
   private Integer jpsStreamLengthNow() {
