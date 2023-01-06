@@ -17,7 +17,6 @@ import com.daml.ledger.api.v1.*;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceGrpc;
 import com.daml.ledger.api.v1.admin.PartyManagementServiceOuterClass;
 import com.daml.ledger.javaapi.data.*;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
@@ -52,7 +51,7 @@ public class DefaultLedgerAdapter {
 
   private TimeProvider timeProvider;
   private ManagedChannel channel;
-  private String ledgerId;
+  private final String ledgerId;
   private LedgerOffset startOffset;
   private Map<String, InMemoryMessageStorage<TreeEvent>> storageByParty;
 
@@ -100,20 +99,17 @@ public class DefaultLedgerAdapter {
     }
   }
 
-  public synchronized void createContract(Party party, Identifier templateId, DamlRecord payload)
-      throws InvalidProtocolBufferException {
+  public synchronized void createContract(Party party, Identifier templateId, DamlRecord payload) {
     logger.debug("Attempting to create a contract {}", templateId);
     submit(party, new CreateCommand(templateId, payload));
   }
 
   public synchronized void exerciseChoice(
-      Party party, Identifier templateId, ContractId contractId, String choice, Value payload)
-      throws InvalidProtocolBufferException {
+      Party party, Identifier templateId, ContractId contractId, String choice, Value payload) {
     exerciseChoice(party, new ExerciseCommand(templateId, contractId.getValue(), choice, payload));
   }
 
-  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand)
-      throws InvalidProtocolBufferException {
+  public void exerciseChoice(Party party, ExerciseCommand exerciseCommand) {
     logger.debug(
         "Attempting to create exercise {} on {} in contract {}",
         exerciseCommand.getChoice(),
@@ -160,13 +156,17 @@ public class DefaultLedgerAdapter {
     InMemoryMessageStorage<TreeEvent> storage =
         new InMemoryMessageStorage<>(ChannelName, valueStore);
     StreamObserver<TransactionServiceOuterClass.GetTransactionTreesResponse> observer =
-        new StreamObserver<TransactionServiceOuterClass.GetTransactionTreesResponse>() {
+        new StreamObserver<>() {
           public void onNext(TransactionServiceOuterClass.GetTransactionTreesResponse response) {
             onMessage(response, party, storage);
           }
 
           public void onError(Throwable t) {
-            logger.error("Error occurred in stream handler for party " + party, t);
+            if (t.toString().contains("Channel shutdown invoked")) {
+              logger.trace("Channel shutdown invoked " + party);
+            } else {
+                logger.error("Error occurred in stream handler for party " + party, t);
+            }
           }
 
           public void onCompleted() {

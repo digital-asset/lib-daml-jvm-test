@@ -19,11 +19,12 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 public class SandboxUtils {
   private static final Path DAML_YAML = Paths.get("daml.yaml");
-  private static Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
-  private static Range<Integer> SANDBOX_PORT_BAD_RANGE = Range.closed(6865, 6867);
+  private static final Range<Integer> SANDBOX_PORT_RANGE = Range.closed(6860, 6890);
+  private static final Range<Integer> SANDBOX_PORT_BAD_RANGE = Range.closed(6865, 6867);
 
   private static final AtomicInteger SANDBOX_PORT_COUNTER =
       new AtomicInteger(SANDBOX_PORT_RANGE.lowerEndpoint());
@@ -69,8 +70,10 @@ public class SandboxUtils {
   }
 
   public static boolean isDamlRoot(Path path) {
-    try {
-      return Files.isDirectory(path) && Files.list(path).anyMatch(p -> p.endsWith(DAML_YAML));
+    if (!Files.isDirectory(path)) return false;
+    // ensure stream gets auto closed to prevent resource leak
+    try (Stream<Path> files = Files.list(path)) {
+      return files.anyMatch(p -> p.endsWith(DAML_YAML));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

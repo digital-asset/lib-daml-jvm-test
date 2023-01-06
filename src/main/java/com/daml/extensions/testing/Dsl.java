@@ -40,7 +40,7 @@ public class Dsl {
   }
 
   public static Bool bool(String bool) {
-    return new Bool(Boolean.parseBoolean(bool));
+    return Bool.of(Boolean.parseBoolean(bool));
   }
 
   public static Party party(String name) {
@@ -56,7 +56,7 @@ public class Dsl {
   }
 
   public static DamlList list(Value... values) {
-    return new DamlList(values);
+    return DamlList.of(values);
   }
 
   public static Decimal decimal(BigDecimal number) {

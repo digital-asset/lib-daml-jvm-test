@@ -33,15 +33,19 @@ public class SandboxTimeProvider implements TimeProvider {
           TimeServiceOuterClass.GetTimeRequest.newBuilder().setLedgerId(ledgerId).build();
       stub.getTime(
           req,
-          new StreamObserver<TimeServiceOuterClass.GetTimeResponse>() {
+          new StreamObserver<>() {
             public void onNext(TimeServiceOuterClass.GetTimeResponse value) {
               logger.debug("SandboxTimeProvider received new time {}", value.getCurrentTime());
               p.setActualTime(value.getCurrentTime());
             }
 
             public void onError(Throwable t) {
-              logger.warn("SandboxTimeProvider request received an error", t);
-              p.stop(t);
+              if (t.toString().contains("Channel shutdown invoked")) {
+                p.stop(null);
+              } else {
+                logger.warn("SandboxTimeProvider request received an error", t);
+                p.stop(t);
+              }
             }
 
             public void onCompleted() {
@@ -60,7 +64,7 @@ public class SandboxTimeProvider implements TimeProvider {
   private final String ledgerId;
   private final Monitor monitor = new Monitor();
 
-  private AtomicReference<Instant> actualTime = new AtomicReference<>(null);
+  private final AtomicReference<Instant> actualTime = new AtomicReference<>(null);
 
   private SandboxTimeProvider(TimeServiceGrpc.TimeServiceStub stub, String ledgerId) {
     this.stub = stub;
