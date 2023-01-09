@@ -9,7 +9,8 @@ package com.daml.extensions.testing.ledger;
 import static com.daml.extensions.testing.utils.Preconditions.require;
 import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -37,14 +38,6 @@ public class DamlScriptRunner {
     script = processBuilder.start();
 
     if (!scriptRunSuccessfully()) {
-      // log stderr from the sdk
-      String stdErr = IOUtils.toString(script.getErrorStream());
-      logger.error(stdErr);
-
-      // log stdout from the sdk
-      String stdout = IOUtils.toString(script.getInputStream());
-      logger.debug(stdout);
-
       throw new IllegalStateException("Unexpected termination of DAML script.");
     }
     logger.info("DAML Script has run successfully.");
