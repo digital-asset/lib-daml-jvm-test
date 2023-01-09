@@ -60,7 +60,7 @@ public class DamlScriptRunner {
     logger.info("DAML Script has run successfully.");
   }
 
-  private boolean scriptRunSuccessfully() throws InterruptedException, IOException {
+  private boolean scriptRunSuccessfully() throws InterruptedException {
     return script.waitFor(4, TimeUnit.MINUTES) && script.exitValue() == 0;
   }
 
