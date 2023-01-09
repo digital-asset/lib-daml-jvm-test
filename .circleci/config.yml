@@ -63,7 +63,6 @@ jobs:
       - checkout
       - install_sdk:
           version: << parameters.daml_sdk_version >>
-
       - run:
           command: |
             if git show --name-only HEAD | grep version.sbt; then
