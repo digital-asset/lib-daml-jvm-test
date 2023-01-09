@@ -9,8 +9,7 @@ package com.daml.extensions.testing.ledger;
 import static com.daml.extensions.testing.utils.Preconditions.require;
 import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -40,8 +39,21 @@ public class DamlScriptRunner {
     logger.info("DAML Script has run successfully.");
   }
 
-  private boolean scriptRunSuccessfully() throws InterruptedException {
-    return script.waitFor(4, TimeUnit.MINUTES) && script.exitValue() == 0;
+  private boolean scriptRunSuccessfully() throws InterruptedException, IOException {
+    script.waitFor(4, TimeUnit.MINUTES);
+
+    // log extra errors from the sdk
+    try (InputStream errorStream = script.getErrorStream()) {
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
+        String line = "";
+        while((line =reader.readLine())!=null)
+        {
+          logger.error(line);
+        }
+      }
+    }
+
+    return (script.exitValue() == 0);
   }
 
   public static class Builder {
