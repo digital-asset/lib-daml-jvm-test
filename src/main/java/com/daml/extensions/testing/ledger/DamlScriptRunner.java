@@ -12,6 +12,8 @@ import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,28 +35,16 @@ public class DamlScriptRunner {
   public void run() throws IOException, InterruptedException {
     logger.debug("Executing: {}", String.join(" ", processBuilder.command()));
     script = processBuilder.start();
+
     if (!scriptRunSuccessfully()) {
       // log stderr from the sdk
-      try (InputStream stderr = script.getErrorStream()) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stderr))) {
-          String line = "";
-          while((line =reader.readLine())!=null)
-          {
-            logger.error(line);
-          }
-        }
-      }
+      String stdErr = IOUtils.toString(script.getErrorStream());
+      logger.error(stdErr);
 
       // log stdout from the sdk
-      try (InputStream stdout = script.getInputStream()) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))) {
-          String line = "";
-          while((line =reader.readLine())!=null)
-          {
-            logger.info(line);
-          }
-        }
-      }
+      String stdout = IOUtils.toString(script.getInputStream());
+      logger.debug(stdout);
+
       throw new IllegalStateException("Unexpected termination of DAML script.");
     }
     logger.info("DAML Script has run successfully.");
