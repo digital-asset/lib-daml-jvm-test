@@ -7,7 +7,7 @@ version: 2.1
 executors:
   jdk-executor:
     docker:
-      - image: circleci/openjdk:11-jdk-stretch
+      - image: cimg/openjdk:17.0
     resource_class: medium+
 
 commands:
@@ -41,6 +41,10 @@ jobs:
       - install_sdk:
           version: << parameters.daml_sdk_version >>
       - run:
+          name: Set jps path 
+          command: |
+            sudo ln -s ${JAVA_HOME}/bin/jps /usr/bin/jps
+      - run:
           command: |
             sbt verify packageAll
       - store_test_results:
@@ -63,6 +67,10 @@ jobs:
       - checkout
       - install_sdk:
           version: << parameters.daml_sdk_version >>
+      - run:
+          name: Set jps path 
+          command: |
+            sudo ln -s ${JAVA_HOME}/bin/jps /usr/bin/jps
       - run:
           command: |
             if git show --name-only HEAD | grep version.sbt; then
