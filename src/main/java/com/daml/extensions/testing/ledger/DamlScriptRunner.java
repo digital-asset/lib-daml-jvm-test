@@ -13,8 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,6 @@ public class DamlScriptRunner {
   public void run() throws IOException, InterruptedException {
     logger.debug("Executing: {}", String.join(" ", processBuilder.command()));
     script = processBuilder.start();
-
     if (!scriptRunSuccessfully()) {
       throw new IllegalStateException("Unexpected termination of DAML script.");
     }
