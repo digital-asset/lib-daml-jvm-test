@@ -1,2 +1,2 @@
-version := "0.1.30"
+version := "0.2.0"
 versionScheme := Some("semver-spec")
