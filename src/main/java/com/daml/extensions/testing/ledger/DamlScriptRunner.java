@@ -34,26 +34,34 @@ public class DamlScriptRunner {
     logger.debug("Executing: {}", String.join(" ", processBuilder.command()));
     script = processBuilder.start();
     if (!scriptRunSuccessfully()) {
+      // log stderr from the sdk
+      try (InputStream stderr = script.getErrorStream()) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stderr))) {
+          String line = "";
+          while((line =reader.readLine())!=null)
+          {
+            logger.error(line);
+          }
+        }
+      }
+
+      // log stdout from the sdk
+      try (InputStream stdout = script.getInputStream()) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stdout))) {
+          String line = "";
+          while((line =reader.readLine())!=null)
+          {
+            logger.info(line);
+          }
+        }
+      }
       throw new IllegalStateException("Unexpected termination of DAML script.");
     }
     logger.info("DAML Script has run successfully.");
   }
 
   private boolean scriptRunSuccessfully() throws InterruptedException, IOException {
-    script.waitFor(4, TimeUnit.MINUTES);
-
-    // log extra errors from the sdk
-    try (InputStream errorStream = script.getErrorStream()) {
-      try (BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
-        String line = "";
-        while((line =reader.readLine())!=null)
-        {
-          logger.error(line);
-        }
-      }
-    }
-
-    return (script.exitValue() == 0);
+    return script.waitFor(4, TimeUnit.MINUTES) && script.exitValue() == 0;
   }
 
   public static class Builder {
