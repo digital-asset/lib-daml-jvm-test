@@ -41,6 +41,14 @@ jobs:
       - install_sdk:
           version: << parameters.daml_sdk_version >>
       - run:
+          name: "Set Java Environment"
+          command: |
+            echo "JAVA_HOME=${JAVA_HOME}"
+            echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
+            which java && java -version
+            which javac && javac -version
+            which jps
+      - run:
           command: |
             sbt verify packageAll
       - store_test_results:
@@ -63,6 +71,13 @@ jobs:
       - checkout
       - install_sdk:
           version: << parameters.daml_sdk_version >>
+      - run:
+          name: "Set Java Environment"
+          command: |
+            echo "JAVA_HOME=${JAVA_HOME}"
+            echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
+            which java && java -version
+            which javac && javac -version
       - run:
           command: |
             if git show --name-only HEAD | grep version.sbt; then

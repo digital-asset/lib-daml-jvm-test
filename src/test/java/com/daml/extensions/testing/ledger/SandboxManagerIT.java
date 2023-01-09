@@ -156,7 +156,7 @@ public class SandboxManagerIT {
   private Collection<String> jps() {
     try {
       List<String> jvmProcesses;
-      Process jps = new ProcessBuilder("$JAVA_HOME/bin/jps").start();
+      Process jps = new ProcessBuilder("jps").start();
       try (BufferedReader reader =
           new BufferedReader(new InputStreamReader(jps.getInputStream()))) {
         jvmProcesses = reader.lines().collect(Collectors.toList());
