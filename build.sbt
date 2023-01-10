@@ -75,6 +75,9 @@ ThisBuild / publishTo := {
   else Some("releases" at nexus + "service/local/staging/deploy/maven2")
 }
 
+// For all Sonatype accounts created on or after February 2021
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+
 usePgpKeyHex(sys.env.getOrElse("GPG_SIGNING_KEY_ID", "0"))
 pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toArray)
 publishConfiguration := publishConfiguration.value.withOverwrite(true)
