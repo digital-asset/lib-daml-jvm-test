@@ -65,12 +65,15 @@ developers := List(
 publishMavenStyle := true
 
 // Add sonatype repository settings
-publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeOssSnapshots.head
-  else
-    Opts.resolver.sonatypeStaging
-)
+// Remove all additional repository other than Maven Central from POM
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  // For accounts created after Feb 2021:
+  val nexus = "https://s01.oss.sonatype.org/"
+  // val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
 
 usePgpKeyHex(sys.env.getOrElse("GPG_SIGNING_KEY_ID", "0"))
 pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toArray)
