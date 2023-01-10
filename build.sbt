@@ -53,6 +53,10 @@ scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xlint:deprecation")
 
 // Publishing to Maven Central
 // POM settings for Sonatype
+ThisBuild / description := "This library provides functions to test that a DAML application and its bots are working together correctly."
+ThisBuild / licenses := List(
+  "Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")
+)
 homepage := Some(url("https://github.com/digital-asset/lib-daml-jvm-test"))
 scmInfo := Some(
   ScmInfo(url("https://github.com/digital-asset/lib-daml-jvm-test"),
@@ -76,7 +80,10 @@ ThisBuild / publishTo := {
 }
 
 // For all Sonatype accounts created on or after February 2021
-ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+// Set this to the repository to publish to using `s01.oss.sonatype.org`
+// for accounts created after Feb. 2021.
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 usePgpKeyHex(sys.env.getOrElse("GPG_SIGNING_KEY_ID", "0"))
 pgpPassphrase := Some(sys.env.getOrElse("GPG_PASSPHRASE", "").toArray)

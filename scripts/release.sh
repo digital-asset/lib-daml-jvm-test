@@ -48,4 +48,4 @@ sbt clean \
     verify \
     packageAll \
     publishSigned \
-    sonatypeBundleRelease
+    sonatypeRelease
