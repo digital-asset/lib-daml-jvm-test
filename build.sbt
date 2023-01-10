@@ -71,13 +71,7 @@ publishMavenStyle := true
 // Add sonatype repository settings
 // Remove all additional repository other than Maven Central from POM
 ThisBuild / pomIncludeRepository := { _ => false }
-ThisBuild / publishTo := {
-  // For accounts created after Feb 2021:
-  val nexus = "https://s01.oss.sonatype.org/"
-  // val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
+publishTo := sonatypePublishToBundle.value
 
 // For all Sonatype accounts created on or after February 2021
 sonatypeCredentialHost := "s01.oss.sonatype.org"
