@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Set jps path 
           command: |
-            sudo ln -s ${JAVA_HOME}/bin/jps /usr/bin/jps
+            sudo ln -fs ${JAVA_HOME}/bin/jps /usr/bin/jps
       - run:
           command: |
             sbt verify packageAll
