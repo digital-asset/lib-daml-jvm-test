@@ -10,4 +10,8 @@ public class OS {
   public static boolean isWindows() {
     return System.getProperty("os.name").contains("indows");
   }
+
+  public static String damlCommand() {
+    return isWindows() ? "daml.cmd" : "daml";
+  }
 }

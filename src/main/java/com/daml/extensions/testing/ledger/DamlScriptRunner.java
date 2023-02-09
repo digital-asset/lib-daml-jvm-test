@@ -6,6 +6,7 @@
 
 package com.daml.extensions.testing.ledger;
 
+import static com.daml.extensions.testing.utils.OS.damlCommand;
 import static com.daml.extensions.testing.utils.Preconditions.require;
 import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,10 +92,11 @@ public class DamlScriptRunner {
 
     private ProcessBuilder command() {
       String sandboxHost = "localhost";
+
       return new ProcessBuilder()
           .directory(damlRoot.toFile())
           .command(
-              "daml",
+              damlCommand(),
               "script",
               "--dar",
               darPath.toString(),
