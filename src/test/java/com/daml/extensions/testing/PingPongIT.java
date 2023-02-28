@@ -225,17 +225,17 @@ public class PingPongIT {
   }
 
   private Identifier pingTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPing");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "MyPing");
   }
 
   private Identifier pongTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "MyPong");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "MyPong");
   }
 
   @Test
   public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
-    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "TimedPing");
 
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
@@ -262,7 +262,7 @@ public class PingPongIT {
   public void testTimedOperationIfTimeIsOk()
       throws InvalidProtocolBufferException {
     Instant futureTime = Instant.ofEpochSecond(5000);
-    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "TimedPing");
+    Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "TimedPing");
 
     Timestamp timestamp = Timestamp.fromInstant(futureTime);
     sandbox
@@ -286,7 +286,7 @@ public class PingPongIT {
   }
 
   private Identifier numericTemplateId() throws InvalidProtocolBufferException {
-    return sandbox.templateIdentifier(PING_PONG_MODULE, "PingPong", "NumericTester");
+    return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "NumericTester");
   }
 
   @Test

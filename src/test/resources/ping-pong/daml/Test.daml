@@ -5,7 +5,7 @@ module Test where
 
 import Daml.Script
 
-import PingPong
+import MyPingPong
 
 testSetup_ = script  do
   alice <- allocateParty "Alice"
