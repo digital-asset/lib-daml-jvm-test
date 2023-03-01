@@ -14,7 +14,7 @@ import java.util.Optional;
 public class SandboxRunnerFactory {
   public static SandboxRunner getSandboxRunner(
       Path damlRoot,
-      Path darPath,
+      Path[] darPath,
       int sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
