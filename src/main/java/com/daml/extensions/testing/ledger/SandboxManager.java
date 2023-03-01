@@ -151,7 +151,11 @@ public class SandboxManager {
       getPartyIdOrAllocate(party);
     }
   }
-
+  public void allocateParties(String... parties) {
+    for (String party : parties) {
+        getPartyIdOrAllocate(party);
+    }
+  }
   private void mapParties() {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }

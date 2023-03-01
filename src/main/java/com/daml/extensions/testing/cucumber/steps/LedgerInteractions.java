@@ -83,7 +83,7 @@ public class LedgerInteractions implements En {
               String[] _dars = dataTable.asList().toArray(new String[] {});
               Path[] dars = Arrays.asList(_dars).stream().map( darPath -> Paths.get(darPath).toAbsolutePath().normalize() )
                   .toArray(Path[]::new);
-              String[] parties = _parties.split(",");
+              String[] parties = _parties.trim ().length()==0 ? new String[0] :  _parties.split(",");
               startSandbox(
                   Paths.get(damlRoot).toAbsolutePath().normalize(),
                   dars,
@@ -103,7 +103,12 @@ public class LedgerInteractions implements En {
             sandboxManager.stop();
           }
         });
-
+      Given(
+          "^the following parties are allocated$",
+          (DataTable dataTable) -> {
+              String[] parties = dataTable.asList().toArray(new String[] {});
+              sandboxManager.allocateParties(parties);
+          });
     // Given - When - Then clauses :
     // ----------------------------
     When(
