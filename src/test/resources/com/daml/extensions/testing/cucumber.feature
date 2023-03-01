@@ -2,9 +2,8 @@ Feature: Cucumber support in the Functional Testing library
   Cucumber support needs to work.
 
   Background:
-    Given Sandbox is started in directory "src/test/resources/ping-pong" with DAR "src/test/resources/ping-pong.dar" and the following parties
-    | Alice |
-    | Bob   |
+    Given Sandbox is started in directory "src/test/resources/ping-pong" with parties "Alice,Bob" and the following dars
+    | src/test/resources/ping-pong.dar |
 
   Scenario: NumericTester can be created.
     Given "Bob" creates contract "MyPingPong:NumericTester" using values

@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -40,7 +41,7 @@ public class SandboxManagerIT {
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
-            DAR_PATH,
+            new Path[] { DAR_PATH },
             (_ignore1, _ignore2) -> {},
             false);
     manager.start();
@@ -67,7 +68,7 @@ public class SandboxManagerIT {
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
-            DAR_PATH,
+            new Path[] { DAR_PATH },
             (_ignore1, _ignore2) -> {},
             false,
             Optional.empty(),
@@ -94,7 +95,7 @@ public class SandboxManagerIT {
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
-            DAR_PATH,
+            new Path[] { DAR_PATH },
             (_ignore1, _ignore2) -> {},
             false,
             Optional.of("TestLedgerID"),
@@ -120,7 +121,7 @@ public class SandboxManagerIT {
             Duration.ofMinutes(1),
             Duration.ofSeconds(10),
             new String[0],
-            DAR_PATH,
+            new Path[] { DAR_PATH } ,
             (_ignore1, _ignore2) -> {},
             false,
             Optional.of("TestLedgerID"),

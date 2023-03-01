@@ -13,6 +13,8 @@ import static com.daml.extensions.testing.utils.SandboxUtils.isDamlRoot;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -48,12 +50,12 @@ public class DamlScriptRunner {
 
   public static class Builder {
     private Path damlRoot;
-    private Path darPath;
+    private Path[] darPath;
     private String scriptName;
     private String sandboxPort;
     private boolean useWallClockTime = false;
 
-    public Builder dar(Path path) {
+    public Builder dar(Path... path) {
       this.darPath = path;
       return this;
     }
@@ -91,22 +93,25 @@ public class DamlScriptRunner {
     }
 
     private ProcessBuilder command() {
-      String sandboxHost = "localhost";
+        String sandboxHost = "localhost";
+        List<String> commands = new ArrayList<>();
+        commands.add(damlCommand());
+        commands.add("script");
+        for (Path relativeDarPath : darPath) {
+            commands.add("--dar");
+            commands.add(relativeDarPath.toString());
+        }
+        commands.add("--script-name");
+        commands.add(scriptName);
+        commands.add("--ledger-host");
+        commands.add(sandboxHost);
+        commands.add("--ledger-port");
+        commands.add(sandboxPort);
+        commands.add(useWallClockTime ? "--wall-clock-time" : "--static-time");
 
-      return new ProcessBuilder()
+        return new ProcessBuilder()
           .directory(damlRoot.toFile())
-          .command(
-              damlCommand(),
-              "script",
-              "--dar",
-              darPath.toString(),
-              "--script-name",
-              scriptName,
-              "--ledger-host",
-              sandboxHost,
-              "--ledger-port",
-              sandboxPort,
-              useWallClockTime ? "--wall-clock-time" : "--static-time");
+          .command(commands.toArray(new String[commands.size()]));
     }
   }
 }

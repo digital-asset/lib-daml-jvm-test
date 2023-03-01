@@ -48,7 +48,7 @@ public class SandboxManager {
   private final Optional<String> ledgerId;
   private final String[] parties;
   private Hashtable<String, Party> partyIdHashTable;
-  private final Path darPath;
+  private final Path[] darPath;
   private final Optional<LogLevel> logLevel;
   private final BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication;
 
@@ -65,7 +65,7 @@ public class SandboxManager {
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
-      Path darPath,
+      Path[] darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime) {
     this(
@@ -91,7 +91,7 @@ public class SandboxManager {
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
-      Path darPath,
+      Path[] darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -151,7 +151,11 @@ public class SandboxManager {
       getPartyIdOrAllocate(party);
     }
   }
-
+  public void allocateParties(String... parties) {
+    for (String party : parties) {
+        getPartyIdOrAllocate(party);
+    }
+  }
   private void mapParties() {
     this.partyIdHashTable = ledgerAdapter.getMapKnownParties();
   }

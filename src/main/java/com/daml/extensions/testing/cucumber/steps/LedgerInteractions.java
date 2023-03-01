@@ -27,8 +27,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
@@ -48,7 +50,7 @@ public class LedgerInteractions implements En {
   private SandboxManager sandboxManager;
   private static final Logger logger = LoggerFactory.getLogger(LedgerInteractions.class);
 
-  private void startSandbox(Path damlRoot, Path darPath, String[] parties)
+  private void startSandbox(Path damlRoot, Path[] darPath, String[] parties)
       throws InterruptedException, IOException, TimeoutException {
     sandboxManager =
         new SandboxManager(
@@ -72,16 +74,28 @@ public class LedgerInteractions implements En {
           String[] parties = dataTable.asList().toArray(new String[] {});
           startSandbox(
               Paths.get(damlRoot).toAbsolutePath().normalize(),
-              Paths.get(darPath).toAbsolutePath().normalize(),
+              new Path[] { Paths.get(darPath).toAbsolutePath().normalize() },
               parties);
         });
-    Given(
+      Given(
+          "^Sandbox is started in directory \"([^\"]+)\" with parties \"([^\"]+)\" and the following dars$",
+          (String damlRoot, String _parties, DataTable dataTable) -> {
+              String[] _dars = dataTable.asList().toArray(new String[] {});
+              Path[] dars = Arrays.asList(_dars).stream().map( darPath -> Paths.get(darPath).toAbsolutePath().normalize() )
+                  .toArray(Path[]::new);
+              String[] parties = _parties.trim ().length()==0 ? new String[0] :  _parties.split(",");
+              startSandbox(
+                  Paths.get(damlRoot).toAbsolutePath().normalize(),
+                  dars,
+                  parties);
+          });
+      Given(
         "^Sandbox is started with DAR \"([^\"]+)\" and the following parties$",
         (String darPathS, DataTable dataTable) -> {
           Path darPath = Paths.get(darPathS).toAbsolutePath().normalize();
           Path damlRoot = darPath.getParent();
           String[] parties = dataTable.asList().toArray(new String[] {});
-          startSandbox(damlRoot, darPath, parties);
+          startSandbox(damlRoot, new Path[] { darPath }, parties);
         });
     After(
         () -> {
@@ -89,7 +103,12 @@ public class LedgerInteractions implements En {
             sandboxManager.stop();
           }
         });
-
+      Given(
+          "^the following parties are allocated$",
+          (DataTable dataTable) -> {
+              String[] parties = dataTable.asList().toArray(new String[] {});
+              sandboxManager.allocateParties(parties);
+          });
     // Given - When - Then clauses :
     // ----------------------------
     When(

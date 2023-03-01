@@ -46,7 +46,7 @@ public class Sandbox {
       Duration sandboxWaitTimeout,
       Duration observationTimeout,
       String[] parties,
-      Path darPath,
+      Path[] darPath,
       BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -76,13 +76,13 @@ public class Sandbox {
     private Duration observationTimeout = DEFAULT_OBSERVATION_TIMEOUT;
     private String[] parties = DEFAULT_PARTIES;
     private Path damlRoot = WORKING_DIRECTORY;
-    private Path darPath;
+    private Path[] darPath;
     private boolean useWallclockTime = false;
     private BiConsumer<DamlLedgerClient, ManagedChannel> setupApplication = (t, u) -> {};
     private Optional<String> ledgerId = Optional.empty();
     private Optional<LogLevel> logLevel = Optional.empty();
 
-    public SandboxBuilder dar(Path darPath) {
+    public SandboxBuilder dar(Path... darPath) {
       this.darPath = darPath;
       return this;
     }

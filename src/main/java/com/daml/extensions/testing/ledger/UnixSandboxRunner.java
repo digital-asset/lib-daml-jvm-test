@@ -14,7 +14,7 @@ public class UnixSandboxRunner extends SandboxRunner {
 
   UnixSandboxRunner(
       Path damlRoot,
-      Path relativeDarPath,
+      Path[] relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,

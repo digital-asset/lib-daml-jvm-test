@@ -19,7 +19,7 @@ import java.util.Optional;
 
 public abstract class SandboxRunner {
   private final Logger logger = LoggerFactory.getLogger(getClass());
-  private final Path relativeDarPath;
+  private final Path[] relativeDarPath;
   private final Integer sandboxPort;
   private final boolean useWallclockTime;
   private final Optional<String> ledgerId;
@@ -29,7 +29,7 @@ public abstract class SandboxRunner {
 
   SandboxRunner(
       Path damlRoot,
-      Path relativeDarPath,
+      Path[] relativeDarPath,
       Integer sandboxPort,
       boolean useWallclockTime,
       Optional<String> ledgerId,
@@ -60,9 +60,10 @@ public abstract class SandboxRunner {
           commands.add("--log-level-root");
           commands.add(value.toString());
         });
-    commands.add("--dar");
-    commands.add(relativeDarPath.toString());
-
+    for (Path relativeDarPath : relativeDarPath) {
+        commands.add("--dar");
+        commands.add(relativeDarPath.toString());
+    }
     return commands;
   }
 
