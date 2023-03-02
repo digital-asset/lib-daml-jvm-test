@@ -13,7 +13,6 @@ import com.daml.extensions.testing.junit5.TestSandbox;
 import com.daml.extensions.testing.ledger.DefaultLedgerAdapter;
 import com.daml.extensions.testing.utils.ContractWithId;
 import com.daml.ledger.javaapi.data.*;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.StatusRuntimeException;
 
 import org.junit.jupiter.api.Assertions;
