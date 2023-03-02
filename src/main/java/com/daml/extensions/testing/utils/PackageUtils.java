@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PackageUtils {
   private static final ConcurrentHashMap<DamlLf1.DottedName, String> packageNames =
@@ -241,16 +242,9 @@ public class PackageUtils {
   }
 
   public static String dottedNameToString(DamlLf1.DottedName name) {
-    StringBuilder b = new StringBuilder();
-    int segmentsCount = name.getSegmentsCount();
-
-    if (segmentsCount > 0) {
-      b.append(name.getSegments(0));
-      for (int i = 1; i < segmentsCount; i++) {
-        b.append('.').append(name.getSegments(i));
-      }
-    }
-    return b.toString();
+    return IntStream.range(0, name.getSegmentsCount())
+            .mapToObj(name::getSegments)
+            .collect(Collectors.joining("."));
   }
 
   private static DataType findDataType(DamlLedgerClient ledgerClient, String moduleAndEntityName)
