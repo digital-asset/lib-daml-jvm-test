@@ -1,0 +1,10 @@
+module One.Two.Three.Four where
+
+template Five
+  with
+    p: Party
+    i: Int
+    b: Bool
+    s: Text
+  where
+    signatory p

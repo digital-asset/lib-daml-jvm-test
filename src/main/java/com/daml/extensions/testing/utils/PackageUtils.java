@@ -198,7 +198,7 @@ public class PackageUtils {
   public static DamlLf1.Package findPackageObject(DamlLedgerClient ledgerClient, String moduleName)
       throws InvalidProtocolBufferException {
     return findPackageObject(
-        ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
+        ledgerClient, DamlLf1.DottedName.newBuilder().addAllSegments(List.of(moduleName.split("\\."))).build());
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
@@ -226,7 +226,7 @@ public class PackageUtils {
             dottedNameToString(getTypeConName(choiceArgTypeCon.getTycon(), dl1));
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
         if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
-          choiceDataTypeFqn = "DAInternalTemplate:Archive";
+          choiceDataTypeFqn = "DA.Internal.Template:Archive";
         }
         DataType choiceArgDataType = findDataType(ledgerClient, choiceDataTypeFqn);
         if (choiceArgDataType.hasFields()) {
@@ -242,8 +242,13 @@ public class PackageUtils {
 
   public static String dottedNameToString(DamlLf1.DottedName name) {
     StringBuilder b = new StringBuilder();
-    for (int i = 0; i < name.getSegmentsCount(); i++) {
-      b.append(name.getSegments(i));
+    int segmentsCount = name.getSegmentsCount();
+
+    if (segmentsCount > 0) {
+      b.append(name.getSegments(0));
+      for (int i = 1; i < segmentsCount; i++) {
+        b.append('.').append(name.getSegments(i));
+      }
     }
     return b.toString();
   }
