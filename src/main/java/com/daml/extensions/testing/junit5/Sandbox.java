@@ -205,7 +205,7 @@ public class Sandbox {
 
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     String pkg = findPackage(sandboxManager.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);
   }

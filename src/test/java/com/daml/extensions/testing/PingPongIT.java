@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testCreate() throws InvalidProtocolBufferException {
+  public void testCreate() throws IOException {
     ledger()
         .createContract(
             charliePartyId(), pingTemplateId(), record(charliePartyId(), bobPartyId(), int64(777)));
@@ -75,7 +76,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testObservationWithMatcher() throws InvalidProtocolBufferException {
+  public void testObservationWithMatcher() throws IOException {
     DamlRecord recordMatcher =
         record(
             field("sender", alicePartyId()),
@@ -86,12 +87,12 @@ public class PingPongIT {
   }
 
   @Test
-  public void testObservationWithoutMatcher() throws InvalidProtocolBufferException {
+  public void testObservationWithoutMatcher() throws IOException {
     ledger().getCreatedContractId(bobPartyId(), pingTemplateId(), ContractId::new);
   }
 
   @Test
-  public void testSimpleObservation() throws InvalidProtocolBufferException {
+  public void testSimpleObservation() throws IOException {
     String key = "mykey";
     TreeEvent evt =
         ledger()
@@ -103,14 +104,14 @@ public class PingPongIT {
   }
 
   @Test
-  public void testObservation() throws InvalidProtocolBufferException {
+  public void testObservation() throws IOException {
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     assertNotNull(contract);
   }
 
   @Test
-  public void testExercise() throws InvalidProtocolBufferException {
+  public void testExercise() throws IOException {
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger()
@@ -119,7 +120,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testExerciseCommand() throws InvalidProtocolBufferException {
+  public void testExerciseCommand() throws IOException {
     ContractWithId<ContractId> contract =
         ledger().getMatchedContract(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger()
@@ -153,7 +154,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testPingPongFullWorkflow() throws InvalidProtocolBufferException {
+  public void testPingPongFullWorkflow() throws IOException {
     // PingPong workflow
     // Bob's turn
     DamlRecord recordMatcher =
@@ -201,7 +202,7 @@ public class PingPongIT {
   }
 
   @Test
-  public void testPingPongFullWorkflowWAlternativeApiCalls() throws InvalidProtocolBufferException {
+  public void testPingPongFullWorkflowWAlternativeApiCalls() throws IOException {
     ContractId pingCid =
         ledger().getCreatedContractId(bobPartyId(), pingTemplateId(), ContractId::new);
     ledger()
@@ -224,16 +225,16 @@ public class PingPongIT {
             .getCreatedContractId(bobPartyId(), pingTemplateId(), recordMatcher, ContractId::new);
   }
 
-  private Identifier pingTemplateId() throws InvalidProtocolBufferException {
+  private Identifier pingTemplateId() throws IOException {
     return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "MyPing");
   }
 
-  private Identifier pongTemplateId() throws InvalidProtocolBufferException {
+  private Identifier pongTemplateId() throws IOException {
     return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "MyPong");
   }
 
   @Test
-  public void testTimedOperationFailsIfTimeIsWrong() throws InvalidProtocolBufferException {
+  public void testTimedOperationFailsIfTimeIsWrong() throws IOException {
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "TimedPing");
 
@@ -260,7 +261,7 @@ public class PingPongIT {
 
   @Test
   public void testTimedOperationIfTimeIsOk()
-      throws InvalidProtocolBufferException {
+          throws IOException {
     Instant futureTime = Instant.ofEpochSecond(5000);
     Identifier timedPingTid = sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "TimedPing");
 
@@ -285,12 +286,12 @@ public class PingPongIT {
     sandbox.getLedgerAdapter().exerciseChoice(bobPartyId(), exerciseCmd);
   }
 
-  private Identifier numericTemplateId() throws InvalidProtocolBufferException {
+  private Identifier numericTemplateId() throws IOException {
     return sandbox.templateIdentifier(PING_PONG_MODULE, PING_PONG_MODULE_NAME, "NumericTester");
   }
 
   @Test
-  public void testNumeric() throws InvalidProtocolBufferException {
+  public void testNumeric() throws IOException {
     ledger()
         .createContract(
             charliePartyId(),
