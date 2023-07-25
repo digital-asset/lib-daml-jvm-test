@@ -19,7 +19,7 @@ Add the library as a test scoped dependency to your project. In case of a Maven 
     <dependency>
         <groupId>com.daml.extensions</groupId>
         <artifactId>junit5-support_2.13</artifactId>
-        <version>0.2.6</version>
+        <version>0.2.7</version>
         <scope>test</scope>
     </dependency>
     ...
@@ -40,9 +40,9 @@ Additional daml dependencies are required by the library, but these dependencies
 **Note:** versioning of this library is not tied to DAML SDK versions. The above artifacts are considered stable, changing rarely. The testing library is compatible with minor version changes in the SDK. We will release new version of the library for incompatible SDK versions. You can test a desired SDK version by using `scripts/upgrade-sdk.sh`, and running the tests.
 ## Using the library in Java projects
 
-### Using the library with the Sandbox JUnit4 Rule
+### Using the library with the Sandbox JUnit5 Rule
 
-One can easily instantiate a Sandbox process using the JUnit4 Rule technique:
+One can easily instantiate a Sandbox process using the JUnit5 Rule technique:
 ```
 @ExtendWith(SandboxTestExtension.class)
 public class TestClass {
@@ -142,7 +142,7 @@ Otherwise, it may skip several events until all predicates are matched.
 
 ### Running tests
 
-The library uses JUnit4 to provide its functionalities. Several build systems (e.g. Maven, Sbt) support running JUnit tests easily.
+The library uses JUnit5 to provide its functionalities. Several build systems (e.g. Maven, Sbt) support running JUnit tests easily.
 In Maven, one can use either *maven-failsafe-plugin* or *maven-surefire-plugin* to run tests using this test library.
 To configure any of these, use the official documentation, to run, execute `mvn verify`.
 Example open source DAML reference applications using this plugin via Maven: [Bond issuance](https://github.com/digital-asset/ex-bond-issuance), [Healthcare](https://github.com/digital-asset/ex-healthcare-claims-processing), [Supply Chain](https://github.com/digital-asset/ex-supply-chain).

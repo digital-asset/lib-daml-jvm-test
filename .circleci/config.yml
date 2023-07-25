@@ -85,11 +85,11 @@ workflows:
   build_and_test:
     jobs:
       - sbt_verify:
-          daml_sdk_version: "2.5.0"
+          daml_sdk_version: "2.6.5"
   build_and_release:
     jobs:
       - sbt_publish:
-          daml_sdk_version: "2.5.0"
+          daml_sdk_version: "2.6.5"
           context: github-refapp-repo-context
           filters:
             branches:
