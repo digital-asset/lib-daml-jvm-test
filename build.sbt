@@ -46,7 +46,7 @@ libraryDependencies ++= Seq(
   cucumberPicoContainer
 )
 
-scalaVersion := "2.13.10"
+scalaVersion := "2.13.11"
 javacOptions ++= Seq("-source", "11", "-target", "11")
 scalacOptions ++= Seq("-release:11")
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xlint:deprecation")
