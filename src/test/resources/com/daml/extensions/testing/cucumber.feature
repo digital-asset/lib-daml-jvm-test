@@ -106,3 +106,15 @@ Feature: Cucumber support in the Functional Testing library
     | 3     |
     When "Bob" exercises choice "RespondPong" on "MyPingPong:MyPing" with contract id "pingPongCid4" and expects failure
     Then they should receive a technical failure containing message "requires authorizers Alice"
+
+  Scenario: Contract in a nested module can be created.
+    Given "Bob" creates contract "One.Two.Three.Four:Five" using values
+      | p | Bob      |
+      | i | 42       |
+      | b | true     |
+      | s | six      |
+    Then "Bob" should observe the creation of "One.Two.Three.Four:Five" with contract id "pingPongCid5" and values
+      | p | Bob      |
+      | i | 42       |
+      | b | true     |
+      | s | six      |

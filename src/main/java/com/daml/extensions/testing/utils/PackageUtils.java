@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PackageUtils {
   private static final ConcurrentHashMap<DamlLf1.DottedName, String> packageNames =
@@ -198,7 +199,7 @@ public class PackageUtils {
   public static DamlLf1.Package findPackageObject(DamlLedgerClient ledgerClient, String moduleName)
       throws InvalidProtocolBufferException {
     return findPackageObject(
-        ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
+        ledgerClient, DamlLf1.DottedName.newBuilder().addAllSegments(List.of(moduleName.split("\\."))).build());
   }
 
   public static TemplateType findTemplate(DamlLedgerClient ledgerClient, String moduleAndEntityName)
@@ -226,7 +227,7 @@ public class PackageUtils {
             dottedNameToString(getTypeConName(choiceArgTypeCon.getTycon(), dl1));
         String choiceDataTypeFqn = toFqn(moduleName, choiceDataTypeName);
         if (choiceArgName.equals("Archive") || choiceDataTypeName.equals("Archive")) {
-          choiceDataTypeFqn = "DAInternalTemplate:Archive";
+          choiceDataTypeFqn = "DA.Internal.Template:Archive";
         }
         DataType choiceArgDataType = findDataType(ledgerClient, choiceDataTypeFqn);
         if (choiceArgDataType.hasFields()) {
@@ -241,11 +242,9 @@ public class PackageUtils {
   }
 
   public static String dottedNameToString(DamlLf1.DottedName name) {
-    StringBuilder b = new StringBuilder();
-    for (int i = 0; i < name.getSegmentsCount(); i++) {
-      b.append(name.getSegments(i));
-    }
-    return b.toString();
+    return IntStream.range(0, name.getSegmentsCount())
+            .mapToObj(name::getSegments)
+            .collect(Collectors.joining("."));
   }
 
   private static DataType findDataType(DamlLedgerClient ledgerClient, String moduleAndEntityName)
