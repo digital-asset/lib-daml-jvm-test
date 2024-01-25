@@ -13,7 +13,6 @@ import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.rxjava.DamlLedgerClient;
 import com.daml.ledger.rxjava.PackageClient;
 import com.google.protobuf.CodedInputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.IOException;
 import java.util.*;
@@ -21,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class PackageUtils {
+  private static final int RECURSION_LIMIT = 1000; // default is 100 which is not enough for a package
   private static final ConcurrentHashMap<DamlLf1.DottedName, String> packageNames =
       new ConcurrentHashMap<>();
   private static final ConcurrentHashMap<String, Identifier> identifiers =
@@ -160,7 +160,7 @@ public class PackageUtils {
   }
 
   public static String findPackage(DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     String strName = packageNames.get(moduleName);
     if (strName != null) {
       return strName;
@@ -169,8 +169,10 @@ public class PackageUtils {
       Iterable<String> pkgs = pkgClient.listPackages().blockingIterable();
       for (String pkgId : pkgs) {
         GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
+        CodedInputStream codeInputStream = CodedInputStream.newInstance(pkgResp.getArchivePayload());
+        codeInputStream.setRecursionLimit(RECURSION_LIMIT);
         DamlLf.ArchivePayload archivePl =
-            DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+            DamlLf.ArchivePayload.parseFrom(codeInputStream);
         DamlLf1.Package dl1 = archivePl.getDamlLf1();
         List<DamlLf1.Module> mods = dl1.getModulesList();
         for (DamlLf1.Module mod : mods) {
@@ -187,16 +189,18 @@ public class PackageUtils {
 
   public static DamlLf1.Package findPackageObject(
       DamlLedgerClient ledgerClient, DamlLf1.DottedName moduleName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     PackageClient pkgClient = ledgerClient.getPackageClient();
     String pkgId = findPackage(ledgerClient, moduleName);
     GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
-    DamlLf.ArchivePayload archivePl = DamlLf.ArchivePayload.parseFrom(pkgResp.getArchivePayload());
+    CodedInputStream codeInputStream = CodedInputStream.newInstance(pkgResp.getArchivePayload());
+    codeInputStream.setRecursionLimit(RECURSION_LIMIT);
+    DamlLf.ArchivePayload archivePl = DamlLf.ArchivePayload.parseFrom(codeInputStream);
     return archivePl.getDamlLf1();
   }
 
   public static DamlLf1.Package findPackageObject(DamlLedgerClient ledgerClient, String moduleName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     return findPackageObject(
         ledgerClient, DamlLf1.DottedName.newBuilder().addSegments(moduleName).build());
   }
@@ -274,7 +278,7 @@ public class PackageUtils {
     for (String pkgId : pkgs) {
       GetPackageResponse pkgResp = pkgClient.getPackage(pkgId).blockingGet();
       CodedInputStream codeInputStream = CodedInputStream.newInstance(pkgResp.getArchivePayload());
-      codeInputStream.setRecursionLimit(1000); // default is 100 which is not enough for a package
+      codeInputStream.setRecursionLimit(RECURSION_LIMIT);
       DamlLf.ArchivePayload archivePl =
           DamlLf.ArchivePayload.parseFrom(codeInputStream);
       DamlLf1.Package dl1 = archivePl.getDamlLf1();

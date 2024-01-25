@@ -12,7 +12,6 @@ import com.daml.extensions.testing.ledger.SandboxManager;
 import com.daml.ledger.javaapi.data.Identifier;
 import com.daml.ledger.javaapi.data.Party;
 import com.daml.ledger.rxjava.DamlLedgerClient;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.ManagedChannel;
 
 import java.io.IOException;
@@ -205,7 +204,7 @@ public class Sandbox {
 
   public Identifier templateIdentifier(
       DamlLf1.DottedName packageName, String moduleName, String entityName)
-      throws InvalidProtocolBufferException {
+          throws IOException {
     String pkg = findPackage(sandboxManager.getClient(), packageName);
     return new Identifier(pkg, moduleName, entityName);
   }
